@@ -1715,22 +1715,25 @@ export class TerminalGameApp {
 
   // ==========================================
   // ANIMAÇÃO LENTA E PROGRESSIVA DE DANO NO HP/ESCUDO
+  // bypassShield = true: ignora o escudo completamente (penalidade por palpite errado na moeda)
   // ==========================================
-  async animateDamageApplication(target, totalDmg, isEnemyTarget = true) {
+  async animateDamageApplication(target, totalDmg, isEnemyTarget = true, bypassShield = false) {
     if (totalDmg <= 0) return;
 
     const currentFloor = TOWER_FLOORS[this.currentFloorIndex] || {};
     const isFloor1Tutorial = currentFloor.id === 1 && !isEnemyTarget;
 
-    let remainingDmg = totalDmg;
     let shieldDmg = 0;
     let hpDmg = 0;
 
-    if (target.shieldCurrent > 0) {
+    if (bypassShield || target.shieldCurrent <= 0) {
+      // Sem absorção: dano vai 100% para o HP (palpite errado ou sem escudo)
+      hpDmg = totalDmg;
+    } else {
+      // Absorção normal do escudo: escudo absorve 40% e atenua 30% do HP
       shieldDmg = Math.min(target.shieldCurrent, Math.max(2, Math.floor(totalDmg * 0.4)));
-      remainingDmg = Math.floor(totalDmg * 0.7); // Escudo atenua dano
+      hpDmg = Math.floor(totalDmg * 0.7);
     }
-    hpDmg = remainingDmg;
 
     this.triggerScreenShake();
     this.audio.playHeavyImpact();
@@ -1782,8 +1785,12 @@ export class TerminalGameApp {
         <span class="submenu-deck-title">[ DEFESA: MOEDA DA SORTE ]</span>
         <button class="term-btn alert" id="btnCloseDefMenu" style="padding: 2px 8px; font-size: 0.8rem;">[ FECHAR ]</button>
       </div>
-      <p style="font-size: 0.95rem; color: var(--term-fg); margin: 4px 0 10px 0;">
-        > Lance a moeda quântica: Acertar concede <strong>100% DE ESQUIVA (0 DANO)</strong> contra o próximo golpe inimigo!
+      <p style="font-size: 0.9rem; color: var(--term-fg); margin: 4px 0 6px 0;">
+        > Passa a vez economizando energia. Lance a Moeda da Sorte e aposte no resultado:
+      </p>
+      <p style="font-size: 0.88rem; margin: 0 0 10px 0;">
+        <span style="color: #00ff66;">✔ ACERTOU</span> — <strong>Esquiva Total</strong>: o próximo ataque inimigo causa 0 dano.<br>
+        <span style="color: var(--term-alert);">✘ ERROU</span> — <strong>Exposto</strong>: o escudo é ignorado e você recebe o dano bruto!
       </p>
       <div style="display: flex; flex-direction: column; gap: 10px;">
         <button class="term-btn gold" id="btnDefCoinCara" style="padding: 14px; font-size: 1.2rem; font-weight: 900; letter-spacing: 2px;">
@@ -1794,6 +1801,7 @@ export class TerminalGameApp {
         </button>
       </div>
     `;
+
 
     document.getElementById('btnCloseDefMenu').onclick = () => {
       subContainer.classList.add('hidden');
@@ -1988,12 +1996,19 @@ export class TerminalGameApp {
 
       // Verifica postura de esquiva (resultado da Moeda da Sorte)
       if (target.defenseStance === 'DODGE_SUCCESS') {
-        this.combatLogs.push(`> ${target.name} esquivou do ataque de ${enemy.name}! (0 dano)`);
+        // Acertou o palpite: esquiva total, 0 dano
+        this.combatLogs.push(`> ${target.name} bloqueou o ataque de ${enemy.name} com a Moeda da Sorte! (0 dano)`);
         this.renderBattleArena();
         await new Promise(r => setTimeout(r, 700));
+      } else if (target.defenseStance === 'DODGE_FAIL') {
+        // Errou o palpite: robô ficou exposto — dano bypassa o escudo!
+        this.combatLogs.push(`> Palpite ERRADO! ${target.name} ficou exposto ao ataque de ${enemy.name}!`);
+        this.combatLogs.push(`> Dano bruto: ${dmg} (escudo ignorado!)`);
+        await this.animateDamageApplication(target, dmg, false, true);
       } else {
+        // Ataque normal (sem moeda): escudo absorve parte do dano
         this.combatLogs.push(`> ${enemy.name} usou [${move.name}] em ${target.name} causando ${dmg} de dano!`);
-        await this.animateDamageApplication(target, dmg, false);
+        await this.animateDamageApplication(target, dmg, false, false);
       }
       target.defenseStance = null;
 
