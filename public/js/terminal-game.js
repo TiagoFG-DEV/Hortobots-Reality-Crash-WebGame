@@ -755,6 +755,15 @@ export class TerminalGameApp {
     this.tutorialDefensesCount = 0;
     this.setBiomeTheme('forest');
 
+    const warnDiag = this.getDialogue('floor1_warning', 'SISTEMA // ALERTA', '[ALERTA]', 'ALERTA CRÍTICO: Robô DINO-BYTE detectado! Cabos roxos de corrupção da Grande Inteligência tomaram conta de seus circuitos!\nQuezadilhas assume a frente para romper o controle mental!');
+    this.showDialogue(
+      warnDiag.speaker,
+      warnDiag.avatar,
+      warnDiag.text,
+      async () => {
+        await this.runGrandDuelCinematic('ANDAR 1', 'FLORESTA DIGITAL', 'QUEZADILHAS', 'DINO-BYTE CORROMPIDO', 'forestBattle');
+        this.showScreen('battleScreen');
+
         const quezasSolo = {
           id: 'quezas_avatar',
           name: 'Quezadilhas',
