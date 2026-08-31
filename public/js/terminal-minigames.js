@@ -21,8 +21,8 @@ export class TerminalMinigames {
     const map = {
       dino_targets: 'CLIQUE OU TOQUE RAPIDAMENTE NOS NÓS DE CALOR ANTES QUE RESFRIEM!',
       targets: 'CLIQUE OU TOQUE RAPIDAMENTE NOS NÓS DE CALOR ANTES QUE RESFRIEM!',
-      dino_arrows: 'DIGITE AS TECLAS DIRECIONAIS [ ↑ / ↓ / ← / → ] NA ORDEM INDICADA!',
-      arrows: 'DIGITE AS TECLAS DIRECIONAIS [ ↑ / ↓ / ← / → ] NA ORDEM INDICADA!',
+      dino_arrows: 'DIGITE AS TECLAS [ W / A / S / D ] NA ORDEM INDICADA!',
+      arrows: 'DIGITE AS TECLAS [ W / A / S / D ] NA ORDEM INDICADA!',
       dino_timing: 'PRESSIONE [ESPAÇO] OU CLIQUE NO CENTRO EXATO DA ZONA VERDE!',
       timing: 'PRESSIONE [ESPAÇO] OU CLIQUE NO CENTRO EXATO DA ZONA VERDE!',
       cow_lasso: 'CLIQUE E SEGURE PARA GIRAR O LAÇO E SOLTE NO ALVO EM MOVIMENTO!',
@@ -281,7 +281,7 @@ export class TerminalMinigames {
           <div class="blackout-title-row">
             <div>
               <h2 style="color: var(--term-accent);">[SEQUÊNCIA DE GARRAS] ${moveName.toUpperCase()}</h2>
-              <p>DIGITE AS DIREÇÕES OU CLIQUE NAS TECLAS:</p>
+              <p>DIGITE AS TECLAS [ W / A / S / D ] OU CLIQUE NOS BOTÕES:</p>
             </div>
             <div class="blackout-combo-badge" id="arrowsCombo">0/${sequence.length}</div>
           </div>
@@ -333,7 +333,12 @@ export class TerminalMinigames {
       };
 
       const keyHandler = (e) => {
-        const k = e.key.toUpperCase();
+        let k = e.key.toUpperCase();
+        if (e.key === 'ArrowUp') k = 'W';
+        if (e.key === 'ArrowLeft') k = 'A';
+        if (e.key === 'ArrowDown') k = 'S';
+        if (e.key === 'ArrowRight') k = 'D';
+
         if (keys.includes(k)) {
           e.preventDefault();
           processKey(k);

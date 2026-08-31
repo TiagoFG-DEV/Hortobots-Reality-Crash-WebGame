@@ -27,7 +27,7 @@ export class Terminal3DEngine {
       return;
     }
 
-    if (titleEl) titleEl.innerText = `[ ANDAR ${targetFloorNum}: ${targetFloorName.toUpperCase()} ]`;
+    if (titleEl) titleEl.innerText = `${targetFloorNum} ANDAR`;
     overlay.classList.remove('hidden');
 
     // Se Three.js estiver disponível, renderiza a cena 3D completa de Escada em Espiral

@@ -978,12 +978,19 @@ html, body {
 }
 
 .ascent-floor-title {
-  font-size: 2.8rem;
+  font-size: 3.2rem;
   font-weight: 900;
   color: #ffd700;
-  letter-spacing: 3px;
-  text-shadow: 0 0 25px #ffd700;
+  letter-spacing: 6px;
+  text-shadow: 
+    3px 3px 0px #000000,
+    -3px -3px 0px #000000,
+    3px -3px 0px #000000,
+    -3px 3px 0px #000000,
+    0px 5px 12px #000000,
+    0 0 25px rgba(0, 0, 0, 0.95);
   margin: 0;
+  text-align: center;
 }
 
 .ascent-altitude-readout {

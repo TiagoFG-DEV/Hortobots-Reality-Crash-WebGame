@@ -41,9 +41,9 @@ const ROBOT_TEMPLATES = {
     xpGrowthPerLevel: 35,
     growthStats: { hp: 6, atk: 2, shield: 1 },
     moves: [
-      { id: 'jurassic_bite', name: 'Mordida Jurássica', cost: 1, basePower: 10, minigame: 'dino_targets', unlockLevel: 1, desc: 'Ataque dentado veloz que exige mira térmica rápida.' },
-      { id: 'flame_claw', name: 'Garras Flamejantes', cost: 2, basePower: 18, minigame: 'dino_arrows', unlockLevel: 4, desc: 'Talhos incandescentes em sequência direcional.' },
-      { id: 'draconic_firewall', name: 'Firewall Dracônico', cost: 3, basePower: 26, minigame: 'dino_timing', unlockLevel: 6, desc: 'Descarga de calor concentrada no pico de pressão.' }
+      { id: 'jurassic_bite', name: 'Mordida Jurássica', cost: 2, basePower: 10, minigame: 'dino_targets', unlockLevel: 1, desc: 'Ataque dentado veloz que exige mira térmica rápida.' },
+      { id: 'flame_claw', name: 'Garras Flamejantes', cost: 4, basePower: 18, minigame: 'dino_arrows', unlockLevel: 4, desc: 'Talhos incandescentes em sequência direcional.' },
+      { id: 'draconic_firewall', name: 'Firewall Dracônico', cost: 6, basePower: 26, minigame: 'dino_timing', unlockLevel: 6, desc: 'Descarga de calor concentrada no pico de pressão.' }
     ],
     finisher: { id: 'lizards_roar', name: 'Rugido Hiperbárico do Lagarto', cost: 10, basePower: 38, unlockLevel: 2, minigame: 'chained_finisher', desc: 'O golpe supremo que desencadeia os 3 protocolos em sequência rápida!' }
   },
@@ -62,9 +62,9 @@ const ROBOT_TEMPLATES = {
     xpGrowthPerLevel: 40,
     growthStats: { hp: 8, atk: 2, shield: 2 },
     moves: [
-      { id: 'stampede_ram', name: 'Laço Magnético', cost: 1, basePower: 9, minigame: 'cow_lasso', unlockLevel: 1, desc: 'Lança o laço magnético no ponto de rotação polar.' },
-      { id: 'horn_overload', name: 'Sobrecarga de Chifres', cost: 2, basePower: 17, minigame: 'cow_decrypt', unlockLevel: 4, desc: 'Decodificação rápida de frequência binária.' },
-      { id: 'western_dust', name: 'Poeira do Velho Oeste', cost: 3, basePower: 25, minigame: 'cow_quickdraw', unlockLevel: 6, desc: 'Saque relâmpago ao primeiro sinal de faísca.' }
+      { id: 'stampede_ram', name: 'Laço Magnético', cost: 2, basePower: 9, minigame: 'cow_lasso', unlockLevel: 1, desc: 'Lança o laço magnético no ponto de rotação polar.' },
+      { id: 'horn_overload', name: 'Sobrecarga de Chifres', cost: 4, basePower: 17, minigame: 'cow_decrypt', unlockLevel: 4, desc: 'Decodificação rápida de frequência binária.' },
+      { id: 'western_dust', name: 'Poeira do Velho Oeste', cost: 6, basePower: 25, minigame: 'cow_quickdraw', unlockLevel: 6, desc: 'Saque relâmpago ao primeiro sinal de faísca.' }
     ],
     finisher: { id: 'bovine_voltage', name: 'Choque Bovino de Alta Tensão', cost: 10, basePower: 35, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Ataque sísmico total encadeando laço, código e saque rápido!' }
   },
@@ -83,9 +83,9 @@ const ROBOT_TEMPLATES = {
     xpGrowthPerLevel: 35,
     growthStats: { hp: 5, atk: 3, shield: 1 },
     moves: [
-      { id: 'frost_slide', name: 'Deslize Glacial', cost: 1, basePower: 11, minigame: 'pen_slide', unlockLevel: 1, desc: 'Desvia dos blocos de gelo na pista em alta velocidade.' },
-      { id: 'glacier_quake', name: 'Terremoto de Iceberg', cost: 2, basePower: 19, minigame: 'pen_stomp', unlockLevel: 4, desc: 'Ondas convergentes travadas no tempo exato.' },
-      { id: 'dance_pass', name: 'Passinho do Hee-Hee', cost: 3, basePower: 27, minigame: 'pen_rhythm', unlockLevel: 6, desc: 'Ritmo musical acrobático no compasso da batida.' }
+      { id: 'frost_slide', name: 'Deslize Glacial', cost: 2, basePower: 11, minigame: 'pen_slide', unlockLevel: 1, desc: 'Desvia dos blocos de gelo na pista em alta velocidade.' },
+      { id: 'glacier_quake', name: 'Terremoto de Iceberg', cost: 4, basePower: 19, minigame: 'pen_stomp', unlockLevel: 4, desc: 'Ondas convergentes travadas no tempo exato.' },
+      { id: 'dance_pass', name: 'Passinho do Hee-Hee', cost: 6, basePower: 27, minigame: 'pen_rhythm', unlockLevel: 6, desc: 'Ritmo musical acrobático no compasso da batida.' }
     ],
     finisher: { id: 'hee_hee_avalanche', name: 'Avalanche Ártica do Hee-Hee', cost: 10, basePower: 40, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Coreografia devastadora executando os 3 ritmos em cadeia!' }
   },
@@ -104,9 +104,9 @@ const ROBOT_TEMPLATES = {
     xpGrowthPerLevel: 45,
     growthStats: { hp: 7, atk: 3, shield: 1 },
     moves: [
-      { id: 'titanium_slash', name: 'Talho de Titânio', cost: 1, basePower: 12, minigame: 'tiger_slice', unlockLevel: 1, desc: 'Fatia os cabos de dados condutores em sequência cirúrgica.' },
-      { id: 'plasma_pounce', name: 'Bote de Plasma', cost: 2, basePower: 20, minigame: 'tiger_plasma', unlockLevel: 4, desc: 'Carrega e retém energia de plasma até o ponto ótimo de 95%.' },
-      { id: 'white_fang', name: 'Presas Relâmpago', cost: 3, basePower: 28, minigame: 'tiger_tesla', unlockLevel: 6, desc: 'Conexão em cadeia das bobinas Tesla.' }
+      { id: 'titanium_slash', name: 'Talho de Titânio', cost: 2, basePower: 12, minigame: 'tiger_slice', unlockLevel: 1, desc: 'Fatia os cabos de dados condutores em sequência cirúrgica.' },
+      { id: 'plasma_pounce', name: 'Bote de Plasma', cost: 4, basePower: 20, minigame: 'tiger_plasma', unlockLevel: 4, desc: 'Carrega e retém energia de plasma até o ponto ótimo de 95%.' },
+      { id: 'white_fang', name: 'Presas Relâmpago', cost: 6, basePower: 28, minigame: 'tiger_tesla', unlockLevel: 6, desc: 'Conexão em cadeia das bobinas Tesla.' }
     ],
     finisher: { id: 'thunder_core', name: 'Ruptura do Núcleo Trovão', cost: 10, basePower: 42, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Liberação total da usina interna em feixe colinear triplo!' }
   },
@@ -125,9 +125,9 @@ const ROBOT_TEMPLATES = {
     xpGrowthPerLevel: 40,
     growthStats: { hp: 6, atk: 2, shield: 2 },
     moves: [
-      { id: 'prism_flare', name: 'Clarão Prismático', cost: 1, basePower: 10, minigame: 'pava_prism', unlockLevel: 1, desc: 'Alinha o prisma para convergir o feixe de luz espectral.' },
-      { id: 'spectral_tail', name: 'Cauda Espectral', cost: 2, basePower: 18, minigame: 'pava_fan', unlockLevel: 4, desc: 'Memoriza e reflete a sequência do leque holográfico.' },
-      { id: 'code_cascade', name: 'Cascata de Códigos', cost: 3, basePower: 26, minigame: 'pava_cascade', unlockLevel: 6, desc: 'Chuva torrencial de fótons dourados.' }
+      { id: 'prism_flare', name: 'Clarão Prismático', cost: 2, basePower: 10, minigame: 'pava_prism', unlockLevel: 1, desc: 'Alinha o prisma para convergir o feixe de luz espectral.' },
+      { id: 'spectral_tail', name: 'Cauda Espectral', cost: 4, basePower: 18, minigame: 'pava_fan', unlockLevel: 4, desc: 'Memoriza e reflete a sequência do leque holográfico.' },
+      { id: 'code_cascade', name: 'Cascata de Códigos', cost: 6, basePower: 26, minigame: 'pava_cascade', unlockLevel: 6, desc: 'Chuva torrencial de fótons dourados.' }
     ],
     finisher: { id: 'rainbow_laser', name: 'Matriz Laser Arco-Íris', cost: 10, basePower: 39, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Bombardeio orbital óptico convergente executado em 3 fases!' }
   }
@@ -742,8 +742,8 @@ export class TerminalGameApp {
           defenseStance: null,
           isLethalWithstandTriggered: false, // Guts: travado explicitamente como false
           moves: [
-            { id: 'quezas_hack', name: 'Pulso de Desfragmentação', cost: 1, basePower: 12, minigame: 'dino_targets', desc: 'Disparo de neutralização de cabos.' },
-            { id: 'quezas_strike', name: 'Talho de Dados', cost: 2, basePower: 18, minigame: 'dino_arrows', desc: 'Corte de precisão nos circuitos corrompidos.' }
+            { id: 'quezas_hack', name: 'Pulso de Desfragmentação', cost: 2, basePower: 12, minigame: 'dino_targets', desc: 'Disparo de neutralização de cabos.' },
+            { id: 'quezas_strike', name: 'Talho de Dados', cost: 4, basePower: 18, minigame: 'dino_arrows', desc: 'Corte de precisão nos circuitos corrompidos.' }
           ]
         };
 
@@ -1087,23 +1087,97 @@ export class TerminalGameApp {
         </div>
         <p style="font-size: 0.88rem; color: #ccc; margin: 8px 0;">${item.desc}</p>
         <button class="term-btn gold" style="margin-top: 8px; width: 100%;">
-          [ USAR ITEM NO LÍDER ]
+          [ USAR ITEM... ]
         </button>
       `;
 
       const useBtn = card.querySelector('button');
       if (useBtn) {
         useBtn.onclick = () => {
-          if (this.party.length === 0) return;
-          const target = this.party[0]; // Aplica ao líder da party
-          const msg = item.apply(target);
-          this.inventory[key]--;
-          if (this.inventory[key] <= 0) delete this.inventory[key];
-          this.audio.playHealSound();
-          this.showSystemToast('SUPRIMENTO APLICADO', msg, 'success');
-          this.renderInventoryGrid();
+          if (this.party.length === 0) {
+            this.showSystemToast('SEM ROBÔS', 'Você não tem nenhum robô na party para usar este item.', 'alert');
+            return;
+          }
+          this.renderInventoryTargetPicker(item, key);
         };
       }
+
+      container.appendChild(card);
+    });
+  }
+
+  renderInventoryTargetPicker(item, key) {
+    const container = document.getElementById('inventoryItemsGrid');
+    if (!container) return;
+    container.innerHTML = `
+      <div style="grid-column: 1 / -1; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--term-accent); padding-bottom: 8px;">
+        <span style="font-size: 1.1rem; color: var(--term-accent); font-weight: 700;">// SELECIONE O ROBÔ QUE RECEBERÁ: [ ${item.icon} ${item.name.toUpperCase()} ] //</span>
+        <button class="term-btn alert" id="btnCancelInventoryPicker" style="padding: 4px 12px; font-size: 0.85rem;">[ << VOLTAR ]</button>
+      </div>
+    `;
+
+    document.getElementById('btnCancelInventoryPicker').onclick = () => {
+      this.renderInventoryGrid();
+    };
+
+    this.party.forEach(bot => {
+      const hpPct = Math.min(100, Math.max(0, (bot.currentHp / bot.maxHp) * 100));
+      const shieldPct = Math.min(100, Math.max(0, (bot.shieldCurrent / bot.shieldMax) * 100));
+      const energyPct = Math.min(100, Math.max(0, (bot.currentEnergy / bot.maxEnergy) * 100));
+
+      const card = document.createElement('div');
+      card.className = 'pokemon-card-slot';
+      card.style.cursor = 'pointer';
+      card.innerHTML = `
+        <div class="pokemon-card-header">
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <div class="robot-avatar-badge">${bot.avatar}</div>
+            <div>
+              <div class="char-name-glow ${bot.badgeClass}">${bot.name}</div>
+              <div style="font-size: 0.8rem; color: var(--term-dim);">Tipo: ${bot.type} | Nível: ${bot.level}</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px; margin: 8px 0;">
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+              <span>HP: ${bot.currentHp}/${bot.maxHp}</span>
+              <span style="color: #00ff66;">${Math.floor(hpPct)}%</span>
+            </div>
+            <div class="pokemon-bar-track"><div class="pokemon-bar-fill-hp" style="width: ${hpPct}%;"></div></div>
+          </div>
+
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+              <span>Escudo: ${bot.shieldCurrent}/${bot.shieldMax}</span>
+              <span style="color: #00e5ff;">${Math.floor(shieldPct)}%</span>
+            </div>
+            <div class="pokemon-bar-track"><div class="pokemon-bar-fill-shield" style="width: ${shieldPct}%;"></div></div>
+          </div>
+
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+              <span>Energia: ${bot.currentEnergy}/${bot.maxEnergy} EN</span>
+              <span style="color: #ffd700;">${Math.floor(energyPct)}%</span>
+            </div>
+            <div class="pokemon-bar-track"><div class="pokemon-bar-fill-energy" style="width: ${energyPct}%;"></div></div>
+          </div>
+        </div>
+
+        <button class="term-btn gold" style="width: 100%; margin-top: 10px; padding: 10px; font-weight: 700;">
+          [ APLICAR EM ${bot.name.toUpperCase()} ]
+        </button>
+      `;
+
+      card.onclick = () => {
+        const msg = item.apply(bot);
+        this.inventory[key]--;
+        if (this.inventory[key] <= 0) delete this.inventory[key];
+        this.audio.playHealSound();
+        this.showSystemToast('SUPRIMENTO APLICADO', msg, 'success');
+        this.renderInventoryGrid();
+      };
 
       container.appendChild(card);
     });
@@ -1237,11 +1311,12 @@ export class TerminalGameApp {
     if (floor.isDuel === 'PENLINUX') battlerBots = this.party.slice(0, 2);
     if (floor.isFinal) battlerBots = [...this.party]; // Todos no Andar 8!
 
-    // Reseta status para o combate
+    // Inicia status para o combate preservando o HP e Escudo atuais da Party (Continuidade)
     this.activeBattlers = battlerBots.map(b => ({
       ...b,
+      currentHp: b.currentHp !== undefined ? b.currentHp : b.maxHp,
+      shieldCurrent: b.shieldCurrent !== undefined ? b.shieldCurrent : b.shieldMax,
       currentEnergy: 2,
-      shieldCurrent: b.shieldMax,
       isShieldBroken: false,
       stunTurns: 0,
       isOverclocked: false,
@@ -1887,10 +1962,52 @@ export class TerminalGameApp {
         <span><strong>${item.icon} ${item.name}</strong></span>
         <span style="font-size: 0.85rem; color: var(--term-accent);">QTD: ${count}</span>
       `;
+      btn.onclick = () => {
+        this.renderBattleItemTargetPicker(item, key);
+      };
+      list.appendChild(btn);
+    });
+  }
+
+  renderBattleItemTargetPicker(item, key) {
+    const subContainer = document.getElementById('battleSubMenuDeck');
+    const currentBot = this.activeBattlers[this.currentTurnIndex];
+    if (!subContainer || !currentBot) return;
+
+    const aliveBattlers = this.activeBattlers.filter(b => b.currentHp > 0);
+    if (aliveBattlers.length === 0) return;
+
+    subContainer.classList.remove('hidden');
+    subContainer.innerHTML = `
+      <div class="submenu-deck-header">
+        <span class="submenu-deck-title">[ ALVO DO ITEM: ${item.name.toUpperCase()} ]</span>
+        <button class="term-btn alert" id="btnBackToItemList" style="padding: 2px 8px; font-size: 0.8rem;">[ << VOLTAR ]</button>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--term-dim); margin: 6px 0 10px 0;">
+        > Selecione em qual robô da sua party o item será aplicado:
+      </p>
+      <div class="submenu-items-list" id="battleItemTargetsList"></div>
+    `;
+
+    document.getElementById('btnBackToItemList').onclick = () => {
+      this.renderItemSubMenu();
+    };
+
+    const list = document.getElementById('battleItemTargetsList');
+    aliveBattlers.forEach(targetBot => {
+      const btn = document.createElement('button');
+      btn.className = 'term-btn gold';
+      btn.style.justifyContent = 'space-between';
+      btn.style.padding = '10px 12px';
+      btn.innerHTML = `
+        <span><strong>${targetBot.avatar} ${targetBot.name}</strong></span>
+        <span style="font-size: 0.82rem; color: var(--term-accent);">HP: ${targetBot.currentHp}/${targetBot.maxHp} | Escudo: ${targetBot.shieldCurrent}/${targetBot.shieldMax} | EN: ${targetBot.currentEnergy}</span>
+      `;
+
       btn.onclick = async () => {
         subContainer.classList.add('hidden');
-        await this.showTurnActionCinematic(currentBot.name, `USOU ${item.name}`, true);
-        const msg = item.apply(currentBot);
+        await this.showTurnActionCinematic(currentBot.name, `USOU ${item.name} EM ${targetBot.name}`, true);
+        const msg = item.apply(targetBot);
         this.inventory[key]--;
         if (this.inventory[key] <= 0) delete this.inventory[key];
         this.audio.playHealSound();
@@ -1899,6 +2016,7 @@ export class TerminalGameApp {
         await new Promise(r => setTimeout(r, 600));
         this.advanceTurn();
       };
+
       list.appendChild(btn);
     });
   }
@@ -2145,8 +2263,10 @@ export class TerminalGameApp {
         bot.level = curLevel;
         bot.xp = curXp;
         bot.xpToNext = curXpToNext;
-        bot.currentHp = bot.maxHp;
-        bot.shieldCurrent = bot.shieldMax;
+        if (didLevelUp) {
+          // Bônus de HP do nível adicionado à vida atual (preserva dano tomado)
+          bot.currentHp = Math.min(bot.maxHp, (bot.currentHp || bot.maxHp) + growth.hp);
+        }
 
         xpResults.push({
           bot,
@@ -2235,6 +2355,17 @@ export class TerminalGameApp {
     const currentFloor = TOWER_FLOORS[this.currentFloorIndex];
     this.audio.fadeOutBGM(600);
     this.audio.playVictoryFanfare();
+
+    // Sincroniza o estado de HP e Escudo dos combatentes da batalha de volta para a Party (Continuidade)
+    if (this.activeBattlers && this.activeBattlers.length > 0) {
+      this.activeBattlers.forEach(battler => {
+        const partyBot = this.party.find(p => p.id === battler.id);
+        if (partyBot) {
+          partyBot.currentHp = Math.max(1, battler.currentHp); // Garante integridade mínima para robôs vitoriosos
+          partyBot.shieldCurrent = battler.shieldCurrent;
+        }
+      });
+    }
 
     // ANDAR 1 TUTORIAL: Recruta Dino-Byte
     if (currentFloor.id === 1) {
