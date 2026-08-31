@@ -245,7 +245,7 @@ export class Terminal3DEngine {
   // =========================================================================
   // 2. HOLOGRAMA 3D DO NÚCLEO MONOLÍTICO NO HUB (ELEVADOR)
   // =========================================================================
-  initHub3DCoreHologram(containerId = 'hub3DCoreCanvasContainer', clearedFloorsSet = new Set(), currentFloorIdx = 0) {
+  initHub3DCoreHologram(containerId = 'hub3DCoreCanvasContainer', clearedFloorsSet = new Set(), currentFloorVal = 1) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
@@ -262,6 +262,13 @@ export class Terminal3DEngine {
         </div>
       `;
       return;
+    }
+
+    // Normaliza para o número real do andar (1 a 8)
+    // Encontros/duelos intermediários (ex: 2.5, 4.5, 6.5) pertencem ao andar base e não avançam o indicador da torre
+    let currentFloorNum = 1;
+    if (typeof currentFloorVal === 'number') {
+      currentFloorNum = Math.min(8, Math.max(1, Math.floor(currentFloorVal)));
     }
 
     const scene = new THREE.Scene();
@@ -328,8 +335,11 @@ export class Terminal3DEngine {
       const y = -3.6 + progress * 7.2;
       const angle = progress * Math.PI * 4;
       const r = 2.0;
-      const isCleared = clearedFloorsSet.has(f);
-      const isCurrent = f === currentFloorIdx + 1;
+
+      // Andares anteriores são verdes (concluídos)
+      const isCleared = f < currentFloorNum || (f === 8 && clearedFloorsSet.has(8));
+      // Andar atual é amarelo pulsante
+      const isCurrent = f === currentFloorNum && !clearedFloorsSet.has(8);
 
       const cubeGeo = new THREE.BoxGeometry(0.55, 0.55, 0.55);
       let cubeMat;
@@ -360,6 +370,7 @@ export class Terminal3DEngine {
       cubeMesh.position.set(Math.cos(angle) * r, y, Math.sin(angle) * r);
       group.add(cubeMesh);
     }
+
 
     scene.add(group);
 

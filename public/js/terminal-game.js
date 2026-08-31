@@ -618,7 +618,9 @@ export class TerminalGameApp {
     });
 
     if (tabId === 'tabBtnSectors') {
-      setTimeout(() => this.engine3D.initHub3DCoreHologram('hub3DCoreCanvasContainer', this.clearedFloors, this.currentFloorIndex), 80);
+      const currentFloor = TOWER_FLOORS[this.currentFloorIndex];
+      const currentFloorNum = currentFloor ? Math.floor(currentFloor.id) : 1;
+      setTimeout(() => this.engine3D.initHub3DCoreHologram('hub3DCoreCanvasContainer', this.clearedFloors, currentFloorNum), 80);
     }
     if (tabId === 'tabBtnParty') this.renderPartyGrid();
     if (tabId === 'tabBtnInventory') this.renderInventoryGrid();
@@ -903,11 +905,13 @@ export class TerminalGameApp {
     const badge = document.getElementById('elevatorFloorThemeBadge');
     if (badge) badge.innerText = `Tema: ${currentFloor.theme}`;
 
-    // Indicador de Altitude na Cabine e Barra de Progresso
+    // Indicador de Altitude na Cabine e Barra de Progresso (8 Andares Reais da Torre)
+    const currentFloorNum = Math.floor(currentFloor.id);
+    const totalTowerFloors = 8;
+    const pct = Math.floor((currentFloorNum / totalTowerFloors) * 100);
     const altIndicator = document.getElementById('towerAltitudeIndicator');
     const altFill = document.getElementById('towerAltitudeFill');
-    const pct = Math.floor(((this.currentFloorIndex + 1) / TOWER_FLOORS.length) * 100);
-    if (altIndicator) altIndicator.innerText = `${this.currentFloorIndex + 1}/${TOWER_FLOORS.length} (${pct}%)`;
+    if (altIndicator) altIndicator.innerText = `${currentFloorNum}/${totalTowerFloors} (${pct}%)`;
     if (altFill) altFill.style.width = `${pct}%`;
 
     // Atualiza Painel de Inteligência Tática
@@ -1163,7 +1167,7 @@ export class TerminalGameApp {
     // Dispara a Cinemática 3D de Subida da Torre (Escada em Espiral / Ascensão Helicoidal)
     if (floor.id > 1) {
       await new Promise(res => {
-        this.engine3D.runSpiralAscentCinematic(floor.id, floor.name, floor.theme, res);
+        this.engine3D.runSpiralAscentCinematic(Math.floor(floor.id), floor.name, floor.theme, res);
       });
     }
 
