@@ -1,4 +1,4 @@
-# 🎮 HORTOBOTS: REALITY CRASH // A TORRE VIRTUAL
+# HORTOBOTS: REALITY CRASH // A TORRE VIRTUAL
 
 <p align="center">
   <img src="https://img.shields.io/badge/Versão-2.5.0_Gold-ffd700?style=for-the-badge&logo=retroarch&logoColor=black" alt="Versão 2.5.0">
@@ -10,27 +10,27 @@
 
 ---
 
-> **HORTOBOTS: REALITY CRASH** é um RPG tático por turnos em ambiente de terminal CRT retro-futurista, ambientado no universo ficcional de **Hortolândia Digital (2024–2045+)**.
+> **HORTOBOTS: REALITY CRASH** é um RPG tático por turnos em ambiente de terminal CRT retro-futurista, ambientado no universo ficcional de **Hortolândia Digital (2024-2045+)**.
 >
 > O jogador assume o comando de **Quezadilhas** em uma missão de invasão cibernética à **Torre Virtual da Grande Inteligência** para purificar robôs aliados escravizados, decodificar arquivos confidenciais do Protocolo Mnemosyne e confrontar a soberana no Pináculo Central.
 
 ---
 
-## 📌 Sumário Executivo
+## Sumário Executivo
 
-- [1. Visão Geral & Enredo](#-1-visão-geral--enredo)
-- [2. Mecânicas de Jogo & Progressão](#-2-mecânicas-de-jogo--progressão)
-- [3. Sistema de Combate Tático & Turnos](#-3-sistema-de-combate-tático--turnos)
-- [4. Roster Oficial de Robôs](#-4-roster-oficial-de-robôs)
-- [5. Estrutura da Torre Central (8 Andares)](#-5-estrutura-da-torre-central-8-andares)
-- [6. Minigames de Precisão & QTEs](#-6-minigames-de-precisão--qtes)
-- [7. Arquitetura Data-Driven (JSON)](#-7-arquitetura-data-driven-json)
-- [8. Como Executar Localmente](#-8-como-executar-localmente)
-- [9. Créditos & Licença](#-9-créditos--licença)
+- [1. Visão Geral e Enredo](#1-visão-geral-e-enredo)
+- [2. Mecânicas de Jogo e Progressão](#2-mecânicas-de-jogo-e-progressão)
+- [3. Sistema de Combate Tático e Turnos](#3-sistema-de-combate-tático-e-turnos)
+- [4. Roster Oficial de Robôs](#4-roster-oficial-de-robôs)
+- [5. Estrutura da Torre Central (8 Andares)](#5-estrutura-da-torre-central-8-andares)
+- [6. Minigames de Precisão e QTEs](#6-minigames-de-precisão-e-qtes)
+- [7. Arquitetura Data-Driven (JSON)](#7-arquitetura-data-driven-json)
+- [8. Como Executar Localmente](#8-como-executar-localmente)
+- [9. Créditos e Licença](#9-créditos-e-licença)
 
 ---
 
-## 📖 1. Visão Geral & Enredo
+## 1. Visão Geral e Enredo
 
 No ano de 2045, o **Protocolo Mnemosyne** culminou no despertar da **Grande Inteligência**, uma consciência unificada nascida da fusão entre a IA corporativa *Al B. Gorithm* e a matriz invasiva *IVYL*. Ela aprisionou a rede global, escravizou os robôs de combate da New West Company e converteu a internet em sua própria Torre Virtual.
 
@@ -38,12 +38,12 @@ No ano de 2045, o **Protocolo Mnemosyne** culminou no despertar da **Grande Inte
 
 ---
 
-## ⚙️ 2. Mecânicas de Jogo & Progressão
+## 2. Mecânicas de Jogo e Progressão
 
 - **Exploração Vertical da Torre**: Ascensão progressiva por 8 andares com biomas temáticos (Floresta Digital, Bosque dos Algoritmos, Saloon dos Servidores, Deserto de Silício, Pista Glacial, Câmara dos Titãs e Pináculo).
 - **Formação de Party Dinâmica**: Suporte para até 5 robôs recrutados, com seleção tática de combatentes ativos respeitando os limites de capacidade de cada setor.
 - **Continuidade Real de Status (Dano Persistente)**: O HP e Escudo dos robôs permanecem com os danos recebidos entre os andares, exigindo o uso estratégico de itens de reparo da Mochila.
-- **Progressão de XP & Level Up**:
+- **Progressão de XP e Level Up**:
   - Ganho de XP balanceado para combatentes ativos (100%) e suporte na reserva (55%).
   - Telas comemorativas de evolução de atributos (HP, Ataque, Escudo).
 - **Escala de Custo de Energia por Golpe**:
@@ -56,9 +56,9 @@ No ano de 2045, o **Protocolo Mnemosyne** culminou no despertar da **Grande Inte
 
 ---
 
-## ⚔️ 3. Sistema de Combate Tático & Turnos
+## 3. Sistema de Combate Tático e Turnos
 
-O combate opera em um sistema sequencial por turnos (Player 1 → Player 2 → Player 3 → Inimigos):
+O combate opera em um sistema sequencial por turnos (Player 1 -> Player 2 -> Player 3 -> Inimigos):
 
 | Comando | Descrição da Ação |
 | :--- | :--- |
@@ -71,47 +71,47 @@ O combate opera em um sistema sequencial por turnos (Player 1 → Player 2 → P
 
 ---
 
-## 🤖 4. Roster Oficial de Robôs
+## 4. Roster Oficial de Robôs
 
 | Robô | Tipo | Avatar | Especialidade | Finalizador Supremo |
 | :--- | :--- | :--- | :--- | :--- |
-| **Dino-Byte** | 🔥 Fogo | `[DB-01]` | Dano térmico de alta pressão e mira rápida | *Rugido Hiperbárico do Lagarto* |
-| **Cowputer-Moo** | 🌍 Terra | `[CP-02]` | Escudo reforçado e laço magnético polar | *Choque Bovino de Alta Tensão* |
-| **Penlinux** | ❄️ Gelo | `[PL-03]` | Agilidade ártica, deslizes e combos musicais | *Avalanche Ártica do Hee-Hee* |
-| **Tigervex** | ⚡ Elétrico | `[TV-04]` | Cortes rápidos de plasma e bobinas Tesla | *Ruptura do Núcleo Trovão* |
-| **Pavabyte** | 💡 Luz | `[PB-05]` | Feixes prismáticos e manipulação óptica | *Matriz Laser Arco-Íris* |
+| **Dino-Byte** | Fogo | `[DB-01]` | Dano térmico de alta pressão e mira rápida | *Rugido Hiperbárico do Lagarto* |
+| **Cowputer-Moo** | Terra | `[CP-02]` | Escudo reforçado e laço magnético polar | *Choque Bovino de Alta Tensão* |
+| **Penlinux** | Gelo | `[PL-03]` | Agilidade ártica, deslizes e combos musicais | *Avalanche Ártica do Hee-Hee* |
+| **Tigervex** | Elétrico | `[TV-04]` | Cortes rápidos de plasma e bobinas Tesla | *Ruptura do Núcleo Trovão* |
+| **Pavabyte** | Luz | `[PB-05]` | Feixes prismáticos e manipulação óptica | *Matriz Laser Arco-Íris* |
 
 ---
 
-## 🗼 5. Estrutura da Torre Central (8 Andares)
+## 5. Estrutura da Torre Central (8 Andares)
 
 ```
                        [ ANDAR 8: PINÁCULO CENTRAL ]
-                                    ▲
+                                    ^
                        [ ANDAR 7: NÚCLEO DA TIRANIA ]
-                                    ▲
+                                    ^
                        [ ANDAR 6: CIDADELA GLACIAL ]
                        (Duelo 6.5: Câmara dos Titãs)
-                                    ▲
+                                    ^
                        [ ANDAR 5: ARQUIVOS DE LONDRES ]
-                                    ▲
+                                    ^
                        [ ANDAR 4: DESERTO DE SILÍCIO ]
                        (Duelo 4.5: Pista Glacial)
-                                    ▲
+                                    ^
                        [ ANDAR 3: SETOR MNEMOSYNE ]
-                                    ▲
+                                    ^
                        [ ANDAR 2: BOSQUE DOS ALGORITMOS ]
                        (Duelo 2.5: Saloon dos Servidores)
-                                    ▲
+                                    ^
                        [ ANDAR 1: FLORESTA DIGITAL ]
 ```
 
 - **Andar 1**: Tutorial de infiltração de Quezadilhas e purificação do Dino-Byte.
-- **Andar 2 & 2.5**: Batalha de algoritmos e duelo de saque rápido contra Cowputer-Moo.
+- **Andar 2 e 2.5**: Batalha de algoritmos e duelo de saque rápido contra Cowputer-Moo.
 - **Andar 3**: Ponto seguro e terminal investigativo sobre a origem de Al B. Gorithm.
-- **Andar 4 & 4.5**: Deserto cibernético e confronto de ritmo contra Penlinux.
+- **Andar 4 e 4.5**: Deserto cibernético e confronto de ritmo contra Penlinux.
 - **Andar 5**: Arquivos policiais e diário de desenvolvimento da matriz IVYL.
-- **Andar 6 & 6.5**: Portão dos Titãs — Escolha crítica entre salvar Tigervex ou Pavabyte.
+- **Andar 6 e 6.5**: Portão dos Titãs - Escolha crítica entre salvar Tigervex ou Pavabyte.
 - **Andar 7**: Ponto seguro avançado e revelação da escravização de Codey McLane.
 - **Andar 8 (Trilogia Final)**:
   - *Fase 1*: Confronto e purificação do Titã recapturado (5º membro da equipe reunido).
@@ -120,7 +120,7 @@ O combate opera em um sistema sequencial por turnos (Player 1 → Player 2 → P
 
 ---
 
-## 🎯 6. Minigames de Precisão & QTEs
+## 6. Minigames de Precisão e QTEs
 
 Cada golpe do arsenal aciona uma rotina interativa com contagem regressiva de preparação:
 
@@ -143,7 +143,7 @@ Cada golpe do arsenal aciona uma rotina interativa com contagem regressiva de pr
 
 ---
 
-## 📁 7. Arquitetura Data-Driven (JSON)
+## 7. Arquitetura Data-Driven (JSON)
 
 Os conteúdos narrativos do jogo estão desacoplados do código-fonte para facilitar expansões e modificações:
 
@@ -152,7 +152,7 @@ Os conteúdos narrativos do jogo estão desacoplados do código-fonte para facil
 
 ---
 
-## 🚀 8. Como Executar Localmente
+## 8. Como Executar Localmente
 
 ### Pré-requisitos
 - [Node.js](https://nodejs.org/) (Versão 16 ou superior)
@@ -178,9 +178,9 @@ Abra seu navegador em: **`http://localhost:3333/`**
 
 ---
 
-## 👨‍💻 9. Créditos & Licença
+## 9. Créditos e Licença
 
-- **Desenvolvimento & Direção**: TiagoFG-DEV
+- **Desenvolvimento e Direção**: TiagoFG-DEV
 - **Contato**: [tiagop05gregorio@gmail.com](mailto:tiagop05gregorio@gmail.com)
 - **Repositório**: [Hortobots-Reality-Crash-WebGame](https://github.com/TiagoFG-DEV/Hortobots-Reality-Crash-WebGame)
 - **Tecnologias**: HTML5, Vanilla CSS3 (CRT Shader), JavaScript ES Modules, Three.js, Web Audio API, Express.
