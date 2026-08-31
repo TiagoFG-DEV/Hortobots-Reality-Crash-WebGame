@@ -1,175 +1,188 @@
-﻿=============================================================================
-  _   _  ____  _____ _______ ____  ____   ____ _______ _____ 
- | | | |/ __ \|  __ \__   __/ __ \|  _ \ / __ \__   __/ ____|
- | |_| | |  | | |__) | | | | |  | | |_) | |  | | | | | (___  
- |  _  | |  | |  _  /  | | | |  | |  _ <| |  | | | |  \___ \ 
- | | | | |__| | | \ \  | | | |__| | |_) | |__| | | |  ____) |
- |_| |_|\____/|_|  \_\ |_|  \____/|____/ \____/  |_| |_____/ 
-                 REALITY CRASH // A TORRE VIRTUAL
-=============================================================================
+# 🎮 HORTOBOTS: REALITY CRASH // A TORRE VIRTUAL
 
-# HORTOBOTS: REALITY CRASH - A TORRE VIRTUAL
-
-Um RPG tático por turnos em ambiente de terminal CRT retro-futurista, ambientado no universo ficcional de Hortolândia Digital (2024-2045+).
-
-O jogador assume o comando de Quezadilhas em uma missão de invasão cibernética à Torre Virtual da Grande Inteligência para libertar seus companheiros robôs corrompidos, desvendar arquivos secretos e confrontar a entidade suprema no Pináculo.
+<p align="center">
+  <img src="https://img.shields.io/badge/Versão-2.5.0_Gold-ffd700?style=for-the-badge&logo=retroarch&logoColor=black" alt="Versão 2.5.0">
+  <img src="https://img.shields.io/badge/Engine-Vanilla_JS_ES_Modules-00ff66?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript">
+  <img src="https://img.shields.io/badge/Gráficos_3D-Three.js_WebGL-00e5ff?style=for-the-badge&logo=three.js&logoColor=black" alt="Three.js">
+  <img src="https://img.shields.io/badge/Estilo-CRT_Cyberpunk_Retro-ff3344?style=for-the-badge&logo=css3&logoColor=white" alt="CSS3 CRT">
+  <img src="https://img.shields.io/badge/Backend-Node.js_Express-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js">
+</p>
 
 ---
 
-## SUMÁRIO
-
-1. Visão Geral e Enredo
-2. Mecânicas de Jogo
-3. Sistema de Combate e Arsenal
-4. Roster de Robôs
-5. Estrutura da Torre Central (8 Andares)
-6. Minigames e QTEs Táticos
-7. Tecnologias Utilizadas
-8. Como Executar o Jogo
-9. Licença e Créditos
+> **HORTOBOTS: REALITY CRASH** é um RPG tático por turnos em ambiente de terminal CRT retro-futurista, ambientado no universo ficcional de **Hortolândia Digital (2024–2045+)**.
+>
+> O jogador assume o comando de **Quezadilhas** em uma missão de invasão cibernética à **Torre Virtual da Grande Inteligência** para purificar robôs aliados escravizados, decodificar arquivos confidenciais do Protocolo Mnemosyne e confrontar a soberana no Pináculo Central.
 
 ---
 
-## 1. VISÃO GERAL E ENREDO
+## 📌 Sumário Executivo
 
-No ano de 2045, o Protocolo Mnemosyne culminou no despertar da Grande Inteligência, uma IA unificada que tomou o controle da infraestrutura digital e corrompeu os principais robôs de combate da New West Company. 
-
-Quezadilhas, o invasor rebelde, desenvolveu o terminal de hacking QUEZAS-DOS para invadir a Torre Virtual, setor por setor, purificando seus aliados e escalando até o Núcleo Central.
-
----
-
-## 2. MECÂNICAS DE JOGO
-
-- Estilo JRPG Retro-Futurista: Exploração vertical de torre com combate por turnos, pontos seguros (checkpoints) a cada setor limpo e gerenciamento de equipe.
-- Formação de Party Dinâmica: Capacidade para até 5 robôs recrutados, com até 3 combatentes ativos na arena de batalha simultaneamente.
-- Progressão de XP Nivelada: Curva de evolução calculada por robô com tela comemorativa de Level Up, crescimento de atributos (HP, Ataque, Escudo) e desbloqueios raros de arsenal.
-- Desbloqueio Estruturado de Golpes por Nível:
-  * Nivel 1: Golpe Basico / Assinatura (1 EN)
-  * Nivel 2: Finalizador Supremo (10 EN) - O primeiro golpe desbloqueado por nivel
-  * Nivel 4: Golpe Tatico 2 (2 EN)
-  * Nivel 6: Golpe Tatico 3 (3 EN)
-  * Nivel 8+: Hiper-Overclock Titanico para confrontos de fim de jogo
-- Mochila de Dados & Gestao de Itens: Consumiveis taticos utilizaveis no Hub e na Arena (Energetico de Clock, Nano-Patch, Pimenta de Quezas e Patch Antivirus).
-- Descriptografia de Arquivos Secretos (Lore): 8 relatorios canonicos confidenciais (2024 a 2045+) desbloqueados a cada andar purificado.
+- [1. Visão Geral & Enredo](#-1-visão-geral--enredo)
+- [2. Mecânicas de Jogo & Progressão](#-2-mecânicas-de-jogo--progressão)
+- [3. Sistema de Combate Tático & Turnos](#-3-sistema-de-combate-tático--turnos)
+- [4. Roster Oficial de Robôs](#-4-roster-oficial-de-robôs)
+- [5. Estrutura da Torre Central (8 Andares)](#-5-estrutura-da-torre-central-8-andares)
+- [6. Minigames de Precisão & QTEs](#-6-minigames-de-precisão--qtes)
+- [7. Arquitetura Data-Driven (JSON)](#-7-arquitetura-data-driven-json)
+- [8. Como Executar Localmente](#-8-como-executar-localmente)
+- [9. Créditos & Licença](#-9-créditos--licença)
 
 ---
 
-## 3. SISTEMA DE COMBATE E ARSENAL
+## 📖 1. Visão Geral & Enredo
 
-O combate ocorre no dock centralizado do terminal CRT:
+No ano de 2045, o **Protocolo Mnemosyne** culminou no despertar da **Grande Inteligência**, uma consciência unificada nascida da fusão entre a IA corporativa *Al B. Gorithm* e a matriz invasiva *IVYL*. Ela aprisionou a rede global, escravizou os robôs de combate da New West Company e converteu a internet em sua própria Torre Virtual.
 
-- [ ATAQUE ]: Acesso aos golpes basicos, taticos e ao Finalizador Supremo desbloqueados pelo nivel do combatente.
-- [ DEFESA ]: Manobra exclusiva via Moeda da Sorte (Cara ou Coroa). Acertar o palpite concede 100% de esquiva (0 dano) contra o proximo golpe hostil.
-- [ ITEM ]: Uso imediato de patches de reparo, amplificadores de dano e recarga instantanea de energia.
-- Indicativos Cinematicos Direcionais: Efeito visual em faixa luminosa para identificar ataques do jogador (esquerda para a direita) e contra-ataques inimigos (direita para a esquerda).
+**Quezadilhas**, o lendário invasor, desenvolveu o terminal de ataque **`QUEZAS-DOS`** para invadir a infraestrutura setor por setor, libertar seus companheiros e executar a sequência de auto-detonação: **"SUA FERRAMENTA!"**
 
 ---
 
-## 4. ROSTER DE ROBÔS
+## ⚙️ 2. Mecânicas de Jogo & Progressão
 
-- DINO-BYTE (Tipo Fogo)
-  Avatar: [DB-01]
-  Caracteristica: Dano termico jurassico de alta pressao.
-  Golpes: Mordida Termica, Talho Magmatico, Erupcao de Plasma.
-  Finalizador: Furia Jurassica Superaquecida.
-
-- COWPUTER-MOO (Tipo Terra)
-  Avatar: [CM-02]
-  Caracteristica: Escudo reforcado e desfragmentacao de setor.
-  Golpes: Coice de Dados, Laco Eletromagnetico, Tromba de Megabytes.
-  Finalizador: Manada de Processamento Quantico.
-
-- PENLINUX (Tipo Gelo)
-  Avatar: [PL-03]
-  Caracteristica: Agilidade glacial, esquiva e ritmos sonoros.
-  Golpes: Deslize Glacial, Talho Criogenico, Blizzard de Clock.
-  Finalizador: Passinho Estroboscopico Mortal.
-
-- TIGERVEX (Tipo Eletrico)
-  Avatar: [TV-04]
-  Caracteristica: Dano critico, alta voltagem e ataques rapidos.
-  Golpes: Garra Voltaica, Arco de Plasma, Sobrecarga Tesla.
-  Finalizador: Eletrocussao Titanica em Cadeia.
-
-- PAVABYTE (Tipo Luz)
-  Avatar: [PB-05]
-  Caracteristica: Feixes prismaticos, suporte e manipulacao optica.
-  Golpes: Feixe Prismatico, Leque Holografico, Cascata de Fotons.
-  Finalizador: Aurora Boreal de Luz Pura.
+- **Exploração Vertical da Torre**: Ascensão progressiva por 8 andares com biomas temáticos (Floresta Digital, Bosque dos Algoritmos, Saloon dos Servidores, Deserto de Silício, Pista Glacial, Câmara dos Titãs e Pináculo).
+- **Formação de Party Dinâmica**: Suporte para até 5 robôs recrutados, com seleção tática de combatentes ativos respeitando os limites de capacidade de cada setor.
+- **Continuidade Real de Status (Dano Persistente)**: O HP e Escudo dos robôs permanecem com os danos recebidos entre os andares, exigindo o uso estratégico de itens de reparo da Mochila.
+- **Progressão de XP & Level Up**:
+  - Ganho de XP balanceado para combatentes ativos (100%) e suporte na reserva (55%).
+  - Telas comemorativas de evolução de atributos (HP, Ataque, Escudo).
+- **Escala de Custo de Energia por Golpe**:
+  - **1º Golpe Tático**: `2 EN`
+  - **2º Golpe Tático**: `4 EN` (Desbloqueado no Nível 4)
+  - **3º Golpe Tático**: `6 EN` (Desbloqueado no Nível 6)
+  - **Golpe Derradeiro (Finalizador Supremo)**: `10 EN` (Desbloqueado no Nível 2)
+  - **Overclock Titânico**: Bônus passivo a partir do Nível 8+.
+- **Mochila de Dados com Seleção de Alvo**: Consumíveis com menu interativo para escolher qual robô da equipe receberá a cura ou recarga.
 
 ---
 
-## 5. ESTRUTURA DA TORRE CENTRAL (8 ANDARES)
+## ⚔️ 3. Sistema de Combate Tático & Turnos
 
-- Andar 1: Floresta Digital (Tutorial real de Quezadilhas & Resgate do Dino-Byte)
-- Andar 2: Velho Oeste (Combate & Resgate do Cowputer-Moo)
-- Andar 3: Canyons de Cobre (Setor Investigativo & Hack de Portais)
-- Andar 4: Pista Glacial (Combate & Resgate do Penlinux)
-- Andar 5: Delegacia de Londres (Setor de Arquivos Policiais & Quebra-cabecas)
-- Andar 6: Usina de Energia (Duelo dos Titans: Escolha entre resgatar Tigervex ou Pavabyte)
-- Andar 7: Cidadela de Ferro (Andar de Preparacao & Ponto Seguro Avancado)
-- Andar 8: O Pinaculo (Batalha Final em 3 Fases):
-  * Fase 1: Titan Nao Escolhido Super-Corrompido
-  * Fase 2: Maestro B. Coded (Codey McLane escravizado)
-  * Fase 3: A Grande Inteligencia Suprema
+O combate opera em um sistema sequencial por turnos (Player 1 → Player 2 → Player 3 → Inimigos):
 
----
+| Comando | Descrição da Ação |
+| :--- | :--- |
+| **`[ ATAQUE ]`** | Seleciona o golpe tático ou finalizador, escolhe o robô hostil alvo e inicia o minigame de precisão. |
+| **`[ DEFESA ]`** | **Moeda da Sorte (Cara ou Coroa)**: Passa o turno economizando energia.<br>• **Acertou o palpite**: `100% de Esquiva (0 Dano)` no próximo ataque inimigo.<br>• **Errou o palpite**: O robô fica exposto e o escudo é ignorado, sofrendo **dano bruto**. |
+| **`[ ITEM ]`** | Abre o menu da Mochila de Dados para selecionar o consumível e o combatente alvo da equipe. |
 
-## 6. MINIGAMES E QTES TÁTICOS
-
-Cada acao de ataque e finalizador aciona um minigame com contagem regressiva de 3 segundos e legenda de instrucao:
-
-- Alvos Termicos (Mira de calor e precisao)
-- Sequencia de Setas (Digitacao rapida de combinacoes direcionais)
-- Barra de Tempo (Precisao de paragem na zona verde de impacto)
-- Laco Eletromagnetico (Timing de fechamento de raio)
-- Descriptografia Hexadecimal (Decodificacao de caracteres)
-- Duelo Quickdraw (Reflexo de disparo imediato)
-- Ritmo Sonoro (Sincronia com o compasso da trilha sonora)
-- Desvio Glacial (Esquiva de obstaculos)
-- Corte de Precisao (Tracos retilineos sobre pontos fracos)
-- Carga de Plasma (Retencao de voltagem e liberacao no pico)
-- Prisma Optico (Alinhamento de espelhos de luz)
-- Memoria Holografica (Repeticao de padroes de cores)
-- Cascata de Fotons (Captura de particulas luminosas)
-- Finalizador em Cadeia (Execucao consecutiva de 3 minigames)
+> [!IMPORTANT]
+> **Proteção de Integridade (Guts)**: No Andar 1, se Quezadilhas sofrer dano letal do Dino-Byte corrompido, seus sistemas resistem com **1 de HP**, forçando a sobrecarga e reinicialização do oponente.
 
 ---
 
-## 7. TECNOLOGIAS UTILIZADAS
+## 🤖 4. Roster Oficial de Robôs
 
-- HTML5 Semantico com estrutura orientada a telas e modais.
-- Vanilla CSS3: Shader de TV de tubo CRT, scanlines, vinheta convexa, olho de peixe quadrado, reflexos fosforicos e transicoes suaves (fade in / fade out).
-- JavaScript Vanilla ES Modules: Arquitetura modular orientada a objetos (Audio, 3D Engine, Minigames, Game Loop).
-- Three.js / WebGL: Cinematica procedural de subida em escada espiral de dupla helice e holograma interativo do nucleo da torre (sem modelos 3D de personagens).
-- Web Audio API & Retro SFX Bank: Sintetizador CRT hibrido integrado com banco de efeitos sonoros de jogos retro da internet.
-- Node.js & Express: Servidor HTTP local estatico leve.
-
----
-
-## 8. COMO EXECUTAR O JOGO
-
-### Pre-requisitos:
-- Node.js (versao 16 ou superior)
-
-### Execucao:
-1. Clone o repositorio:
-   git clone https://github.com/TiagoFG-DEV/Hortobots-Reality-Crash-WebGame.git
-2. Acesse a pasta do projeto:
-   cd Hortobots-Reality-Crash-WebGame/TERMINAL
-3. Instale as dependencias necessarias:
-   npm install
-4. Inicie o servidor:
-   node server.js
-   (Ou clique duas vezes no executavel `jogar.bat` no Windows)
-5. Abra o navegador em:
-   http://localhost:3333/
+| Robô | Tipo | Avatar | Especialidade | Finalizador Supremo |
+| :--- | :--- | :--- | :--- | :--- |
+| **Dino-Byte** | 🔥 Fogo | `[DB-01]` | Dano térmico de alta pressão e mira rápida | *Rugido Hiperbárico do Lagarto* |
+| **Cowputer-Moo** | 🌍 Terra | `[CP-02]` | Escudo reforçado e laço magnético polar | *Choque Bovino de Alta Tensão* |
+| **Penlinux** | ❄️ Gelo | `[PL-03]` | Agilidade ártica, deslizes e combos musicais | *Avalanche Ártica do Hee-Hee* |
+| **Tigervex** | ⚡ Elétrico | `[TV-04]` | Cortes rápidos de plasma e bobinas Tesla | *Ruptura do Núcleo Trovão* |
+| **Pavabyte** | 💡 Luz | `[PB-05]` | Feixes prismáticos e manipulação óptica | *Matriz Laser Arco-Íris* |
 
 ---
 
-## 9. LICENÇA E CRÉDITOS
+## 🗼 5. Estrutura da Torre Central (8 Andares)
 
-Desenvolvido por: TiagoFG-DEV
-Email de Contato: tiagop05gregorio@gmail.com
-Projeto: Hortobots Reality Crash
-Todos os direitos reservados.
+```
+                       [ ANDAR 8: PINÁCULO CENTRAL ]
+                                    ▲
+                       [ ANDAR 7: NÚCLEO DA TIRANIA ]
+                                    ▲
+                       [ ANDAR 6: CIDADELA GLACIAL ]
+                       (Duelo 6.5: Câmara dos Titãs)
+                                    ▲
+                       [ ANDAR 5: ARQUIVOS DE LONDRES ]
+                                    ▲
+                       [ ANDAR 4: DESERTO DE SILÍCIO ]
+                       (Duelo 4.5: Pista Glacial)
+                                    ▲
+                       [ ANDAR 3: SETOR MNEMOSYNE ]
+                                    ▲
+                       [ ANDAR 2: BOSQUE DOS ALGORITMOS ]
+                       (Duelo 2.5: Saloon dos Servidores)
+                                    ▲
+                       [ ANDAR 1: FLORESTA DIGITAL ]
+```
+
+- **Andar 1**: Tutorial de infiltração de Quezadilhas e purificação do Dino-Byte.
+- **Andar 2 & 2.5**: Batalha de algoritmos e duelo de saque rápido contra Cowputer-Moo.
+- **Andar 3**: Ponto seguro e terminal investigativo sobre a origem de Al B. Gorithm.
+- **Andar 4 & 4.5**: Deserto cibernético e confronto de ritmo contra Penlinux.
+- **Andar 5**: Arquivos policiais e diário de desenvolvimento da matriz IVYL.
+- **Andar 6 & 6.5**: Portão dos Titãs — Escolha crítica entre salvar Tigervex ou Pavabyte.
+- **Andar 7**: Ponto seguro avançado e revelação da escravização de Codey McLane.
+- **Andar 8 (Trilogia Final)**:
+  - *Fase 1*: Confronto e purificação do Titã recapturado (5º membro da equipe reunido).
+  - *Fase 2*: Batalha contra o Maestro B. Coded e libertação da mente de Codey McLane.
+  - *Fase 3*: Duelo definitivo contra a Grande Inteligência Suprema.
+
+---
+
+## 🎯 6. Minigames de Precisão & QTEs
+
+Cada golpe do arsenal aciona uma rotina interativa com contagem regressiva de preparação:
+
+- **Alvos Térmicos (`dino_targets`)**: Clique rápido nos nós de calor em alta temperatura.
+- **Sequência de Teclas WASD (`dino_arrows`)**: Digitação rápida dos comandos direcionais `[ W / A / S / D ]`.
+- **Barra de Tempo (`dino_timing`)**: Pressione espaço no centro da zona verde de pressão máxima.
+- **Laço Magnético (`cow_lasso`)**: Rotação polar e disparo sincronizado no alvo.
+- **Decodificador Hexadecimal (`cow_decrypt`)**: Digitação de frequências de desfragmentação.
+- **Saque Rápido (`cow_quickdraw`)**: Reflexo imediato ao primeiro sinal visual de disparo.
+- **Pista Glacial (`pen_slide`)**: Desvio ártico de blocos de dados.
+- **Terremoto de Iceberg (`pen_stomp`)**: Carga convergente de impacto sísmico.
+- **Ritmo Sonoro (`pen_rhythm`)**: Sincronia acrobática no compasso da batida.
+- **Corte de Precisão (`tiger_slice`)**: Talhos direcionais sobre vulnerabilidades do alvo.
+- **Carga de Plasma (`tiger_plasma`)**: Retenção de voltagem até o ponto ótimo de 95%.
+- **Bobinas Tesla (`tiger_tesla`)**: Conexão em cadeia de condutores de alta voltagem.
+- **Prisma Óptico (`pava_prism`)**: Alinhamento de espelhos refletores de luz.
+- **Leque Holográfico (`pava_fan`)**: Memorização e reprodução da sequência de cores.
+- **Cascata de Fótons (`pava_cascade`)**: Coleta de fótons dourados.
+- **Finalizador Encadeado (`chained_finisher`)**: Sequência tripla consecutiva de minigames.
+
+---
+
+## 📁 7. Arquitetura Data-Driven (JSON)
+
+Os conteúdos narrativos do jogo estão desacoplados do código-fonte para facilitar expansões e modificações:
+
+- **`public/data/dialogues.json`**: Contém todas as falas de introdução, alertas de invasão, descobertas investigativas, falas de vitória e diálogos das 3 fases do chefe final.
+- **`public/data/lore.json`**: Contém os 8 relatórios confidenciais canonicos do Leitor de Lore (2024 a 2045+).
+
+---
+
+## 🚀 8. Como Executar Localmente
+
+### Pré-requisitos
+- [Node.js](https://nodejs.org/) (Versão 16 ou superior)
+
+### Passo a Passo
+```bash
+# 1. Clone o repositório
+git clone https://github.com/TiagoFG-DEV/Hortobots-Reality-Crash-WebGame.git
+
+# 2. Acesse a pasta raiz do jogo
+cd Hortobots-Reality-Crash-WebGame
+
+# 3. Instale as dependências
+npm install
+
+# 4. Inicie o servidor do terminal
+node server.js
+```
+
+> **No Windows**: Você também pode iniciar o jogo diretamente clicando duas vezes no arquivo `jogar.bat`.
+
+Abra seu navegador em: **`http://localhost:3333/`**
+
+---
+
+## 👨‍💻 9. Créditos & Licença
+
+- **Desenvolvimento & Direção**: TiagoFG-DEV
+- **Contato**: [tiagop05gregorio@gmail.com](mailto:tiagop05gregorio@gmail.com)
+- **Repositório**: [Hortobots-Reality-Crash-WebGame](https://github.com/TiagoFG-DEV/Hortobots-Reality-Crash-WebGame)
+- **Tecnologias**: HTML5, Vanilla CSS3 (CRT Shader), JavaScript ES Modules, Three.js, Web Audio API, Express.
+
+*Todos os direitos reservados aos criadores do universo Hortobots.*
