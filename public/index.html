@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HORTOBOTS // QUEZAS-DOS - A TORRE VIRTUAL</title>
+  <link rel="stylesheet" href="/css/terminal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+  <div class="crt-scanlines"></div>
+  <div class="crt-vignette"></div>
+  <div class="crt-fisheye-overlay"></div>
+  <div class="crt-glass-glare"></div>
+
+  <div class="crt-monitor-container">
+    <!-- Header Minimalista e Padronizado -->
+    <header class="term-sys-header">
+      <div class="term-brand">
+        <strong>[HORTOBOTS]</strong> // QUEZAS-DOS <span class="term-dim">// v4.9 CRT</span>
+      </div>
+      <div class="term-controls">
+        <div class="biome-status-badge" id="termBiomeBadge">[ SETOR: FLORESTA DIGITAL ]</div>
+        <div class="party-status-badge" id="termPartyBadge">[ PARTY: 1/5 ]</div>
+        <button class="term-btn gold" id="termAudioToggle">[ SOM: ON ]</button>
+      </div>
+    </header>
+
+    <!-- TELA 1: BOOT & INTRODUÇÃO -->
+    <div id="titleScreen" class="term-screen title-screen-container">
+      <pre class="ascii-art-logo">
+=============================================================================
+  _   _  ____  ____  _____ ____  ____   ____  _____ ____  
+ | | | |/ __ \|  _ \|_   _/ __ \|  _ \ / __ \|_   _/ ___| 
+ | |_| | |  | | |_) | | | | |  | | |_) | |  | | | | \___ \ 
+ |  _  | |__| |  _ <  | | | |__| |  _ <| |__| | | |  ___) |
+ |_| |_|\____/|_| \_\ |_|  \____/|____/ \____/  |_| |____/ 
+                 O MUNDO VIRTUAL DA GRANDE INTELIGÊNCIA
+=============================================================================
+      </pre>
+      <div class="title-lore-teaser">
+        <p>> PROTOCOLO MNEMOSYNE DETECTADO... PODEROSO SER DIGITAL DESCONTROLADO!</p>
+        <p>> ESCALE A TORRE CENTRAL, EVOLUA SUA EQUIPE E DESTRUA A GRANDE INTELIGÊNCIA!</p>
+      </div>
+
+      <div class="title-actions">
+        <button class="term-btn main-invasion-btn" id="termStartBtn">
+          [ INICIAR INVASÃO! ]
+        </button>
+      </div>
+    </div>
+
+    <!-- TELA 2: HISTÓRIA / DIÁLOGO COM AVATAR (FORMATADO DE CIMA PARA BAIXO) -->
+    <div id="storyScreen" class="term-screen story-screen-container hidden">
+      <div class="story-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="color: var(--term-accent); font-weight: 700;">// TRANSMISSÃO DE DIÁLOGO //</span>
+          <span style="color: var(--term-dim); font-size: 0.85rem;">CANAL: [ DIRETO ]</span>
+        </div>
+        <span style="color: var(--term-fg); font-size: 0.85rem;">[ PRESSIONE ESPAÇO PARA AVANÇAR ]</span>
+      </div>
+
+      <div class="story-content">
+        <div class="story-speaker-banner">
+          <span class="story-speaker-label">EMISSOR:</span>
+          <span id="storySpeaker" class="story-speaker-name">QUEZADILHAS</span>
+        </div>
+        <div class="story-text-terminal" id="storyTerminalText"></div>
+      </div>
+
+      <div class="story-footer-actions">
+        <div id="storyActions" class="hidden" style="display: flex; gap: 14px;"></div>
+        <button class="term-btn gold" id="termNextDialogueBtn">[ CONTINUAR ► (ESPAÇO) ]</button>
+      </div>
+    </div>
+
+    <!-- TELA 3: HUB PRINCIPAL (ELEVADOR CENTRAL & PROGRESSÃO RPG) -->
+    <div id="elevatorScreen" class="term-screen elevator-linear-container hidden">
+      <!-- Navegação de Abas do Hub -->
+      <div class="hub-nav-tabs">
+        <button class="hub-tab-btn active" id="tabBtnSectors">[ ANDARES ]</button>
+        <button class="hub-tab-btn" id="tabBtnParty">[ PARTY ]</button>
+        <button class="hub-tab-btn" id="tabBtnInventory">[ ITENS ]</button>
+        <button class="hub-tab-btn" id="tabBtnLore">[ ARQUIVOS DO SISTEMA ]</button>
+      </div>
+
+      <!-- CONTEÚDO DA ABA 1: ANDARES & ASCENSÃO DA TORRE -->
+      <div id="hubViewSectors" class="hub-tab-view">
+        <div class="elevator-top-info">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <h2 style="color: var(--term-accent);" id="elevatorNextFloorLabel">
+                [ ANDAR 1: FLORESTA DIGITAL ]
+              </h2>
+              <span id="elevatorSafePointBadge" class="floor-safe-badge hidden">[ PONTO SEGURO ATIVO ]</span>
+            </div>
+            <div id="elevatorFloorThemeBadge" style="color: var(--term-fg); font-size: 0.95rem; margin-top: 4px;">
+              Tema: Infiltração Inicial de Quezadilhas
+            </div>
+          </div>
+          <div style="text-align: right; min-width: 200px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px;">
+              <span style="color: var(--term-dim);">// ASCENSÃO DA TORRE</span>
+              <span id="towerAltitudeIndicator" style="color: var(--term-accent); font-weight: 700;">1/8 (12%)</span>
+            </div>
+            <div class="altitude-progress-track">
+              <div class="altitude-progress-fill" id="towerAltitudeFill" style="width: 12.5%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LAYOUT LIMPO: TELEMETRIA 3D DA TORRE & PAINEL DO PRÓXIMO ANDAR COM BOTÃO -->
+        <div class="hub-sectors-layout">
+          <!-- Coluna 1: Holograma 3D da Torre Central -->
+          <div class="hub-sectors-col-left">
+            <div class="hologram-3d-card" style="height: 100%; min-height: 280px;">
+              <div class="hologram-header">
+                <span style="font-size: 0.85rem; color: var(--term-accent); font-weight: 700;">// TELEMETRIA DA TORRE 3D</span>
+                <span class="hologram-live-badge">[ AO VIVO ]</span>
+              </div>
+              <div id="hub3DCoreCanvasContainer" class="hologram-canvas-container" style="height: 230px;"></div>
+              <div class="hologram-footer">
+                <span>ESTRUTURA CILÍNDRICA // 8 ANDARES EM ESPIRAL</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Coluna 2: Destino Atual & Botão Centralizado -->
+          <div class="hub-sectors-col-right" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <!-- PAINEL DE INTELIGÊNCIA TÁTICA DO ANDAR -->
+            <div class="sector-tactical-intel-box" style="margin-bottom: 12px;">
+              <div class="tactical-intel-row">
+                <span class="intel-tag">// RESTRIÇÃO TÁTICA DA FORMAÇÃO:</span>
+                <strong id="tacticalRestrictionLabel" style="color: var(--term-accent);">Formação Livre (1 a 3 Robôs)</strong>
+              </div>
+              <div class="tactical-intel-row" style="margin-top: 8px;">
+                <span class="intel-tag">// INIMIGOS NO PRÓXIMO ANDAR:</span>
+                <div class="tactical-enemy-chips" id="tacticalEnemyChips"></div>
+              </div>
+            </div>
+
+            <!-- CARD CENTRAL DE AÇÃO E AVANÇO -->
+            <div class="hub-next-action-card">
+              <div style="font-size: 0.85rem; color: var(--term-dim); letter-spacing: 2px; font-weight: 700;">// CABINE PRONTA //</div>
+              <div style="font-size: 1.1rem; color: var(--term-fg); margin: 6px 0 14px 0;">
+                Avance com sua equipe para o próximo setor da Torre Virtual.
+              </div>
+              <button class="term-btn gold btn-advance-floor" id="btnAdvanceNextFloor" style="width: 100%; font-size: 1.2rem; padding: 14px; font-weight: 900;">
+                [ >> ELEVAR CABINE / INICIAR COMBATE NO ANDAR >> ]
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTEÚDO DA ABA 2: GERENCIADOR DA PARTY & PROGRESSÃO -->
+      <div id="hubViewParty" class="hub-tab-view hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h3 style="color: var(--term-accent);">[ PARTY ]</h3>
+          <span style="color: var(--term-fg);" id="partyCapacityLabel">Combatentes Ativos: 1/3</span>
+        </div>
+        <div class="party-pokemon-grid" id="partyPokemonGrid"></div>
+      </div>
+
+      <!-- CONTEÚDO DA ABA 3: MOCHILA / INVENTÁRIO DE ITENS -->
+      <div id="hubViewInventory" class="hub-tab-view hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h3 style="color: var(--term-accent); margin-bottom: 4px;">[ ITENS ]</h3>
+            <span style="color: var(--term-dim); font-size: 0.85rem;">> Utilizáveis para recuperação rápida de HP, Escudo e Purificação.</span>
+          </div>
+          <div class="inventory-capacity-box" style="text-align: right; min-width: 190px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px;">
+              <span style="color: var(--term-dim);">// ARMAZENAMENTO</span>
+              <span id="inventoryCapacityText" style="color: var(--term-accent); font-weight: 700;">10/16 ITENS</span>
+            </div>
+            <div class="inv-capacity-track">
+              <div class="inv-capacity-fill" id="inventoryCapacityFill" style="width: 62.5%;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="inventory-items-grid" id="inventoryItemsGrid"></div>
+      </div>
+
+      <!-- CONTEÚDO DA ABA 4: ARQUIVOS SECRETOS & LORE -->
+      <div id="hubViewLore" class="hub-tab-view hidden">
+        <div class="lore-tab-header">
+          <div>
+            <h3 style="color: var(--term-accent); margin-bottom: 4px;">[ ARQUIVOS CONFIDENCIAIS ]</h3>
+            <div style="font-size: 0.85rem; color: var(--term-dim);">
+              > Decodifique fragmentos da cronologia (2024-2045) ao purificar os andares da Torre Central.
+            </div>
+          </div>
+          <div class="lore-progress-status">
+            <span id="loreDecodedCounter" style="color: var(--term-accent); font-weight: 700; font-size: 0.9rem;">DESCRIPTOGRAFADOS: 1/8</span>
+            <div class="lore-progress-track">
+              <div class="lore-progress-fill" id="loreProgressFill" style="width: 12.5%;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="lore-reader-box" id="loreReaderBox"></div>
+      </div>
+    </div>
+
+    <!-- TELA 4: ARENA DE COMBATE TÁTICA -->
+    <div id="battleScreen" class="term-screen battle-terminal-container hidden">
+      <!-- Layout Especial do Pináculo / Grande Inteligência -->
+      <div id="finalBossCinematicHeader" class="final-boss-cinematic-header hidden">
+        <div class="boss-avatar-frame">
+          <img id="finalBossSpriteImg" src="/sprites/normal.png" alt="Grande Inteligência" class="boss-sprite-pixel" />
+        </div>
+        <div class="boss-header-info">
+          <div class="boss-header-tag">// NÚCLEO CENTRAL SUPREMO //</div>
+          <h1 class="boss-header-title">GRANDE INTELIGÊNCIA (IVYL + AL B. GORITHM)</h1>
+          <div class="boss-hp-bar-track">
+            <div class="boss-hp-bar-fill" id="finalBossHpFill" style="width: 100%;"></div>
+          </div>
+          <div class="boss-status-sub" id="finalBossHpText">HP: 180 / 180 | ESCUDO: 20/20</div>
+        </div>
+      </div>
+
+      <!-- Grid Normal de Arena -->
+      <div class="battle-top-grid" id="normalBattleTopGrid">
+        <div class="battle-side-box" id="battlePartySide"></div>
+        <div class="battle-center-log" id="battleLogTerminal"></div>
+        <div class="battle-side-box" id="battleEnemySide"></div>
+      </div>
+
+      <!-- Dock de Ações do Turno -->
+      <div class="battle-command-deck">
+        <div class="command-deck-header">
+          <span id="turnBannerPrompt">>> COMANDO DO COMBATENTE <<</span>
+          <span id="activeRobotTurnIndicator" style="color: var(--term-accent); font-weight: 700;"></span>
+        </div>
+
+        <div class="deck-buttons-row">
+          <button class="term-action-card-btn" id="actionCardAttack">
+            <span>[ ATAQUE ]</span>
+          </button>
+          <button class="term-action-card-btn gold" id="actionCardDefense">
+            <span>[ DEFESA ]</span>
+          </button>
+          <button class="term-action-card-btn" id="actionCardItem">
+            <span>[ ITEM ]</span>
+          </button>
+        </div>
+
+        <div id="battleSubMenuDeck" class="submenu-deck hidden"></div>
+      </div>
+    </div>
+
+    <!-- TELA 5: RESOLUÇÃO FINAL / EXPLOSÃO & CRÉDITOS -->
+    <div id="endingScreen" class="term-screen story-screen-container hidden">
+      <div class="story-header">
+        <span style="font-weight: 700; color: var(--term-accent);">[FIM DE TRANSMISSÃO // RELATÓRIO DA MISSÃO]</span>
+      </div>
+      
+      <div class="ending-resolution-card" id="endingResolutionCard"></div>
+
+      <div class="story-footer-actions" style="margin-top: 20px;">
+        <button class="term-btn gold" onclick="location.reload()">[ REINICIAR A TORRE ]</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CINEMÁTICO DE PROGRESSÃO & GANHO DE XP (LEVEL UP) -->
+  <div id="xpLevelUpCinematicOverlay" class="xp-levelup-overlay hidden">
+    <div class="xp-levelup-modal">
+      <div class="xp-modal-header">
+        <div class="xp-modal-tag">// PROGRESSÃO DA EQUIPE APÓS O COMBATE //</div>
+        <h2 class="xp-modal-title">[ GANHO DE EXPERIÊNCIA & EVOLUÇÃO ]</h2>
+      </div>
+
+      <div class="xp-bots-list" id="xpBotsListContainer"></div>
+
+      <div class="xp-modal-footer">
+        <button class="term-btn gold" id="btnContinueFromXp" style="font-size: 1.15rem; padding: 10px 28px;">
+          [ CONTINUAR REDENÇÃO ► ]
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE RECOMPENSA: ESCOLHA DE 1 ENTRE 3 ITENS BÔNUS -->
+  <div id="bonusItemModalOverlay" class="bonus-reward-overlay hidden">
+    <div class="bonus-reward-modal">
+      <div class="reward-modal-tag">// RECOMPENSA DE SETOR PURIFICADO //</div>
+      <h2 style="color: var(--term-accent); font-size: 1.8rem; margin: 8px 0;">[ ESCOLHA 1 ITEM BÔNUS ]</h2>
+      <p style="color: var(--term-fg); margin-bottom: 20px;">Selecione um dos bônus de dados para adicionar ao seu inventário:</p>
+      
+      <div class="reward-cards-row" id="rewardCardsRow"></div>
+    </div>
+  </div>
+
+  <!-- BANNER CINEMÁTICO DE TURNO -->
+  <div id="turnCinematicBanner" class="turn-cinematic-banner hidden">
+    <div class="cinematic-slash-strip" id="cinematicSlashStrip">
+      <span class="cinematic-attacker" id="cinematicAttackerName">DINO-BYTE</span>
+      <span class="cinematic-arrow">►</span>
+      <span class="cinematic-move" id="cinematicMoveName">MORDIDA JURÁSSICA</span>
+    </div>
+  </div>
+
+  <!-- OVERLAY DE CONTAGEM REGRESSIVA PRÉ-MINIGAME -->
+  <div id="preCountdownOverlay" class="pre-countdown-overlay hidden">
+    <div class="countdown-inner-card">
+      <h1 id="countdownActionTitle" style="color: var(--term-accent); font-size: 2.2rem; margin-bottom: 8px;">GOLPE</h1>
+      <p id="countdownInstructionLegend" style="font-size: 1.1rem; color: #fff; margin-bottom: 16px;">INSTRUÇÃO</p>
+      <div class="countdown-number-digit" id="countdownNumberDigit">3</div>
+    </div>
+  </div>
+
+  <!-- OVERLAY DE MINIGAMES CRT BLACKOUT -->
+  <div id="terminalBlackoutOverlay" class="terminal-blackout-overlay hidden"></div>
+
+  <!-- GRANDE CINEMÁTICA PRÉ-DUELO (10 SEGUNDOS COM MÚSICA E SUSPENSE) -->
+  <div id="preDuelCinematicOverlay" class="pre-duel-cinematic-overlay hidden">
+    <div class="duel-cinematic-bg-grid"></div>
+    <div class="duel-cinematic-content">
+      <!-- Fase 1: Alerta de Setor -->
+      <div id="duelPhaseSector" class="duel-phase-box hidden">
+        <div class="duel-sys-alert">// CONEXÃO HOSTIL DETECTADA //</div>
+        <h1 class="duel-sector-title" id="duelCinematicSectorTitle">ANDAR 1</h1>
+        <div class="duel-theme-badge" id="duelCinematicThemeBadge">[ FLORESTA DIGITAL ]</div>
+      </div>
+
+      <!-- Fase 2: VS Confronto com Party Completa -->
+      <div id="duelPhaseVS" class="duel-phase-box hidden">
+        <div class="duel-vs-grid">
+          <div class="duel-fighter-col player" id="duelCinematicPlayerFighter">EQUIPE QUEZAS</div>
+          <div class="duel-vs-badge">VS</div>
+          <div class="duel-fighter-col enemy" id="duelCinematicEnemyFighter">INIMIGO</div>
+        </div>
+      </div>
+
+      <!-- Fase 3: Prepare-se -->
+      <div id="duelPhasePrepare" class="duel-phase-box hidden">
+        <h1 class="duel-prepare-glitch">>> PREPARE-SE <<</h1>
+      </div>
+
+      <!-- Fase 4: Contagem 3... 2... 1... -->
+      <div id="duelPhaseCountdown" class="duel-phase-box hidden">
+        <div class="duel-big-digit" id="duelBigDigitDisplay">3</div>
+      </div>
+
+      <!-- Fase 5: DUELEM! -->
+      <div id="duelPhaseStart" class="duel-phase-box hidden">
+        <h1 class="duel-start-climax">>> DUELEM! <<</h1>
+      </div>
+    </div>
+  </div>
+
+  <!-- TELA DE DERROTA -->
+  <div id="defeatCinematicOverlay" class="battle-result-overlay defeat hidden">
+    <div class="result-backdrop-grid defeat"></div>
+    <div class="result-content-card defeat">
+      <div class="result-sys-tag alert">// SOBRECARGA CRÍTICA //</div>
+      <h1 class="result-main-title defeat">>> SISTEMA EM COLAPSO <<</h1>
+      <p style="color: #ff3344; font-size: 1.15rem;">Sua party foi subjugada pela Grande Inteligência.</p>
+      <div class="result-badge-row">
+        <span class="result-badge alert">[ REINICIALIZANDO NO PONTO SEGURO ]</span>
+      </div>
+      <div class="result-timer-bar">
+        <div class="result-timer-progress defeat" id="defeatTimerProgress"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERLAY CINEMÁTICA 3D: ASCENSÃO DA TORRE -->
+  <div id="towerAscent3DOverlay" class="tower-ascent-3d-overlay hidden">
+    <div id="towerAscent3DCanvasContainer" class="tower-ascent-canvas"></div>
+    <div class="tower-ascent-hud" style="display: flex; justify-content: center; align-items: center; text-align: center;">
+      <div class="ascent-hud-center">
+        <div style="font-size: 0.95rem; color: var(--term-dim); letter-spacing: 3px; font-weight: 700; margin-bottom: 8px;">// ELEVANDO CABINE PARA O PRÓXIMO ANDAR //</div>
+        <h1 class="ascent-floor-title" id="ascentFloorTitle" style="font-size: 2.2rem; color: var(--term-accent); text-shadow: 0 0 25px var(--term-glow); margin: 0;">[ ANDAR 2: VELHO OESTE ]</h1>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERLAY CINEMÁTICA 3D: MOEDA DA SORTE -->
+  <div id="coin3DFullOverlay" class="coin-3d-full-overlay hidden">
+    <div id="coin3DCanvasContainer" class="coin-3d-canvas-container"></div>
+    <div class="coin-3d-hud-layer">
+      <div class="coin-3d-header">
+        <h2 class="coin-3d-title" style="font-size: 1.25rem; margin: 0; color: var(--term-accent); letter-spacing: 2px;">[ MOEDA DA SORTE! ]</h2>
+        <div class="coin-3d-guess-badge" id="coin3DPlayerGuessBadge" style="font-size: 0.85rem; padding: 3px 10px; margin-top: 4px;">PALPITE: CARA</div>
+      </div>
+      <div class="coin-3d-result-box" id="coin3DResultBox" style="padding: 8px 16px;">
+        <div class="coin-3d-status-text" id="coin3DStatusText" style="font-size: 0.95rem;">Lançando moeda 3D...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script Principal do Jogo -->
+  <script type="module" src="/js/terminal-game.js"></script>
+</body>
+</html>
