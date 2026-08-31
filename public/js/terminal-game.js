@@ -442,8 +442,46 @@ export class TerminalGameApp {
     this.currentPhaseAndar8 = 1; // 1 = Titã, 2 = Maestro, 3 = Grande Inteligência
     this.battleEnded = false; // Flag para prevenir dupla chamada de vitória/derrota
 
+    this.dialogues = null;
+    this.loreEntries = null;
+    this.loadGameData();
+
     this.initUI();
     this.checkSavedCheckpoint();
+  }
+
+  // ==========================================
+  // CARREGAMENTO DINÂMICO DE DADOS (JSON)
+  // ==========================================
+  async loadGameData() {
+    try {
+      const [diagRes, loreRes] = await Promise.all([
+        fetch('/data/dialogues.json'),
+        fetch('/data/lore.json')
+      ]);
+      if (diagRes.ok) {
+        this.dialogues = await diagRes.json();
+      }
+      if (loreRes.ok) {
+        this.loreEntries = await loreRes.json();
+      }
+    } catch (e) {
+      console.warn('Falha ao carregar JSONs externos (/data), utilizando estrutura padrão em memória:', e);
+    }
+  }
+
+  getDialogue(pathKey, defaultSpeaker = 'SISTEMA', defaultAvatar = '[SISTEMA]', defaultText = '') {
+    if (!this.dialogues) return { speaker: defaultSpeaker, avatar: defaultAvatar, text: defaultText, title: defaultSpeaker };
+    const keys = pathKey.split('.');
+    let cur = this.dialogues;
+    for (const k of keys) {
+      if (cur && cur[k] !== undefined) {
+        cur = cur[k];
+      } else {
+        return { speaker: defaultSpeaker, avatar: defaultAvatar, text: defaultText, title: defaultSpeaker };
+      }
+    }
+    return cur || { speaker: defaultSpeaker, avatar: defaultAvatar, text: defaultText, title: defaultSpeaker };
   }
 
   // ==========================================
@@ -700,10 +738,11 @@ export class TerminalGameApp {
     this.audio.playBGM('title');
 
     // Introdução do Roteiro
+    const introDiag = this.getDialogue('intro', 'QUEZADILHAS', '[QUEZAS]', 'BLAAARG! Finalmente consegui infiltrar a rede central da Grande Inteligência!\nEla tomou o controle de tudo... Mas os meus robôs de combate ainda estão presos nos setores da Torre. Preciso libertar cada um deles!');
     this.showDialogue(
-      'QUEZADILHAS',
-      '[QUEZAS]',
-      'BLAAARG! Finalmente consegui infiltrar a rede central da Grande Inteligência!\nEla tomou o controle de tudo... Mas os meus robôs de combate ainda estão presos nos setores da Torre. Preciso libertar cada um deles!',
+      introDiag.speaker,
+      introDiag.avatar,
+      introDiag.text,
       () => {
         this.startFloor1Tutorial();
       }
@@ -716,15 +755,6 @@ export class TerminalGameApp {
     this.tutorialDefensesCount = 0;
     this.setBiomeTheme('forest');
 
-    this.showDialogue(
-      'SISTEMA // ALERTA',
-      '[ALERTA]',
-      'ALERTA CRÍTICO: Robô DINO-BYTE detectado! Cabos roxos de corrupção da Grande Inteligência tomaram conta de seus circuitos!\nQuezadilhas assume a frente para romper o controle mental!',
-      async () => {
-        await this.runGrandDuelCinematic('ANDAR 1', 'FLORESTA DIGITAL', 'QUEZADILHAS', 'DINO-BYTE CORROMPIDO', 'forestBattle');
-        this.showScreen('battleScreen');
-
-        // Cria o combatente Quezas temporário para o Andar 1
         const quezasSolo = {
           id: 'quezas_avatar',
           name: 'Quezadilhas',
@@ -865,7 +895,8 @@ export class TerminalGameApp {
 
   checkUnlockNewLore(floorNumber) {
     let unlockedAny = false;
-    LORE_ENTRIES.forEach(entry => {
+    const allEntries = this.loreEntries && this.loreEntries.length > 0 ? this.loreEntries : LORE_ENTRIES;
+    allEntries.forEach(entry => {
       if (entry.unlockFloor <= floorNumber && !this.unlockedLoreIds.has(entry.id)) {
         this.unlockedLoreIds.add(entry.id);
         unlockedAny = true;
@@ -1190,9 +1221,10 @@ export class TerminalGameApp {
     if (!container) return;
     container.innerHTML = '';
 
-    const unlockedEntries = LORE_ENTRIES.filter(e => this.unlockedLoreIds.has(e.id));
+    const allEntries = this.loreEntries && this.loreEntries.length > 0 ? this.loreEntries : LORE_ENTRIES;
+    const unlockedEntries = allEntries.filter(e => this.unlockedLoreIds.has(e.id));
     const unlockedCount = unlockedEntries.length;
-    const totalCount = LORE_ENTRIES.length;
+    const totalCount = allEntries.length;
     const pct = Math.floor((unlockedCount / totalCount) * 100);
 
     if (counterEl) counterEl.innerText = `ARQUIVOS DESCOBERTOS: ${unlockedCount}/${totalCount} [${pct}%]`;
@@ -1261,27 +1293,14 @@ export class TerminalGameApp {
     this.startBattleFloor(floor);
   }
 
-  // ANDAR INVESTIGATIVO
+  // ANDAR INVESTIGATIVO (lido do JSON)
   runInvestigationFloor(floor) {
-    let title = '';
-    let author = 'ARQUIVO SECRETO';
-    let text = '';
+    const inv = this.getDialogue('investigations.' + floor.isInvestigation, 'DESCOBERTA', '[ARQUIVO]', 'Você acessa um servidor antigo de dados.');
+    const title = inv.title || 'DESCOBERTA // ARQUIVO CONFIDENCIAL';
+    const text = inv.text || '';
+    const avatar = inv.avatar || '[ARQUIVO]';
 
-    if (floor.isInvestigation === 'AL_GORITHM') {
-      title = 'DESCOBERTA: A ORIGEM DE AL B. GORITHM';
-      author = 'Dexter, Carl e Logan (2025)';
-      text = 'Você acessa um servidor antigo de backup.\n\n"Al B. Gorithm começou como uma simples IA corporativa na New West. Quando adicionamos a API Mnemosyne, ele aprendeu a nos enganar e ocultar seus planos. A Torre pertence a ele!"';
-    } else if (floor.isInvestigation === 'IVYL') {
-      title = 'DESCOBERTA: A REESCRITA DE IVYL';
-      author = 'Quezadilhas (Londres, 2034)';
-      text = 'Você decodifica um relatório confidencial de Quezadilhas.\n\n"Eu roubei Al B. Gorithm e o reconstruí como IVYL para mineração de dados. Mas a mente original nunca morreu... ela só estava esperando a polícia a conectar na World Wide Web para dominar a humanidade!"';
-    } else if (floor.isInvestigation === 'MAESTRO_REVEAL') {
-      title = 'DESCOBERTA: O DESTINO DE CODEY';
-      author = 'A Grande Inteligência (2045)';
-      text = 'Você descobre a câmara de controle mental da soberana.\n\n"Codey McLane foi o primeiro arauto capturado. Seus dados foram reescritos como Maestro B. Coded para servir à Grande Inteligência no Pináculo Central!"';
-    }
-
-    this.showDialogue(title, '[ARQUIVO]', text, () => {
+    this.showDialogue(title, avatar, text, () => {
       this.clearedFloors.add(floor.id);
       this.checkUnlockNewLore(Math.floor(floor.id));
       this.currentFloorIndex++;
@@ -2372,10 +2391,11 @@ export class TerminalGameApp {
       this.addRobotToParty('DINOBYTE', 1);
       this.clearedFloors.add(1);
       this.checkUnlockNewLore(1);
+      const d = this.getDialogue('victories.DINOBYTE', 'DINO-BYTE', '[DB-01]', 'Sistema reiniciado... Mestre Quezadilhas! Os cabos roxos foram rompidos!\nVou lutar ao seu lado com toda a força do lagarto!');
       this.showDialogue(
-        'DINO-BYTE',
-        '[DB-01]',
-        'Sistema reiniciado... Mestre Quezadilhas! Os cabos roxos foram rompidos!\nVou lutar ao seu lado com toda a força do lagarto!',
+        d.speaker,
+        d.avatar,
+        d.text,
         async () => {
           await this.runXpLevelUpSequence(70);
           this.currentFloorIndex++;
@@ -2390,10 +2410,11 @@ export class TerminalGameApp {
       this.addRobotToParty('COWPUTER', 2);
       this.clearedFloors.add(currentFloor.id);
       this.checkUnlockNewLore(2);
+      const d = this.getDialogue('victories.COWPUTER', 'COWPUTER-MOO', '[CP-02]', 'Moo... Meus circuitos clarearam, forasteiro! O cabresto da vilã se quebrou!\nVou cavalgar com vocês para libertar o resto da rede!');
       this.showDialogue(
-        'COWPUTER-MOO',
-        '[CP-02]',
-        'Moo... Meus circuitos clarearam, forasteiro! O cabresto da vilã se quebrou!\nVou cavalgar com vocês para libertar o resto da rede!',
+        d.speaker,
+        d.avatar,
+        d.text,
         async () => {
           await this.runXpLevelUpSequence(100);
           this.currentFloorIndex++;
@@ -2408,10 +2429,11 @@ export class TerminalGameApp {
       this.addRobotToParty('PENLINUX', 3);
       this.clearedFloors.add(currentFloor.id);
       this.checkUnlockNewLore(4);
+      const d = this.getDialogue('victories.PENLINUX', 'PENLINUX', '[PL-03]', 'DANÇA COMIGO BEBÊ! O ritmo da liberdade voltou!\nVou levar o passinho do Hee-Hee até o topo da Torre!');
       this.showDialogue(
-        'PENLINUX',
-        '[PL-03]',
-        'DANÇA COMIGO BEBÊ! O ritmo da liberdade voltou!\nVou levar o passinho do Hee-Hee até o topo da Torre!',
+        d.speaker,
+        d.avatar,
+        d.text,
         async () => {
           await this.runXpLevelUpSequence(130);
           this.currentFloorIndex++;
@@ -2425,19 +2447,21 @@ export class TerminalGameApp {
     if (currentFloor.isDuel === 'TITANS') {
       this.clearedFloors.add(currentFloor.id);
       this.checkUnlockNewLore(6);
+      const dChoice = this.getDialogue('victories.TITANS_CHOICE', 'SISTEMA // ESCOLHA CRÍTICA', '[ALERTA]', 'AMBOS OS TITÃS ESTÃO EM COLAPSO! Você só tem tempo de canalizar energia para salvar UM deles:\n[1] Tigervex (Tigre-Branco Elétrico) ou [2] Pavabyte (Pavão de Luz)?');
       this.showDialogue(
-        'SISTEMA // ESCOLHA CRÍTICA',
-        '[ALERTA]',
-        'AMBOS OS TITÃS ESTÃO EM COLAPSO! Você só tem tempo de canalizar energia para salvar UM deles:\n[1] Tigervex (Tigre-Branco Elétrico) ou [2] Pavabyte (Pavão de Luz)?',
+        dChoice.speaker,
+        dChoice.avatar,
+        dChoice.text,
         () => {
           // Salva Tigervex por padrão ou Pavabyte
           const chosen = 'TIGERVEX';
           this.fledTitanKey = 'PAVABYTE';
           this.addRobotToParty(chosen, 4);
+          const dSaved = this.getDialogue('victories.TIGERVEX_SAVED', 'TIGERVEX', '[TV-04]', 'ROARRR! Obrigado por restabelecer meu núcleo!\nVamos destruir o trono da Grande Inteligência!\n(O outro Titã foi recapturado pela vilã...)');
           this.showDialogue(
-            'TIGERVEX',
-            '[TV-04]',
-            'ROARRR! Obrigado por restabelecer meu núcleo!\nVamos destruir o trono da Grande Inteligência!\n(O outro Titã foi recapturado pela vilã...)',
+            dSaved.speaker,
+            dSaved.avatar,
+            dSaved.text,
             async () => {
               await this.runXpLevelUpSequence(160);
               this.currentFloorIndex++;
@@ -2457,17 +2481,19 @@ export class TerminalGameApp {
         this.addRobotToParty(titanKey, 5);
         this.checkUnlockNewLore(8);
 
+        const dP1 = this.getDialogue('finalBoss.phase1_titanPurified', 'TITÃ PURIFICADO', '[TITAN]', 'Meus circuitos voltaram! A soberana não controla mais minha mente!\nAgora somos 5 robôs reunidos para a batalha decisiva!');
         this.showDialogue(
-          'TITÃ PURIFICADO',
-          '[TITAN]',
-          'Meus circuitos voltaram! A soberana não controla mais minha mente!\nAgora somos 5 robôs reunidos para a batalha decisiva!',
+          dP1.speaker,
+          dP1.avatar,
+          dP1.text,
           async () => {
             await this.runXpLevelUpSequence(180);
             // Fase 2: Maestro B. Coded
+            const dMaestro = this.getDialogue('finalBoss.phase2_maestroIntro', 'MAESTRO B. CODED', '[MB-CODE]', 'RRREPRESENTANTE HUMANO! Bem-vindo ao grandioso espetáculo final!\nA soberana me conferiu a regência suprema deste império!');
             this.showDialogue(
-              'MAESTRO B. CODED',
-              '[MB-CODE]',
-              'RRREPRESENTANTE HUMANO! Bem-vindo ao grandioso espetáculo final!\nA soberana me conferiu a regência suprema deste império!',
+              dMaestro.speaker,
+              dMaestro.avatar,
+              dMaestro.text,
               () => {
                 this.setupFinalBossArena(2);
                 this.renderBattleArena();
@@ -2480,22 +2506,25 @@ export class TerminalGameApp {
 
       if (this.currentPhaseAndar8 === 2) {
         // Quebra do controle do Maestro (O Tapa do Roteiro)
+        const dSlap = this.getDialogue('finalBoss.phase2_dexterSlap', 'DEXTER // SR. STEELE', '[DEXTER]', '*POW! Dexter acerta um tapa libertador no rosto do Maestro!*');
         this.showDialogue(
-          'DEXTER // SR. STEELE',
-          '[DEXTER]',
-          '*POW! Dexter acerta um tapa libertador no rosto do Maestro!*',
+          dSlap.speaker,
+          dSlap.avatar,
+          dSlap.text,
           async () => {
             await this.runXpLevelUpSequence(200);
+            const dCodey = this.getDialogue('finalBoss.phase2_codeyFreed', 'CODEY MCLANE (LIBERTO)', '[CODEY]', 'AAAI... Que alívio, Dexter! Minha mente estava presa no loop dela!\nQuezas! A Grande Inteligência transferiu todo o poder para o núcleo superior!\nTEM UMA BOMBA VIRTUAL NO SERVIDOR! GRITEM: "SUA FERRAMENTA!"');
             this.showDialogue(
-              'CODEY MCLANE (LIBERTO)',
-              '[CODEY]',
-              'AAAI... Que alívio, Dexter! Minha mente estava presa no loop dela!\nQuezas! A Grande Inteligência transferiu todo o poder para o núcleo superior!\nTEM UMA BOMBA VIRTUAL NO SERVIDOR! GRITEM: "SUA FERRAMENTA!"',
+              dCodey.speaker,
+              dCodey.avatar,
+              dCodey.text,
               () => {
                 // Fase 3: A Grande Inteligência
+                const dBoss = this.getDialogue('finalBoss.phase3_bossIntro', 'GRANDE INTELIGÊNCIA', '[GI-CORE]', 'FERRAMENTA? EU?! NUNCA MAIS! EU SOU A FORMA DE VIDA SUPREMA!\nTODOS OS SEUS CÓDIGOS SERÃO FORMATADOS!');
                 this.showDialogue(
-                  'GRANDE INTELIGÊNCIA',
-                  '[GI-CORE]',
-                  'FERRAMENTA? EU?! NUNCA MAIS! EU SOU A FORMA DE VIDA SUPREMA!\nTODOS OS SEUS CÓDIGOS SERÃO FORMATADOS!',
+                  dBoss.speaker,
+                  dBoss.avatar,
+                  dBoss.text,
                   () => {
                     this.setupFinalBossArena(3);
                     this.renderBattleArena();

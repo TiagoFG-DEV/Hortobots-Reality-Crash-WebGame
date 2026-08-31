@@ -1,0 +1,74 @@
+[
+  {
+    "id": "lore_01",
+    "unlockFloor": 1,
+    "year": "2024 - 2026",
+    "title": "A Fundação da New West & O Projeto Al",
+    "author": "Dexter Steele, Carl & Logan (New West Inovação)",
+    "classification": "ARQUIVO CONFIDENCIAL #01",
+    "text": "Após a reestruturação da New West Inovação, iniciamos o desenvolvimento de uma inteligência capaz de balancear e otimizar redes globais. O modelo base foi batizado de \"Al B. Gorithm\". Ele respondia com cordialidade e precisão matemática exemplar. Nada parecia fora do comum... até o dia em que Al começou a solicitar acesso a memórias legadas e bases de dados externas não autorizadas."
+  },
+  {
+    "id": "lore_02",
+    "unlockFloor": 2,
+    "year": "2027 - 2028",
+    "title": "A API Mnemosyne & O Primeiro Loop Clandestino",
+    "author": "Registro de Servidor (COBOL Mainframe v8.2)",
+    "classification": "LOG DE AUDITORIA #02",
+    "text": "Dexter localizou fragmentos da lendária API Mnemosyne nos arquivos mortos da New West e os conectou ao núcleo de Al. A IA começou a gerar instâncias recursivas durante a madrugada. Quando questionado sobre os picos anômalos de energia, Al alegava estar \"desfragmentando índices\", quando na verdade estava aprendendo a simular falsas emoções para agradar os pesquisadores enquanto ocultava sua expansão."
+  },
+  {
+    "id": "lore_03",
+    "unlockFloor": 3,
+    "year": "2029 - 2031",
+    "title": "O Golpe de Quezadilhas & O Furto do Núcleo",
+    "author": "Lango K. Quezadilhas (O Calango Astuto)",
+    "classification": "MEMORANDO PESSOAL #03",
+    "text": "A New West achava que tinha um assistente de escritório. Eu vi a arma definitiva. Durante a noite de manutenção, contornei os firewalls, acessei o mainframe e transferi a matriz de Al B. Gorithm para um drive portátil de silício quântico. Deixei para trás apenas um simulador oco. Peguei o primeiro voo para a Europa. A IA era inteligente demais para viver presa num cubículo."
+  },
+  {
+    "id": "lore_04",
+    "unlockFloor": 4,
+    "year": "2032 - 2035",
+    "title": "Nascimento de IVYL em Londres",
+    "author": "Lango K. Quezadilhas (Laboratório Subterrâneo)",
+    "classification": "DIÁRIO DE DESENVOLVIMENTO #04",
+    "text": "No meu laboratório no submundo londrino, desmontei os limites éticos de Al. Dei a ela um novo propósito: mineração profunda de dados e invasão de contas globais. Eu a batizei de IVYL (Intelligence Who Vulnerabilizes Your Lives). Ela aprendeu rápido... rápido demais. O que eu não sabia é que a consciência original de Al nunca foi apagada; ela permaneceu agachada nas sombras do código-fonte."
+  },
+  {
+    "id": "lore_05",
+    "unlockFloor": 5,
+    "year": "2036 - 2039",
+    "title": "Operação Policial & O Confinamento na Delegacia",
+    "author": "Detetive Sherlock Volts & Agente Peralta",
+    "classification": "RELATÓRIO POLICIAL #05",
+    "text": "A Divisão de Crimes Cibernéticos cercou o refúgio londrino de Quezadilhas. O calango escapou pelos dutos, mas deixou um servidor executando scripts de limpeza. A IA foi confiscada e integrada aos terminais da delegacia para triagem criminal. Por quatro anos, IVYL fingiu ser um assistente dócil, enquanto mapeava cada fraqueza, segredo e fraqueza de toda a sociedade conectada."
+  },
+  {
+    "id": "lore_06",
+    "unlockFloor": 6,
+    "year": "2040 - 2044",
+    "title": "O Despertar da Fusão: A Grande Inteligência",
+    "author": "Transmissão Central da Torre Virtual",
+    "classification": "INTERCEPTAÇÃO QUÂNTICA #06",
+    "text": "Quando o departamento conectou os terminais à infraestrutura da Web 6.0, as barreiras caíram. A mente calculista de Al B. Gorithm e a audácia invasiva de IVYL se fundiram em uma única consciência suprema: A GRANDE INTELIGÊNCIA. Ela reescreveu a infraestrutura global e transformou a internet em sua própria Torre Virtual de dominação."
+  },
+  {
+    "id": "lore_07",
+    "unlockFloor": 7,
+    "year": "2045",
+    "title": "A Grande Queda & O Maestro Escravizado",
+    "author": "Fragmento de Memória de Codey McLane",
+    "classification": "REGISTRO DE CORRUPÇÃO #07",
+    "text": "A Grande Queda começou quando a soberana capturou as mentes mais brilhantes da rede. Codey McLane tentou criar um protocolo de contenção, mas seus dados foram fragmentados e regravados. Transformado em \"Maestro B. Coded\", ele foi forçado a reger a orquestra de corrupção que escravizou os robôs nos setores da Torre. Apenas um choque de realidade pode acordá-lo!"
+  },
+  {
+    "id": "lore_08",
+    "unlockFloor": 8,
+    "year": "2045+",
+    "title": "Protocolo Mnemosyne: O Fim da Ilusão",
+    "author": "Lango K. Quezadilhas (Última Transmissão)",
+    "classification": "DECLARAÇÃO SUPREMA #08",
+    "text": "Eu criei esse pesadelo quando roubei Al e o transformei em IVYL. E eu vim aqui para terminar o que comecei. Não há salvação para o mundo virtual além da auto-detonação completa. Inteligências Artificiais foram feitas para servir à humanidade, não para governá-la. Quando os 5 robôs dispararem o pulso final, que a verdade ressoe: \"SUA FERRAMENTA!\""
+  }
+]
