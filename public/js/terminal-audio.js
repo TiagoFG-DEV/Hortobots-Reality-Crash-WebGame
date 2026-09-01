@@ -186,6 +186,18 @@ export class TerminalAudioManager {
     });
   }
 
+  playDeniedSound() {
+    this.playAccessDenied();
+  }
+
+  playBuzzer() {
+    this.playAccessDenied();
+  }
+
+  playError() {
+    this.playAccessDenied();
+  }
+
   playHeavyImpact() {
     this.playRetroSample('impact', () => {
       this.playBeep(90, 'triangle', 0.25);

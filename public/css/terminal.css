@@ -2637,3 +2637,340 @@ html, body {
   letter-spacing: 1px;
 }
 
+/* ===================================================
+   PROJÉTEIS GRÁFICOS DE COMBATE EM TEMPO REAL
+   =================================================== */
+.combat-projectile-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.combat-projectile {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 900;
+  z-index: 10000;
+  box-shadow: 0 0 20px currentColor;
+  transition: transform 0.05s linear;
+}
+
+.projectile-fogo {
+  background: radial-gradient(circle, #ff6600, #ff0033);
+  color: #fff;
+  border: 2px solid #ffd700;
+  box-shadow: 0 0 25px #ff4400, 0 0 50px #ff2200;
+  animation: projSpin 0.3s linear infinite;
+}
+
+.projectile-terra {
+  background: radial-gradient(circle, #88cc00, #448800);
+  color: #fff;
+  border: 2px solid #aaff44;
+  box-shadow: 0 0 25px #66aa00;
+  animation: projPulse 0.4s ease-in-out infinite alternate;
+}
+
+.projectile-gelo {
+  background: radial-gradient(circle, #00ffff, #0088ff);
+  color: #fff;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 25px #00ffff, 0 0 45px #00aaff;
+  animation: projSpin 0.25s linear infinite;
+}
+
+.projectile-eletrico {
+  background: radial-gradient(circle, #ffff00, #ff9900);
+  color: #000;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 30px #ffff00, 0 0 60px #ffbb00;
+  animation: projJitter 0.15s ease-in-out infinite;
+}
+
+.projectile-luz {
+  background: radial-gradient(circle, #ffffff, #ffd700);
+  color: #000;
+  border: 2px solid #ffd700;
+  box-shadow: 0 0 35px #ffffff, 0 0 70px #ffd700;
+  animation: projPulse 0.2s ease-in-out infinite alternate;
+}
+
+.projectile-corrupt {
+  background: radial-gradient(circle, #ff0055, #880033);
+  color: #fff;
+  border: 2px solid #ff3366;
+  box-shadow: 0 0 30px #ff0055, 0 0 60px #ff0033;
+  animation: projJitter 0.18s linear infinite;
+}
+
+@keyframes projSpin {
+  from { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+  to { transform: translate(-50%, -50%) rotate(360deg) scale(1.1); }
+}
+
+@keyframes projPulse {
+  from { transform: translate(-50%, -50%) scale(0.9); }
+  to { transform: translate(-50%, -50%) scale(1.35); }
+}
+
+@keyframes projJitter {
+  0% { transform: translate(-50%, -50%) translate(0, 0) scale(1); }
+  25% { transform: translate(-50%, -50%) translate(-3px, 2px) scale(1.15); }
+  50% { transform: translate(-50%, -50%) translate(3px, -2px) scale(0.95); }
+  75% { transform: translate(-50%, -50%) translate(-2px, -3px) scale(1.2); }
+  100% { transform: translate(-50%, -50%) translate(0, 0) scale(1); }
+}
+
+/* ===================================================
+   INDICADORES DINÂMICOS DE HP NOS CARDS
+   =================================================== */
+.hp-fill-high {
+  background: #00ff66 !important;
+  box-shadow: 0 0 8px rgba(0, 255, 102, 0.4);
+}
+
+.hp-fill-mid {
+  background: #ffd700 !important;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.hp-fill-low {
+  background: #ff7700 !important;
+  box-shadow: 0 0 12px rgba(255, 119, 0, 0.6);
+}
+
+.hp-fill-critical {
+  background: #ff2233 !important;
+  box-shadow: 0 0 16px rgba(255, 34, 51, 0.9);
+  animation: hpCritPulse 0.45s ease-in-out infinite alternate;
+}
+
+@keyframes hpCritPulse {
+  from { opacity: 0.65; filter: brightness(0.9); }
+  to { opacity: 1; filter: brightness(1.4); }
+}
+
+/* ===================================================
+   EFEITOS GRÁFICOS DE MINIGAMES
+   =================================================== */
+.iceberg-visual-box {
+  width: 160px;
+  height: 120px;
+  margin: 0 auto 10px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: transform 0.08s ease-out;
+}
+
+.iceberg-ascii-art {
+  font-family: monospace;
+  font-size: 1.5rem;
+  line-height: 1.1;
+  color: #00ffff;
+  text-shadow: 0 0 12px #00ffff, 0 0 25px rgba(0, 255, 255, 0.6);
+  white-space: pre;
+}
+
+.ice-crack-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.4) 10px, rgba(255, 255, 255, 0.4) 12px);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+/* Efeito de queima nos nós térmicos */
+.term-target-node.burning {
+  border-color: #ff3300 !important;
+  background: radial-gradient(circle, #ffaa00, #ff2200) !important;
+  box-shadow: 0 0 25px #ff4400, 0 0 45px #ff0000 !important;
+  animation: flameBurn 0.25s infinite alternate !important;
+}
+
+@keyframes flameBurn {
+  0% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+  100% { transform: scale(1.12) rotate(4deg); filter: brightness(1.35); }
+}
+
+/* ===================================================
+   EVENTOS DE BATALHA (BANNER DRAMÁTICO NO TOPO)
+   =================================================== */
+.battle-event-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 0, 51, 0.25);
+  border: 1px solid #ff3344;
+  color: #ff3344;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 4px 12px;
+  margin-top: 4px;
+  animation: eventPulse 1.2s infinite alternate;
+}
+
+@keyframes eventPulse {
+  from { background: rgba(255, 0, 51, 0.2); box-shadow: 0 0 5px rgba(255, 0, 51, 0.2); }
+  to { background: rgba(255, 0, 51, 0.4); box-shadow: 0 0 18px rgba(255, 0, 51, 0.6); }
+}
+
+/* ===================================================
+   ESCOLHA DOS TITÃS (ANDAR 6.5)
+   =================================================== */
+.titan-choice-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.94);
+  z-index: 1500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+.titan-choice-box {
+  max-width: 780px;
+  width: 100%;
+  background: #020804;
+  border: 2px solid var(--term-border);
+  box-shadow: 0 0 45px rgba(0, 255, 102, 0.3);
+  padding: 28px;
+  text-align: center;
+}
+
+.titan-choice-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 24px;
+}
+
+@media (max-width: 600px) {
+  .titan-choice-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.titan-choice-btn {
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid var(--term-border);
+  color: var(--term-fg);
+  font-family: inherit;
+  padding: 20px 16px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.titan-choice-btn:hover {
+  border-color: #ffd700;
+  background: rgba(255, 215, 0, 0.15);
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
+  transform: translateY(-3px);
+}
+
+/* ===================================================
+   MINIGAMES ESTILO UNDERTALE (ARENA BOX & NÚCLEO)
+   =================================================== */
+.undertale-arena-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 620px;
+  margin: 0 auto;
+  background: rgba(5, 10, 8, 0.95);
+  border: 3px solid var(--term-border);
+  box-shadow: 0 0 35px rgba(0, 255, 102, 0.25), inset 0 0 25px rgba(0, 0, 0, 0.9);
+  padding: 16px;
+  position: relative;
+  border-radius: 4px;
+}
+
+.undertale-hud-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px dashed var(--term-dim);
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+}
+
+.undertale-canvas-container {
+  position: relative;
+  width: 520px;
+  height: 320px;
+  background: #000000;
+  border: 3px solid #ffffff;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2), inset 0 0 15px rgba(0, 255, 102, 0.08);
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+@media (max-width: 600px) {
+  .undertale-canvas-container {
+    width: 320px;
+    height: 260px;
+  }
+}
+
+.undertale-canvas-container canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.undertale-bottom-hud {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.undertale-integrity-track {
+  width: 180px;
+  height: 16px;
+  background: #220000;
+  border: 1px solid var(--term-border);
+  position: relative;
+  overflow: hidden;
+}
+
+.undertale-integrity-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ff66, #ffd700);
+  transition: width 0.08s ease-out;
+}
+
+.undertale-controls-legend {
+  font-size: 0.82rem;
+  color: var(--term-dim);
+  text-align: center;
+  margin-top: 8px;
+  letter-spacing: 1px;
+}
+
+

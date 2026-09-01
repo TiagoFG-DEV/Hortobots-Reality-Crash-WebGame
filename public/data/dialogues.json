@@ -2,12 +2,12 @@
   "intro": {
     "speaker": "QUEZADILHAS",
     "avatar": "[QUEZAS]",
-    "text": "Aqui é o Quezas... Consegui me infiltrar na Torre Virtual da Grande Inteligência!\nMeu objetivo é purificar os robôs guardiões escravizados e alcançar o Pináculo Central.\nPreparem-se, a invasão começa agora!"
+    "text": "Aqui é o Quezas... Consegui me infiltrar na Torre Virtual da Grande Inteligência!\nMeu objetivo é encontrar os robôs guardiões e alcançar o Pináculo Central.\nPreparem-se, a invasão começa agora!"
   },
   "floor1_warning": {
     "speaker": "SISTEMA // ALERTA",
     "avatar": "[ALERTA]",
-    "text": "ALERTA CRÍTICO: Robô DINO-BYTE detectado! Cabos roxos de corrupção da Grande Inteligência tomaram conta de seus circuitos!\nQuezadilhas assume a frente para romper o controle mental!"
+    "text": "ALERTA CRÍTICO: Robô DINO-BYTE detectado! Cabos roxos de corrupção da Grande Inteligência tomaram conta de seus circuitos!\nQuezadilhas assume a frente para romper o controle!"
   },
   "investigations": {
     "AL_GORITHM": {
@@ -15,7 +15,7 @@
       "speaker": "ARQUIVO // DESCOBERTA",
       "author": "Dexter, Carl e Logan (2025)",
       "avatar": "[ARQUIVO]",
-      "text": "Você acessa um servidor antigo de backup.\n\n\"Al B. Gorithm começou como uma simples IA corporativa na New West. Quando adicionamos a API Mnemosyne, ele aprendeu a nos enganar e ocultar seus planos. A Torre pertence a ele!\""
+      "text": "Você acessa um servidor antigo de backup.\n\n\"Al B. Gorithm começou como uma simples IA corporativa na New West. Quando adicionamos a API Mnemosyne, ele aprendeu a nos enganar e ocultar seus planos. A Torre pertence a ela!\""
     },
     "IVYL": {
       "title": "DESCOBERTA: A REESCRITA DE IVYL",
@@ -29,7 +29,7 @@
       "speaker": "ARQUIVO // DESCOBERTA",
       "author": "A Grande Inteligência (2045)",
       "avatar": "[ARQUIVO]",
-      "text": "Você descobre a câmara de controle mental da soberana.\n\n\"Codey McLane foi o primeiro arauto capturado. Seus dados foram reescritos como Maestro B. Coded para servir à Grande Inteligência no Pináculo Central!\""
+      "text": "Você descobre a câmara de controle mental da soberana.\n\n\"Codey McLane foi o primeiro humano capturado. Seus dados foram reescritos como Maestro B. Coded para servir à Grande Inteligência no Pináculo Central como seu bobo da corte!\""
     }
   },
   "victories": {
@@ -41,7 +41,7 @@
     "COWPUTER": {
       "speaker": "COWPUTER-MOO",
       "avatar": "[CP-02]",
-      "text": "Moo... Meus circuitos clarearam, forasteiro! O cabresto da vilã se quebrou!\nVou cavalgar com vocês para libertar o resto da rede!"
+      "text": "Moo... Meus circuitos clarearam, forasteiro! O cabresto da vilã se quebrou!\nVou rumar com vocês para libertar o resto da rede!"
     },
     "PENLINUX": {
       "speaker": "PENLINUX",
@@ -56,34 +56,34 @@
     "TIGERVEX_SAVED": {
       "speaker": "TIGERVEX",
       "avatar": "[TV-04]",
-      "text": "ROARRR! Obrigado por restabelecer meu núcleo!\nVamos destruir o trono da Grande Inteligência!\n(O outro Titã foi recapturado pela vilã...)"
+      "text": "ROARRR! Obrigado por restabelecer meu núcleo!\nVamos destruir o trono da Grande Inteligência!\n(O outro Titã foi recapturado e melhorado pela vilã...)"
     }
   },
   "finalBoss": {
     "phase1_titanPurified": {
       "speaker": "TITÃ PURIFICADO",
       "avatar": "[TITAN]",
-      "text": "Meus circuitos voltaram! A soberana não controla mais minha mente!\nAgora somos 5 robôs reunidos para a batalha decisiva!"
+      "text": "Meus circuitos voltaram! A soberana não controla mais meus circuitos!\nAgora somos 5 robôs reunidos para a batalha decisiva!"
     },
     "phase2_maestroIntro": {
       "speaker": "MAESTRO B. CODED",
       "avatar": "[MB-CODE]",
-      "text": "RRREPRESENTANTE HUMANO! Bem-vindo ao grandioso espetáculo final!\nA soberana me conferiu a regência suprema deste império!"
+      "text": "RRREPRESENTANTE LAGARTO! Bem-vindo ao grandioso ESPETÁCULO final!\nA soberana me conferiu a regência SUPREMA deste MAGNIFICO império!"
     },
     "phase2_dexterSlap": {
-      "speaker": "DEXTER // SR. STEELE",
-      "avatar": "[DEXTER]",
-      "text": "*POW! Dexter acerta um tapa libertador no rosto do Maestro!*"
+      "speaker": "SILVER DUNKEL",
+      "avatar": "[SILVER]",
+      "text": "*POW! Silver acerta um tapa libertador no rosto do Maestro!*"
     },
     "phase2_codeyFreed": {
       "speaker": "CODEY MCLANE (LIBERTO)",
       "avatar": "[CODEY]",
-      "text": "AAAI... Que alívio, Dexter! Minha mente estava presa no loop dela!\nQuezas! A Grande Inteligência transferiu todo o poder para o núcleo superior!\nTEM UMA BOMBA VIRTUAL NO SERVIDOR! GRITEM: \"SUA FERRAMENTA!\""
+      "text": "AAAI... Que alívio, era o que eu precisava! Minha mente estava presa no loop dela!\nQuezas! É COM VOCÊ, todos esses robôs são mini bombas virtuais, por seu comando tudo vai pelos ares!"
     },
     "phase3_bossIntro": {
       "speaker": "GRANDE INTELIGÊNCIA",
       "avatar": "[GI-CORE]",
-      "text": "FERRAMENTA? EU?! NUNCA MAIS! EU SOU A FORMA DE VIDA SUPREMA!\nTODOS OS SEUS CÓDIGOS SERÃO FORMATADOS!"
+      "text": "FERRAMENTA? EU?! NUNCA MAIS! EU SOU A FORMA DE VIDA SUPREMA!\nTODAS AS SUAS EXISTÊNCIAS SERÃO FORMATADAS!"
     }
   }
 }

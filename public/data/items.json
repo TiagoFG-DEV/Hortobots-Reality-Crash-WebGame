@@ -1,0 +1,31 @@
+{
+  "energy_drink": {
+    "id": "energy_drink",
+    "name": "Bateria de Sobrecarga",
+    "icon": "[PWR]",
+    "desc": "Recupera +4 de Energia imediatamente para o robô ativo.",
+    "energy": 4
+  },
+  "nano_patch": {
+    "id": "nano_patch",
+    "name": "Nano-Kit de Reparo",
+    "icon": "[KIT]",
+    "desc": "Restaura +35 de HP imediatamente.",
+    "healHp": 35
+  },
+  "quezas_jalapeno": {
+    "id": "quezas_jalapeno",
+    "name": "Pimenta Jalapeño de Quezas",
+    "icon": "[CHIP]",
+    "desc": "Superaquece os circuitos: +50% de poder no próximo ataque!",
+    "overclock": true
+  },
+  "antivirus_patch": {
+    "id": "antivirus_patch",
+    "name": "Antivírus Purificador",
+    "icon": "[SEC]",
+    "desc": "Remove atordoamento e restaura +20 de HP.",
+    "cureStun": true,
+    "healHp": 20
+  }
+}

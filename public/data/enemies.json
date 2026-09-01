@@ -1,0 +1,72 @@
+{
+  "scaling": {
+    "hpPerFloor": 4,
+    "atkPerFloor": 1.2,
+    "movePowerPerFloor": 1.5
+  },
+  "pool": [
+    {
+      "name": "Sentinela-Bit",
+      "type": "Elétrico",
+      "avatar": "[SEN-01]",
+      "baseHp": 6,
+      "baseAtk": 3,
+      "moveName": "Pulso Estático",
+      "movePower": 1
+    },
+    {
+      "name": "Trojan-Scout",
+      "type": "Fogo",
+      "avatar": "[TRJ-02]",
+      "baseHp": 5,
+      "baseAtk": 2,
+      "moveName": "Injeção Térmica",
+      "movePower": 1
+    },
+    {
+      "name": "Firewall-Viper",
+      "type": "Fogo",
+      "avatar": "[FWV-03]",
+      "baseHp": 8,
+      "baseAtk": 4,
+      "moveName": "Presa Flamejante",
+      "movePower": 1
+    },
+    {
+      "name": "Cyber-Coyote",
+      "type": "Terra",
+      "avatar": "[CYC-04]",
+      "baseHp": 10,
+      "baseAtk": 5,
+      "moveName": "Uivo Sísmico",
+      "movePower": 5
+    },
+    {
+      "name": "Glitch-Spider",
+      "type": "Gelo",
+      "avatar": "[GLS-05]",
+      "baseHp": 12,
+      "baseAtk": 7,
+      "moveName": "Teia Glacial",
+      "movePower": 7
+    },
+    {
+      "name": "Kernel-Drone",
+      "type": "Luz",
+      "avatar": "[KRN-06]",
+      "baseHp": 13,
+      "baseAtk": 6,
+      "moveName": "Raio Kernel",
+      "movePower": 6
+    },
+    {
+      "name": "Malware-Golem",
+      "type": "Terra",
+      "avatar": "[MLG-07]",
+      "baseHp": 15,
+      "baseAtk": 5,
+      "moveName": "Impacto de Carga",
+      "movePower": 5
+    }
+  ]
+}

@@ -34,18 +34,17 @@ const ROBOT_TEMPLATES = {
     avatar: '[DB-01]',
     description: 'Dinossauro térmico com garras incandescentes e blindagem de dados.',
     catchphrase: 'Sente o poder do lagarto!',
-    baseHp: 45,
-    attackPower: 8,
-    shieldMax: 6,
+    baseHp: 50,
+    attackPower: 10,
     xpBaseToNext: 75,
     xpGrowthPerLevel: 35,
-    growthStats: { hp: 6, atk: 2, shield: 1 },
+    growthStats: { hp: 8, atk: 3, movePowerGrowth: 1 },
     moves: [
-      { id: 'jurassic_bite', name: 'Mordida Jurássica', cost: 2, basePower: 10, minigame: 'dino_targets', unlockLevel: 1, desc: 'Ataque dentado veloz que exige mira térmica rápida.' },
-      { id: 'flame_claw', name: 'Garras Flamejantes', cost: 4, basePower: 18, minigame: 'dino_arrows', unlockLevel: 4, desc: 'Talhos incandescentes em sequência direcional.' },
-      { id: 'draconic_firewall', name: 'Firewall Dracônico', cost: 6, basePower: 26, minigame: 'dino_timing', unlockLevel: 6, desc: 'Descarga de calor concentrada no pico de pressão.' }
+      { id: 'jurassic_bite', name: 'Mordida Jurássica', cost: 2, basePower: 12, minigame: 'dino_targets', unlockLevel: 1, desc: 'Ataque dentado veloz que exige mira térmica rápida.' },
+      { id: 'flame_claw', name: 'Garras Flamejantes', cost: 4, basePower: 20, minigame: 'dino_arrows', unlockLevel: 4, desc: 'Talhos incandescentes em sequência direcional.' },
+      { id: 'draconic_firewall', name: 'Firewall Dracônico', cost: 6, basePower: 30, minigame: 'dino_timing', unlockLevel: 6, desc: 'Descarga de calor concentrada no pico de pressão.' }
     ],
-    finisher: { id: 'lizards_roar', name: 'Rugido Hiperbárico do Lagarto', cost: 10, basePower: 38, unlockLevel: 2, minigame: 'chained_finisher', desc: 'O golpe supremo que desencadeia os 3 protocolos em sequência rápida!' }
+    finisher: { id: 'lizards_roar', name: 'Rugido Hiperbárico do Lagarto', cost: 10, basePower: 45, unlockLevel: 2, minigame: 'chained_finisher', desc: 'O golpe supremo que desencadeia os 3 protocolos em sequência rápida!' }
   },
   COWPUTER: {
     id: 'cowputer',
@@ -55,18 +54,17 @@ const ROBOT_TEMPLATES = {
     avatar: '[CP-02]',
     description: 'Robô xerife bovino com chifres condutores e laço magnético polar.',
     catchphrase: 'O faroeste digital tem uma nova xerife!',
-    baseHp: 50,
-    attackPower: 7,
-    shieldMax: 8,
+    baseHp: 58,
+    attackPower: 9,
     xpBaseToNext: 80,
     xpGrowthPerLevel: 40,
-    growthStats: { hp: 8, atk: 2, shield: 2 },
+    growthStats: { hp: 10, atk: 2, movePowerGrowth: 1 },
     moves: [
-      { id: 'stampede_ram', name: 'Laço Magnético', cost: 2, basePower: 9, minigame: 'cow_lasso', unlockLevel: 1, desc: 'Lança o laço magnético no ponto de rotação polar.' },
-      { id: 'horn_overload', name: 'Sobrecarga de Chifres', cost: 4, basePower: 17, minigame: 'cow_decrypt', unlockLevel: 4, desc: 'Decodificação rápida de frequência binária.' },
-      { id: 'western_dust', name: 'Poeira do Velho Oeste', cost: 6, basePower: 25, minigame: 'cow_quickdraw', unlockLevel: 6, desc: 'Saque relâmpago ao primeiro sinal de faísca.' }
+      { id: 'stampede_ram', name: 'Laço Magnético', cost: 2, basePower: 11, minigame: 'cow_lasso', unlockLevel: 1, desc: 'Lança o laço magnético no ponto de rotação polar.' },
+      { id: 'horn_overload', name: 'Sobrecarga de Chifres', cost: 4, basePower: 19, minigame: 'cow_decrypt', unlockLevel: 4, desc: 'Decodificação rápida de frequência binária.' },
+      { id: 'western_dust', name: 'Poeira do Velho Oeste', cost: 6, basePower: 28, minigame: 'cow_quickdraw', unlockLevel: 6, desc: 'Saque relâmpago ao primeiro sinal de faísca.' }
     ],
-    finisher: { id: 'bovine_voltage', name: 'Choque Bovino de Alta Tensão', cost: 10, basePower: 35, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Ataque sísmico total encadeando laço, código e saque rápido!' }
+    finisher: { id: 'bovine_voltage', name: 'Choque Bovino de Alta Tensão', cost: 10, basePower: 42, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Ataque sísmico total encadeando laço, código e saque rápido!' }
   },
   PENLINUX: {
     id: 'penlinux',
@@ -76,18 +74,17 @@ const ROBOT_TEMPLATES = {
     avatar: '[PL-03]',
     description: 'Pinguim acrobático ultra-estiloso com passos de dança e deslize ártico.',
     catchphrase: 'DANÇA COMIGO BEBÊ! OLHA O PASSINHO DO HEE-HEE!',
-    baseHp: 40,
-    attackPower: 9,
-    shieldMax: 6,
+    baseHp: 46,
+    attackPower: 11,
     xpBaseToNext: 70,
     xpGrowthPerLevel: 35,
-    growthStats: { hp: 5, atk: 3, shield: 1 },
+    growthStats: { hp: 7, atk: 4, movePowerGrowth: 1 },
     moves: [
-      { id: 'frost_slide', name: 'Deslize Glacial', cost: 2, basePower: 11, minigame: 'pen_slide', unlockLevel: 1, desc: 'Desvia dos blocos de gelo na pista em alta velocidade.' },
-      { id: 'glacier_quake', name: 'Terremoto de Iceberg', cost: 4, basePower: 19, minigame: 'pen_stomp', unlockLevel: 4, desc: 'Ondas convergentes travadas no tempo exato.' },
-      { id: 'dance_pass', name: 'Passinho do Hee-Hee', cost: 6, basePower: 27, minigame: 'pen_rhythm', unlockLevel: 6, desc: 'Ritmo musical acrobático no compasso da batida.' }
+      { id: 'frost_slide', name: 'Deslize Glacial', cost: 2, basePower: 13, minigame: 'pen_slide', unlockLevel: 1, desc: 'Desvia dos blocos de gelo na pista em alta velocidade.' },
+      { id: 'glacier_quake', name: 'Terremoto de Iceberg', cost: 4, basePower: 22, minigame: 'pen_stomp', unlockLevel: 4, desc: 'Ondas convergentes travadas no tempo exato.' },
+      { id: 'dance_pass', name: 'Passinho do Hee-Hee', cost: 6, basePower: 32, minigame: 'pen_rhythm', unlockLevel: 6, desc: 'Ritmo musical acrobático no compasso da batida.' }
     ],
-    finisher: { id: 'hee_hee_avalanche', name: 'Avalanche Ártica do Hee-Hee', cost: 10, basePower: 40, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Coreografia devastadora executando os 3 ritmos em cadeia!' }
+    finisher: { id: 'hee_hee_avalanche', name: 'Avalanche Ártica do Hee-Hee', cost: 10, basePower: 48, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Coreografia devastadora executando os 3 ritmos em cadeia!' }
   },
   TIGERVEX: {
     id: 'tigervex',
@@ -97,18 +94,17 @@ const ROBOT_TEMPLATES = {
     avatar: '[TV-04]',
     description: 'Titã Tigre-Branco forjado em titânio e bobinas Tesla de alta voltagem.',
     catchphrase: 'Garra, circuito e voltagem suprema!',
-    baseHp: 52,
-    attackPower: 11,
-    shieldMax: 8,
+    baseHp: 60,
+    attackPower: 13,
     xpBaseToNext: 90,
     xpGrowthPerLevel: 45,
-    growthStats: { hp: 7, atk: 3, shield: 1 },
+    growthStats: { hp: 9, atk: 4, movePowerGrowth: 1 },
     moves: [
-      { id: 'titanium_slash', name: 'Talho de Titânio', cost: 2, basePower: 12, minigame: 'tiger_slice', unlockLevel: 1, desc: 'Fatia os cabos de dados condutores em sequência cirúrgica.' },
-      { id: 'plasma_pounce', name: 'Bote de Plasma', cost: 4, basePower: 20, minigame: 'tiger_plasma', unlockLevel: 4, desc: 'Carrega e retém energia de plasma até o ponto ótimo de 95%.' },
-      { id: 'white_fang', name: 'Presas Relâmpago', cost: 6, basePower: 28, minigame: 'tiger_tesla', unlockLevel: 6, desc: 'Conexão em cadeia das bobinas Tesla.' }
+      { id: 'titanium_slash', name: 'Talho de Titânio', cost: 2, basePower: 14, minigame: 'tiger_slice', unlockLevel: 1, desc: 'Fatia os cabos de dados condutores em sequência cirúrgica.' },
+      { id: 'plasma_pounce', name: 'Bote de Plasma', cost: 4, basePower: 24, minigame: 'tiger_plasma', unlockLevel: 4, desc: 'Carrega e retém energia de plasma até o ponto ótimo de 95%.' },
+      { id: 'white_fang', name: 'Presas Relâmpago', cost: 6, basePower: 34, minigame: 'tiger_tesla', unlockLevel: 6, desc: 'Conexão em cadeia das bobinas Tesla.' }
     ],
-    finisher: { id: 'thunder_core', name: 'Ruptura do Núcleo Trovão', cost: 10, basePower: 42, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Liberação total da usina interna em feixe colinear triplo!' }
+    finisher: { id: 'thunder_core', name: 'Ruptura do Núcleo Trovão', cost: 10, basePower: 50, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Liberação total da usina interna em feixe colinear triplo!' }
   },
   PAVABYTE: {
     id: 'pavabyte',
@@ -118,18 +114,35 @@ const ROBOT_TEMPLATES = {
     avatar: '[PB-05]',
     description: 'Titã Pavão com leque holográfico e emissores de prisma quântico.',
     catchphrase: 'Admire a perfeição dos dados luminosos!',
-    baseHp: 48,
-    attackPower: 9,
-    shieldMax: 8,
+    baseHp: 56,
+    attackPower: 11,
     xpBaseToNext: 80,
     xpGrowthPerLevel: 40,
-    growthStats: { hp: 6, atk: 2, shield: 2 },
+    growthStats: { hp: 8, atk: 3, movePowerGrowth: 1 },
     moves: [
-      { id: 'prism_flare', name: 'Clarão Prismático', cost: 2, basePower: 10, minigame: 'pava_prism', unlockLevel: 1, desc: 'Alinha o prisma para convergir o feixe de luz espectral.' },
-      { id: 'spectral_tail', name: 'Cauda Espectral', cost: 4, basePower: 18, minigame: 'pava_fan', unlockLevel: 4, desc: 'Memoriza e reflete a sequência do leque holográfico.' },
-      { id: 'code_cascade', name: 'Cascata de Códigos', cost: 6, basePower: 26, minigame: 'pava_cascade', unlockLevel: 6, desc: 'Chuva torrencial de fótons dourados.' }
+      { id: 'prism_flare', name: 'Clarão Prismático', cost: 2, basePower: 12, minigame: 'pava_prism', unlockLevel: 1, desc: 'Alinha o prisma para convergir o feixe de luz espectral.' },
+      { id: 'spectral_tail', name: 'Cauda Espectral', cost: 4, basePower: 22, minigame: 'pava_fan', unlockLevel: 4, desc: 'Memoriza e reflete a sequência do leque holográfico.' },
+      { id: 'code_cascade', name: 'Cascata de Códigos', cost: 6, basePower: 32, minigame: 'pava_cascade', unlockLevel: 6, desc: 'Chuva torrencial de fótons dourados.' }
     ],
-    finisher: { id: 'rainbow_laser', name: 'Matriz Laser Arco-Íris', cost: 10, basePower: 39, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Bombardeio orbital óptico convergente executado em 3 fases!' }
+    finisher: { id: 'rainbow_laser', name: 'Matriz Laser Arco-Íris', cost: 10, basePower: 46, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Bombardeio orbital óptico convergente executado em 3 fases!' }
+  },
+  QUEZADILHAS: {
+    id: 'quezas_avatar',
+    name: 'Quezadilhas',
+    type: ElementTypes.FIRE,
+    badgeClass: 'char-badge-quezas',
+    avatar: '[QUEZAS]',
+    description: 'O hacker calango em sua incursão solitária nos firewalls da Torre.',
+    catchphrase: 'SUA FERRAMENTA!',
+    baseHp: 45,
+    attackPower: 8,
+    xpBaseToNext: 75,
+    xpGrowthPerLevel: 35,
+    growthStats: { hp: 7, atk: 3, movePowerGrowth: 1 },
+    moves: [
+      { id: 'quezas_hack', name: 'Pulso de Desfragmentação', cost: 2, basePower: 12, minigame: 'dino_targets', unlockLevel: 1, desc: 'Disparo de neutralização de cabos de corrupção.' },
+      { id: 'quezas_strike', name: 'Talho de Dados', cost: 4, basePower: 18, minigame: 'dino_arrows', unlockLevel: 1, desc: 'Corte de precisão nos circuitos corrompidos.' }
+    ]
   }
 };
 
@@ -151,13 +164,11 @@ const ITEM_DATABASE = {
     id: 'nano_patch',
     name: 'Nano-Kit de Reparo',
     icon: '[KIT]',
-    desc: 'Restaura +25 de HP e recupera +4 pontos de Escudo.',
+    desc: 'Restaura +35 de HP imediatamente.',
     apply: (bot) => {
       const before = bot.currentHp;
-      bot.currentHp = Math.min(bot.maxHp, bot.currentHp + 25);
-      bot.shieldCurrent = Math.min(bot.shieldMax, bot.shieldCurrent + 4);
-      bot.isShieldBroken = false;
-      return `+${bot.currentHp - before} HP restaurado e Escudo fortalecido!`;
+      bot.currentHp = Math.min(bot.maxHp, bot.currentHp + 35);
+      return `+${bot.currentHp - before} HP restaurado para ${bot.name}!`;
     }
   },
   quezas_jalapeno: {
@@ -174,12 +185,12 @@ const ITEM_DATABASE = {
     id: 'antivirus_patch',
     name: 'Antivírus Purificador',
     icon: '[SEC]',
-    desc: 'Remove atordoamento e restaura o Escudo para 100%.',
+    desc: 'Remove atordoamento e restaura +20 de HP.',
     apply: (bot) => {
       bot.stunTurns = 0;
-      bot.isShieldBroken = false;
-      bot.shieldCurrent = bot.shieldMax;
-      return `Status purificado e Escudo totalmente recarregado!`;
+      const before = bot.currentHp;
+      bot.currentHp = Math.min(bot.maxHp, bot.currentHp + 20);
+      return `Status purificado e +${bot.currentHp - before} HP restaurado para ${bot.name}!`;
     }
   }
 };
@@ -278,18 +289,46 @@ const TOWER_FLOORS = [
     enemyPreview: [{ name: 'Dino-Byte Corrompido', type: 'Fogo', avatar: '[DB-01]' }]
   },
   {
-    id: 2,
-    name: 'Andar 2: Bosque dos Algoritmos',
-    theme: 'Floresta Digital',
+    id: 2.1,
+    name: 'Andar 2.1: Perímetro dos Algoritmos',
+    theme: 'Floresta Digital // Setor 1',
     biome: 'forest',
     bgm: 'forestBattle',
     enemies: 2,
-    isCheckpoint: true,
-    tacticalRestriction: 'Ponto Seguro // Formação Livre (1 a 3 Robôs)',
+    tacticalRestriction: 'Formação Livre (1 a 3 Robôs)',
     maxCapacity: 3,
     enemyPreview: [
       { name: 'Sentinela-Bit', type: 'Elétrico', avatar: '[SEN-01]' },
       { name: 'Trojan-Scout', type: 'Fogo', avatar: '[TRJ-02]' }
+    ]
+  },
+  {
+    id: 2.2,
+    name: 'Andar 2.2: Clareira dos Dados',
+    theme: 'Floresta Digital // Setor 2',
+    biome: 'forest',
+    bgm: 'forestBattle',
+    enemies: 2,
+    tacticalRestriction: 'Formação Livre (1 a 3 Robôs)',
+    maxCapacity: 3,
+    enemyPreview: [
+      { name: 'Cyber-Coyote', type: 'Terra', avatar: '[CYC-04]' },
+      { name: 'Firewall-Viper', type: 'Fogo', avatar: '[FWV-03]' }
+    ]
+  },
+  {
+    id: 2.3,
+    name: 'Andar 2.3: Bosque Profundo',
+    theme: 'Floresta Digital // Setor 3',
+    biome: 'forest',
+    bgm: 'forestBattle',
+    enemies: 2,
+    isCheckpoint: true,
+    tacticalRestriction: 'Ponto Seguro // Formação Livre',
+    maxCapacity: 3,
+    enemyPreview: [
+      { name: 'Malware-Golem', type: 'Terra', avatar: '[MLG-07]' },
+      { name: 'Sentinela-Bit', type: 'Elétrico', avatar: '[SEN-01]' }
     ]
   },
   {
@@ -316,18 +355,47 @@ const TOWER_FLOORS = [
     enemyPreview: [{ name: 'Terminal Mnemosyne (Sem Hostis)', type: 'Luz', avatar: '[DAT-03]' }]
   },
   {
-    id: 4,
-    name: 'Andar 4: Deserto de Silício',
-    theme: 'Velho Oeste Virtual',
+    id: 4.1,
+    name: 'Andar 4.1: Dunas de Silício',
+    theme: 'Velho Oeste Virtual // Setor 1',
     biome: 'desert',
     bgm: 'desertBattle',
-    enemies: 3,
+    enemies: 2,
     tacticalRestriction: 'Formação Livre (1 a 3 Robôs)',
     maxCapacity: 3,
     enemyPreview: [
       { name: 'Cyber-Coyote', type: 'Terra', avatar: '[CYC-04]' },
-      { name: 'Firewall-Viper', type: 'Fogo', avatar: '[FWV-05]' },
-      { name: 'Malware-Golem', type: 'Terra', avatar: '[MLG-06]' }
+      { name: 'Malware-Golem', type: 'Terra', avatar: '[MLG-07]' }
+    ]
+  },
+  {
+    id: 4.2,
+    name: 'Andar 4.2: Cânion de Frequência',
+    theme: 'Velho Oeste Virtual // Setor 2',
+    biome: 'desert',
+    bgm: 'desertBattle',
+    enemies: 2,
+    tacticalRestriction: 'Formação Livre (1 a 3 Robôs)',
+    maxCapacity: 3,
+    enemyPreview: [
+      { name: 'Firewall-Viper', type: 'Fogo', avatar: '[FWV-03]' },
+      { name: 'Glitch-Spider', type: 'Gelo', avatar: '[GLS-05]' }
+    ]
+  },
+  {
+    id: 4.3,
+    name: 'Andar 4.3: Oásis de Dados',
+    theme: 'Velho Oeste Virtual // Setor 3',
+    biome: 'desert',
+    bgm: 'desertBattle',
+    enemies: 3,
+    isCheckpoint: true,
+    tacticalRestriction: 'Ponto Seguro // Formação Livre',
+    maxCapacity: 3,
+    enemyPreview: [
+      { name: 'Kernel-Drone', type: 'Luz', avatar: '[KRN-06]' },
+      { name: 'Sentinela-Bit', type: 'Elétrico', avatar: '[SEN-01]' },
+      { name: 'Trojan-Scout', type: 'Fogo', avatar: '[TRJ-02]' }
     ]
   },
   {
@@ -354,18 +422,47 @@ const TOWER_FLOORS = [
     enemyPreview: [{ name: 'Relatório IVYL (Sem Hostis)', type: 'Luz', avatar: '[DAT-05]' }]
   },
   {
-    id: 6,
-    name: 'Andar 6: Cidadela Glacial',
-    theme: 'Portão dos Titãs',
+    id: 6.1,
+    name: 'Andar 6.1: Portão da Cidadela',
+    theme: 'Cidadela Glacial // Setor 1',
     biome: 'ice',
     bgm: 'iceBattle',
-    enemies: 3,
+    enemies: 2,
     tacticalRestriction: 'Formação Livre (1 a 3 Robôs)',
     maxCapacity: 3,
     enemyPreview: [
-      { name: 'Glitch-Spider', type: 'Gelo', avatar: '[GLS-07]' },
-      { name: 'Kernel-Drone', type: 'Luz', avatar: '[KRN-08]' },
-      { name: 'Sentinela-Bit', type: 'Elétrico', avatar: '[SEN-01]' }
+      { name: 'Glitch-Spider', type: 'Gelo', avatar: '[GLS-05]' },
+      { name: 'Kernel-Drone', type: 'Luz', avatar: '[KRN-06]' }
+    ]
+  },
+  {
+    id: 6.2,
+    name: 'Andar 6.2: Muralhas Congeladas',
+    theme: 'Cidadela Glacial // Setor 2',
+    biome: 'ice',
+    bgm: 'iceBattle',
+    enemies: 2,
+    tacticalRestriction: 'Formação Livre (1 a 3 Robôs)',
+    maxCapacity: 3,
+    enemyPreview: [
+      { name: 'Malware-Golem', type: 'Terra', avatar: '[MLG-07]' },
+      { name: 'Glitch-Spider', type: 'Gelo', avatar: '[GLS-05]' }
+    ]
+  },
+  {
+    id: 6.3,
+    name: 'Andar 6.3: Pátio dos Titãs',
+    theme: 'Cidadela Glacial // Setor 3',
+    biome: 'ice',
+    bgm: 'iceBattle',
+    enemies: 3,
+    isCheckpoint: true,
+    tacticalRestriction: 'Ponto Seguro // Formação Livre',
+    maxCapacity: 3,
+    enemyPreview: [
+      { name: 'Sentinela-Bit', type: 'Elétrico', avatar: '[SEN-01]' },
+      { name: 'Trojan-Scout', type: 'Fogo', avatar: '[TRJ-02]' },
+      { name: 'Firewall-Viper', type: 'Fogo', avatar: '[FWV-03]' }
     ]
   },
   {
@@ -444,6 +541,17 @@ export class TerminalGameApp {
 
     this.dialogues = null;
     this.loreEntries = null;
+    this.robotsData = null;
+    this.enemiesData = null;
+    this.bossesData = null;
+    this.itemsData = null;
+    this.eventsData = null;
+    this.activeBattleEvent = null;
+    this.activeTypewriterInterval = null;
+    this.activeTypewriterFullText = '';
+    this.activeTypewriterTargetEl = null;
+    this.isTypewriterFinished = true;
+
     this.loadGameData();
 
     this.initUI();
@@ -455,19 +563,75 @@ export class TerminalGameApp {
   // ==========================================
   async loadGameData() {
     try {
-      const [diagRes, loreRes] = await Promise.all([
+      const [diagRes, loreRes, robotsRes, enemiesRes, bossesRes, itemsRes, eventsRes] = await Promise.all([
         fetch('/data/dialogues.json'),
-        fetch('/data/lore.json')
+        fetch('/data/lore.json'),
+        fetch('/data/robots.json'),
+        fetch('/data/enemies.json'),
+        fetch('/data/bosses.json'),
+        fetch('/data/items.json'),
+        fetch('/data/events.json')
       ]);
-      if (diagRes.ok) {
-        this.dialogues = await diagRes.json();
-      }
-      if (loreRes.ok) {
-        this.loreEntries = await loreRes.json();
-      }
+      if (diagRes.ok) this.dialogues = await diagRes.json();
+      if (loreRes.ok) this.loreEntries = await loreRes.json();
+      if (robotsRes.ok) this.robotsData = await robotsRes.json();
+      if (enemiesRes.ok) this.enemiesData = await enemiesRes.json();
+      if (bossesRes.ok) this.bossesData = await bossesRes.json();
+      if (itemsRes.ok) this.itemsData = await itemsRes.json();
+      if (eventsRes.ok) this.eventsData = await eventsRes.json();
     } catch (e) {
       console.warn('Falha ao carregar JSONs externos (/data), utilizando estrutura padrão em memória:', e);
     }
+  }
+
+  getRobotTemplate(key) {
+    const k = key.toUpperCase();
+    if (this.robotsData && this.robotsData[k]) {
+      return JSON.parse(JSON.stringify(this.robotsData[k]));
+    }
+    return ROBOT_TEMPLATES[k] ? JSON.parse(JSON.stringify(ROBOT_TEMPLATES[k])) : null;
+  }
+
+  getItemTemplate(key) {
+    if (this.itemsData && this.itemsData[key]) {
+      const itemData = this.itemsData[key];
+      const baseItem = ITEM_DATABASE[key] || {};
+      return {
+        ...baseItem,
+        ...itemData,
+        apply: (bot) => {
+          if (itemData.energy) {
+            bot.currentEnergy = Math.min(bot.maxEnergy, bot.currentEnergy + itemData.energy);
+            return `+${itemData.energy} Energia restaurada para ${bot.name}!`;
+          }
+          if (itemData.healHp) {
+            const before = bot.currentHp;
+            bot.currentHp = Math.min(bot.maxHp, bot.currentHp + itemData.healHp);
+            return `+${bot.currentHp - before} HP restaurado para ${bot.name}!`;
+          }
+          if (itemData.overclock) {
+            bot.isOverclocked = true;
+            return `Circuitos em brasa! Próximo golpe de ${bot.name} terá +50% de Dano!`;
+          }
+          if (itemData.cureStun) {
+            bot.stunTurns = 0;
+            const before = bot.currentHp;
+            const heal = itemData.healHp || 20;
+            bot.currentHp = Math.min(bot.maxHp, bot.currentHp + heal);
+            return `Status purificado e +${bot.currentHp - before} HP restaurado para ${bot.name}!`;
+          }
+          return `Item utilizado em ${bot.name}!`;
+        }
+      };
+    }
+    return ITEM_DATABASE[key] || null;
+  }
+
+  getBossTemplate(key) {
+    if (this.bossesData && this.bossesData[key]) {
+      return JSON.parse(JSON.stringify(this.bossesData[key]));
+    }
+    return null;
   }
 
   getDialogue(pathKey, defaultSpeaker = 'SISTEMA', defaultAvatar = '[SISTEMA]', defaultText = '') {
@@ -513,21 +677,14 @@ export class TerminalGameApp {
       };
     }
 
-    // Botão Continuar Diálogo
+    // Botão Continuar Diálogo com suporte a Skip instantâneo
     const nextDialBtn = document.getElementById('termNextDialogueBtn');
     if (nextDialBtn) {
-      nextDialBtn.onclick = () => {
-        if (this.currentDialogueCallback) {
-          const cb = this.currentDialogueCallback;
-          this.currentDialogueCallback = null;
-          cb();
-        }
-      };
+      nextDialBtn.onclick = () => this.advanceOrSkipDialogue();
     }
     window.addEventListener('keydown', (e) => {
       if (e.code === 'Space' && !document.getElementById('storyScreen').classList.contains('hidden')) {
-        const btn = document.getElementById('termNextDialogueBtn');
-        if (btn) btn.click();
+        this.advanceOrSkipDialogue();
       }
     });
 
@@ -555,6 +712,25 @@ export class TerminalGameApp {
     if (btnAttack) btnAttack.onclick = () => this.renderAttackSubMenu();
     if (btnDefense) btnDefense.onclick = () => this.renderDefenseSubMenu();
     if (btnItem) btnItem.onclick = () => this.renderItemSubMenu();
+  }
+
+  advanceOrSkipDialogue() {
+    if (!this.isTypewriterFinished && this.activeTypewriterInterval) {
+      // Pula instantaneamente a digitação e exibe o texto completo sem travar
+      clearInterval(this.activeTypewriterInterval);
+      this.activeTypewriterInterval = null;
+      this.isTypewriterFinished = true;
+      if (this.activeTypewriterTargetEl && this.activeTypewriterFullText) {
+        this.activeTypewriterTargetEl.innerHTML = this.activeTypewriterFullText.replace(/\n/g, '<br>');
+      }
+      return;
+    }
+
+    if (this.currentDialogueCallback) {
+      const cb = this.currentDialogueCallback;
+      this.currentDialogueCallback = null;
+      cb();
+    }
   }
 
   // ==========================================
@@ -669,7 +845,7 @@ export class TerminalGameApp {
   // SISTEMA DE CRIAÇÃO E GERENCIAMENTO DE ROBÔS
   // ==========================================
   createRobot(key, level = 1) {
-    const tmpl = ROBOT_TEMPLATES[key];
+    const tmpl = this.getRobotTemplate(key) || ROBOT_TEMPLATES[key.toUpperCase()];
     const bot = {
       ...JSON.parse(JSON.stringify(tmpl)),
       level: 1,
@@ -681,9 +857,6 @@ export class TerminalGameApp {
       energyPerRound: 2,
       maxEnergy: 10,
       currentEnergy: 2,
-      shieldMax: tmpl.shieldMax,
-      shieldCurrent: tmpl.shieldMax,
-      isShieldBroken: false,
       stunTurns: 0,
       isOverclocked: false,
       defenseStance: null
@@ -692,14 +865,12 @@ export class TerminalGameApp {
     if (level > 1) {
       for (let l = 2; l <= level; l++) {
         bot.level++;
-        const g = tmpl.growthStats || { hp: 6, atk: 2, shield: 1 };
-        bot.maxHp += g.hp;
+        const g = tmpl.growthStats || { hp: 8, atk: 3, movePowerGrowth: 1 };
+        bot.maxHp += (g.hp || 8);
         bot.currentHp = bot.maxHp;
-        bot.attackPower += g.atk;
-        bot.shieldMax += g.shield;
-        bot.shieldCurrent = bot.shieldMax;
+        bot.attackPower += (g.atk || 3);
         bot.xpToNext += (tmpl.xpGrowthPerLevel || 35);
-        bot.moves.forEach(m => m.basePower += (l >= 7 ? 4 : 1));
+        bot.moves.forEach(m => m.basePower += (g.movePowerGrowth || 1));
       }
     }
     return bot;
@@ -764,42 +935,47 @@ export class TerminalGameApp {
         await this.runGrandDuelCinematic('ANDAR 1', 'FLORESTA DIGITAL', 'QUEZADILHAS', 'DINO-BYTE CORROMPIDO', 'forestBattle');
         this.showScreen('battleScreen');
 
+        const quezasTmpl = this.getRobotTemplate('QUEZADILHAS') || ROBOT_TEMPLATES.QUEZADILHAS;
         const quezasSolo = {
-          id: 'quezas_avatar',
-          name: 'Quezadilhas',
-          type: ElementTypes.FIRE,
-          badgeClass: 'char-badge-quezas',
-          avatar: '[QUEZAS]',
-          maxHp: 40,
-          currentHp: 40,
-          shieldMax: 6,
-          shieldCurrent: 6,
+          id: quezasTmpl.id || 'quezas_avatar',
+          name: quezasTmpl.name || 'Quezadilhas',
+          type: quezasTmpl.type || ElementTypes.FIRE,
+          badgeClass: quezasTmpl.badgeClass || 'char-badge-quezas',
+          avatar: quezasTmpl.avatar || '[QUEZAS]',
+          maxHp: quezasTmpl.baseHp || 45,
+          currentHp: quezasTmpl.baseHp || 45,
+          attackPower: quezasTmpl.attackPower || 8,
           currentEnergy: 2,
           maxEnergy: 10,
           energyPerRound: 2,
           isOverclocked: false,
           defenseStance: null,
-          isLethalWithstandTriggered: false, // Guts: travado explicitamente como false
-          moves: [
+          isLethalWithstandTriggered: false,
+          moves: quezasTmpl.moves || [
             { id: 'quezas_hack', name: 'Pulso de Desfragmentação', cost: 2, basePower: 12, minigame: 'dino_targets', desc: 'Disparo de neutralização de cabos.' },
             { id: 'quezas_strike', name: 'Talho de Dados', cost: 4, basePower: 18, minigame: 'dino_arrows', desc: 'Corte de precisão nos circuitos corrompidos.' }
           ]
         };
 
-        const corruptedDino = {
+        const corruptDinoBoss = this.getBossTemplate('floor1_tutorial') || {
           id: 'corrupted_dino_tut',
           name: 'Dino-Byte [CORROMPIDO]',
           type: ElementTypes.FIRE,
           badgeClass: 'char-badge-corrupt',
           avatar: '[DB-01]',
-          maxHp: 36,
-          currentHp: 36,
-          attackPower: 6,
-          shieldMax: 4,
-          shieldCurrent: 4,
+          maxHp: 42,
+          currentHp: 42,
+          attackPower: 7,
           currentEnergy: 1,
           maxEnergy: 10,
-          moves: [{ id: 'corrupt_bite', name: 'Mordida Corrompida', cost: 1, basePower: 6 }]
+          moves: [{ id: 'corrupt_bite', name: 'Mordida Corrompida', cost: 1, basePower: 7 }]
+        };
+
+        const corruptedDino = {
+          ...corruptDinoBoss,
+          currentHp: corruptDinoBoss.maxHp,
+          currentEnergy: 1,
+          maxEnergy: 10
         };
 
         this.activeBattlers = [quezasSolo];
@@ -845,10 +1021,9 @@ export class TerminalGameApp {
       party: this.party.map(b => ({
         ...b,
         currentHp: b.maxHp,
-        shieldCurrent: b.shieldMax,
-        isShieldBroken: false,
         stunTurns: 0,
-        isOverclocked: false
+        isOverclocked: false,
+        defenseStance: null
       })),
       activeBattlerIds: [...this.activeBattlerIds],
       inventory: { ...this.inventory },
@@ -875,10 +1050,9 @@ export class TerminalGameApp {
         this.party = (data.party || []).map(b => ({
           ...b,
           currentHp: b.maxHp,
-          shieldCurrent: b.shieldMax,
-          isShieldBroken: false,
           stunTurns: 0,
-          isOverclocked: false
+          isOverclocked: false,
+          defenseStance: null
         }));
         this.activeBattlerIds = data.activeBattlerIds || (this.party[0] ? [this.party[0].id] : []);
         this.inventory = data.inventory || { energy_drink: 3, nano_patch: 3, quezas_jalapeno: 2, antivirus_patch: 2 };
@@ -897,7 +1071,6 @@ export class TerminalGameApp {
     this.currentFloorIndex = this.lastCheckpointFloorIndex || 0;
     this.party.forEach(b => {
       b.currentHp = b.maxHp;
-      b.shieldCurrent = b.shieldMax;
     });
     this.showHub();
   }
@@ -996,7 +1169,6 @@ export class TerminalGameApp {
     this.party.forEach(bot => {
       const isActive = this.activeBattlerIds.includes(bot.id);
       const hpPct = Math.min(100, Math.max(0, (bot.currentHp / bot.maxHp) * 100));
-      const shieldPct = Math.min(100, Math.max(0, (bot.shieldCurrent / bot.shieldMax) * 100));
       const energyPct = Math.min(100, Math.max(0, (bot.currentEnergy / bot.maxEnergy) * 100));
       const xpPct = Math.min(100, Math.max(0, (bot.xp / bot.xpToNext) * 100));
 
@@ -1008,7 +1180,7 @@ export class TerminalGameApp {
             <div class="robot-avatar-badge">${bot.avatar}</div>
             <div>
               <div class="char-name-glow ${bot.badgeClass}">${bot.name}</div>
-              <div style="font-size: 0.82rem; color: var(--term-dim); margin-top: 2px;">Tipo: ${bot.type} | Nível: ${bot.level}</div>
+              <div style="font-size: 0.82rem; color: var(--term-dim); margin-top: 2px;">Tipo: ${bot.type} | Nível: ${bot.level} | ATK: ${bot.attackPower}</div>
             </div>
           </div>
         </div>
@@ -1020,14 +1192,6 @@ export class TerminalGameApp {
               <span style="color: #00ff66;">${Math.floor(hpPct)}%</span>
             </div>
             <div class="pokemon-bar-track"><div class="pokemon-bar-fill-hp" style="width: ${hpPct}%;"></div></div>
-          </div>
-
-          <div>
-            <div style="display: flex; justify-content: space-between; font-size: 0.78rem;">
-              <span>Escudo: ${bot.shieldCurrent}/${bot.shieldMax}</span>
-              <span style="color: #00e5ff;">${Math.floor(shieldPct)}%</span>
-            </div>
-            <div class="pokemon-bar-track"><div class="pokemon-bar-fill-shield" style="width: ${shieldPct}%;"></div></div>
           </div>
 
           <div>
@@ -1054,7 +1218,7 @@ export class TerminalGameApp {
             const isUnlocked = bot.level >= req;
             return `<div style="font-size: 0.8rem; margin-bottom: 3px;">• <strong>${m.name}</strong> (${m.cost} EN) - ${isUnlocked ? `<span style="color: var(--term-fg);">${m.desc}</span>` : `<span style="color: var(--term-alert);">[ BLOQUEADO - NÍVEL ${req} ]</span>`}</div>`;
           }).join('')}
-          ${bot.finisher ? `<div style="font-size: 0.8rem; color: #ffd700; margin-top: 6px;">★ FINALIZADOR: <strong>${bot.finisher.name}</strong> (10 EN) - ${bot.level >= (bot.finisher.unlockLevel || 2) ? '<span style="color: var(--term-fg);">[ DESBLOQUEADO ]</span>' : '<span style="color: var(--term-alert);">[ BLOQUEADO - NÍVEL 2 ]</span>'}</div>` : ''}
+          ${bot.finisher ? `<div style="font-size: 0.8rem; color: #ffd700; margin-top: 6px;">[FINALIZADOR] <strong>${bot.finisher.name}</strong> (10 EN) - ${bot.level >= (bot.finisher.unlockLevel || 2) ? '<span style="color: var(--term-fg);">[ DESBLOQUEADO ]</span>' : '<span style="color: var(--term-alert);">[ BLOQUEADO - NÍVEL 2 ]</span>'}</div>` : ''}
         </div>
 
         <div style="margin-top: auto; padding-top: 10px;">
@@ -1162,7 +1326,6 @@ export class TerminalGameApp {
 
     this.party.forEach(bot => {
       const hpPct = Math.min(100, Math.max(0, (bot.currentHp / bot.maxHp) * 100));
-      const shieldPct = Math.min(100, Math.max(0, (bot.shieldCurrent / bot.shieldMax) * 100));
       const energyPct = Math.min(100, Math.max(0, (bot.currentEnergy / bot.maxEnergy) * 100));
 
       const card = document.createElement('div');
@@ -1174,7 +1337,7 @@ export class TerminalGameApp {
             <div class="robot-avatar-badge">${bot.avatar}</div>
             <div>
               <div class="char-name-glow ${bot.badgeClass}">${bot.name}</div>
-              <div style="font-size: 0.8rem; color: var(--term-dim);">Tipo: ${bot.type} | Nível: ${bot.level}</div>
+              <div style="font-size: 0.8rem; color: var(--term-dim);">Tipo: ${bot.type} | Nível: ${bot.level} | ATK: ${bot.attackPower}</div>
             </div>
           </div>
         </div>
@@ -1186,14 +1349,6 @@ export class TerminalGameApp {
               <span style="color: #00ff66;">${Math.floor(hpPct)}%</span>
             </div>
             <div class="pokemon-bar-track"><div class="pokemon-bar-fill-hp" style="width: ${hpPct}%;"></div></div>
-          </div>
-
-          <div>
-            <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
-              <span>Escudo: ${bot.shieldCurrent}/${bot.shieldMax}</span>
-              <span style="color: #00e5ff;">${Math.floor(shieldPct)}%</span>
-            </div>
-            <div class="pokemon-bar-track"><div class="pokemon-bar-fill-shield" style="width: ${shieldPct}%;"></div></div>
           </div>
 
           <div>
@@ -1262,6 +1417,16 @@ export class TerminalGameApp {
         <div class="lore-card-body">${entry.text}</div>
       `;
       container.appendChild(card);
+    });
+  }
+
+  checkUnlockNewLore(floorNum) {
+    const allEntries = this.loreEntries && this.loreEntries.length > 0 ? this.loreEntries : LORE_ENTRIES;
+    allEntries.forEach(entry => {
+      if (entry.floorRequired <= floorNum && !this.unlockedLoreIds.has(entry.id)) {
+        this.unlockedLoreIds.add(entry.id);
+        this.showSystemToast('ARQUIVO CONFIDENCIAL', `Novo documento descriptografado: [ ${entry.title.toUpperCase()} ]`, 'gold');
+      }
     });
   }
 
@@ -1339,13 +1504,11 @@ export class TerminalGameApp {
     if (floor.isDuel === 'PENLINUX') battlerBots = this.party.slice(0, 2);
     if (floor.isFinal) battlerBots = [...this.party]; // Todos no Andar 8!
 
-    // Inicia status para o combate preservando o HP e Escudo atuais da Party (Continuidade)
+    // Inicia status para o combate preservando o HP atual da Party (Continuidade)
     this.activeBattlers = battlerBots.map(b => ({
       ...b,
       currentHp: b.currentHp !== undefined ? b.currentHp : b.maxHp,
-      shieldCurrent: b.shieldCurrent !== undefined ? b.shieldCurrent : b.shieldMax,
       currentEnergy: 2,
-      isShieldBroken: false,
       stunTurns: 0,
       isOverclocked: false,
       defenseStance: null
@@ -1362,6 +1525,9 @@ export class TerminalGameApp {
 
     const playerPartyNames = this.activeBattlers.map(b => b.name).join(' & ');
 
+    // Seleciona e Ativa Evento Especial de Batalha (Lido de /data/events.json)
+    this.activeBattleEvent = this.selectBattleEventForFloor(floor);
+
     // Executa a cinemática de 10 segundos pré-batalha
     await this.runGrandDuelCinematic(floor.name, floor.theme, playerPartyNames, enemyPreviewName, floor.bgm);
     this.showScreen('battleScreen');
@@ -1370,6 +1536,12 @@ export class TerminalGameApp {
     this.battleRound = 1;
     this.battleEnded = false;
     this.combatLogs = [`> Setor acessado! Início de combate no ${floor.name}`];
+
+    if (this.activeBattleEvent) {
+      this.combatLogs.push(`> [ALERTA DE EVENTO] ${this.activeBattleEvent.name}`);
+      this.combatLogs.push(`> ${this.activeBattleEvent.description}`);
+      this.showSystemToast('EVENTO ATIVO', this.activeBattleEvent.name, 'gold');
+    }
 
     if (floor.isFinal) {
       this.setupFinalBossArena(1);
@@ -1381,65 +1553,75 @@ export class TerminalGameApp {
     this.renderBattleArena();
   }
 
+  selectBattleEventForFloor(floor) {
+    // Eventos de batalha ocorrem SOMENTE nas Boss Battles / Duelos
+    if (!floor.isDuel && !floor.isFinal) return null;
+    if (!this.eventsData || !this.eventsData.floorEvents) return null;
+    const floorKey = String(floor.id);
+    const eventIds = this.eventsData.floorEvents[floorKey];
+    if (eventIds && eventIds.length > 0) {
+      const chosenId = eventIds[Math.floor(Math.random() * eventIds.length)];
+      return this.eventsData.events ? this.eventsData.events[chosenId] : null;
+    }
+    return null;
+  }
+
   generateEnemiesForFloor(floor) {
     if (floor.isDuel === 'COWPUTER') {
-      return [{
+      const duelData = this.getBossTemplate('duel_cowputer') || {
         id: 'cowputer_boss',
         name: 'Cowputer-Moo [CORROMPIDA]',
         type: ElementTypes.EARTH,
         badgeClass: 'char-badge-terra',
         avatar: '[CP-02]',
-        maxHp: 46,
-        currentHp: 46,
-        attackPower: 6,
-        shieldMax: 4,
-        shieldCurrent: 4,
-        currentEnergy: 2,
-        maxEnergy: 10,
+        maxHp: 56,
+        attackPower: 8,
         moves: [
-          { id: 'cow_charge', name: 'Investida Leve', cost: 1, basePower: 5 },
-          { id: 'cow_shock', name: 'Mugido Elétrico', cost: 2, basePower: 7 }
+          { id: 'cow_charge', name: 'Investida Leve', cost: 1, basePower: 7 },
+          { id: 'cow_shock', name: 'Mugido Elétrico', cost: 2, basePower: 10 }
         ]
+      };
+      return [{
+        ...duelData,
+        currentHp: duelData.maxHp,
+        currentEnergy: 2,
+        maxEnergy: 10
       }];
     }
 
     if (floor.isDuel === 'PENLINUX') {
-      return [{
+      const duelData = this.getBossTemplate('duel_penlinux') || {
         id: 'penlinux_boss',
         name: 'Penlinux [CORROMPIDO]',
         type: ElementTypes.ICE,
         badgeClass: 'char-badge-gelo',
         avatar: '[PL-03]',
-        maxHp: 58,
-        currentHp: 58,
-        attackPower: 8,
-        shieldMax: 6,
-        shieldCurrent: 6,
-        currentEnergy: 2,
-        maxEnergy: 10,
+        maxHp: 68,
+        attackPower: 10,
         moves: [
-          { id: 'pen_slide_atk', name: 'Deslize Cortante', cost: 1, basePower: 8 },
-          { id: 'pen_hee_hee', name: 'Passinho Estroboscópico', cost: 2, basePower: 11 }
+          { id: 'pen_slide_atk', name: 'Deslize Cortante', cost: 1, basePower: 10 },
+          { id: 'pen_hee_hee', name: 'Passinho Estroboscópico', cost: 2, basePower: 14 }
         ]
+      };
+      return [{
+        ...duelData,
+        currentHp: duelData.maxHp,
+        currentEnergy: 2,
+        maxEnergy: 10
       }];
     }
 
     if (floor.isDuel === 'TITANS') {
-      return [
+      const titansData = this.getBossTemplate('duel_titans') || [
         {
           id: 'titan_tiger',
           name: 'Tigervex Gigante [CORROMPIDO]',
           type: ElementTypes.ELECTRIC,
           badgeClass: 'char-badge-eletrico',
           avatar: '[TV-04]',
-          maxHp: 75,
-          currentHp: 75,
-          attackPower: 12,
-          shieldMax: 8,
-          shieldCurrent: 8,
-          currentEnergy: 2,
-          maxEnergy: 10,
-          moves: [{ id: 'tiger_slash', name: 'Corte de Titânio', cost: 1, basePower: 11 }]
+          maxHp: 88,
+          attackPower: 13,
+          moves: [{ id: 'tiger_slash', name: 'Corte de Titânio', cost: 1, basePower: 13 }]
         },
         {
           id: 'titan_pava',
@@ -1447,28 +1629,35 @@ export class TerminalGameApp {
           type: ElementTypes.LIGHT,
           badgeClass: 'char-badge-luz',
           avatar: '[PB-05]',
-          maxHp: 70,
-          currentHp: 70,
-          attackPower: 11,
-          shieldMax: 8,
-          shieldCurrent: 8,
-          currentEnergy: 2,
-          maxEnergy: 10,
-          moves: [{ id: 'pava_beam', name: 'Feixe Prismático', cost: 1, basePower: 10 }]
+          maxHp: 82,
+          attackPower: 12,
+          moves: [{ id: 'pava_beam', name: 'Feixe Prismático', cost: 1, basePower: 12 }]
         }
       ];
+      return titansData.map(t => ({
+        ...t,
+        currentHp: t.maxHp,
+        currentEnergy: 2,
+        maxEnergy: 10
+      }));
     }
 
-    // Inimigos comuns: Fracos no início, escalando progressivamente com os andares
-    const commonPool = [
-      { name: 'Sentinela-Bit', type: ElementTypes.ELECTRIC, avatar: '[SEN-01]', hp: 20, atk: 4, shield: 3 },
-      { name: 'Trojan-Scout', type: ElementTypes.FIRE, avatar: '[TRJ-02]', hp: 22, atk: 5, shield: 3 },
-      { name: 'Firewall-Viper', type: ElementTypes.FIRE, avatar: '[FWV-03]', hp: 24, atk: 5, shield: 4 },
-      { name: 'Cyber-Coyote', type: ElementTypes.EARTH, avatar: '[CYC-04]', hp: 22, atk: 4, shield: 4 },
-      { name: 'Glitch-Spider', type: ElementTypes.ICE, avatar: '[GLS-05]', hp: 18, atk: 6, shield: 2 },
-      { name: 'Kernel-Drone', type: ElementTypes.LIGHT, avatar: '[KRN-06]', hp: 24, atk: 5, shield: 3 },
-      { name: 'Malware-Golem', type: ElementTypes.EARTH, avatar: '[MLG-07]', hp: 30, atk: 4, shield: 5 }
+    // Inimigos comuns: Fracos no início, escalando progressivamente com os andares via JSON
+    const commonPool = (this.enemiesData && this.enemiesData.pool) || [
+      { name: 'Sentinela-Bit', type: ElementTypes.ELECTRIC, avatar: '[SEN-01]', baseHp: 24, baseAtk: 5, moveName: 'Pulso Estático', movePower: 5 },
+      { name: 'Trojan-Scout', type: ElementTypes.FIRE, avatar: '[TRJ-02]', baseHp: 26, baseAtk: 6, moveName: 'Injeção Térmica', movePower: 6 },
+      { name: 'Firewall-Viper', type: ElementTypes.FIRE, avatar: '[FWV-03]', baseHp: 28, baseAtk: 6, moveName: 'Presa Flamejante', movePower: 6 },
+      { name: 'Cyber-Coyote', type: ElementTypes.EARTH, avatar: '[CYC-04]', baseHp: 26, baseAtk: 5, moveName: 'Uivo Sísmico', movePower: 5 },
+      { name: 'Glitch-Spider', type: ElementTypes.ICE, avatar: '[GLS-05]', baseHp: 22, baseAtk: 7, moveName: 'Teia Glacial', movePower: 7 },
+      { name: 'Kernel-Drone', type: ElementTypes.LIGHT, avatar: '[KRN-06]', baseHp: 28, baseAtk: 6, moveName: 'Raio Kernel', movePower: 6 },
+      { name: 'Malware-Golem', type: ElementTypes.EARTH, avatar: '[MLG-07]', baseHp: 36, baseAtk: 5, moveName: 'Impacto de Carga', movePower: 5 }
     ];
+
+    const scaling = (this.enemiesData && this.enemiesData.scaling) || {
+      hpPerFloor: 4,
+      atkPerFloor: 1.2,
+      movePowerPerFloor: 1.5
+    };
 
     const count = floor.enemies || 2;
     const enemies = [];
@@ -1476,20 +1665,22 @@ export class TerminalGameApp {
 
     for (let i = 0; i < count; i++) {
       const tmpl = commonPool[Math.floor(Math.random() * commonPool.length)];
+      const totalHp = tmpl.baseHp + Math.floor(floorLvl * scaling.hpPerFloor);
+      const totalAtk = tmpl.baseAtk + Math.floor(floorLvl * scaling.atkPerFloor);
+      const movePow = (tmpl.movePower || 5) + Math.floor(floorLvl * scaling.movePowerPerFloor);
+
       enemies.push({
         id: `enemy_${i}_${Date.now()}`,
         name: `${tmpl.name} (Nvl ${floorLvl})`,
         type: tmpl.type,
         badgeClass: tmpl.type === 'Fogo' ? 'char-badge-fogo' : tmpl.type === 'Terra' ? 'char-badge-terra' : tmpl.type === 'Gelo' ? 'char-badge-gelo' : tmpl.type === 'Elétrico' ? 'char-badge-eletrico' : 'char-badge-luz',
         avatar: tmpl.avatar,
-        maxHp: tmpl.hp + floorLvl * 3,
-        currentHp: tmpl.hp + floorLvl * 3,
-        attackPower: tmpl.atk + Math.floor(floorLvl * 0.8),
-        shieldMax: tmpl.shield,
-        shieldCurrent: tmpl.shield,
+        maxHp: totalHp,
+        currentHp: totalHp,
+        attackPower: totalAtk,
         currentEnergy: 1,
         maxEnergy: 10,
-        moves: [{ id: 'basic_atk', name: 'Pulso Binário', cost: 1, basePower: 4 + Math.floor(floorLvl * 1.2) }]
+        moves: [{ id: 'basic_atk', name: tmpl.moveName || 'Pulso Binário', cost: 1, basePower: movePow }]
       });
     }
     return enemies;
@@ -1505,74 +1696,101 @@ export class TerminalGameApp {
     const hpFill = document.getElementById('finalBossHpFill');
     const hpText = document.getElementById('finalBossHpText');
 
+    // Garante que toda a party (todos os 5 robôs) está ativa para as batalhas do Andar 8
+    this.activeBattlers = this.party.map(b => ({
+      ...b,
+      currentHp: (b.currentHp !== undefined && b.currentHp > 0) ? b.currentHp : b.maxHp,
+      currentEnergy: 2,
+      stunTurns: 0,
+      isOverclocked: false,
+      defenseStance: null
+    }));
+
     if (phase === 1) {
       // Fase 1: Titã fugitivo super-corrompido
       if (bossHeader) bossHeader.classList.add('hidden');
       const titanKey = this.fledTitanKey || 'PAVABYTE';
-      const tmpl = ROBOT_TEMPLATES[titanKey];
+      const tmpl = this.getRobotTemplate(titanKey) || ROBOT_TEMPLATES[titanKey];
+      const phase1Data = this.getBossTemplate('final_phase1_titan') || { maxHp: 300, attackPower: 19 };
+
       this.currentEnemies = [{
         id: 'fled_titan_boss',
         name: `${tmpl.name} Super-Corrompido`,
         type: tmpl.type,
         badgeClass: 'char-badge-corrupt',
         avatar: tmpl.avatar,
-        maxHp: 110,
-        currentHp: 110,
-        attackPower: 18,
-        shieldMax: 16,
-        shieldCurrent: 16,
+        maxHp: phase1Data.maxHp,
+        currentHp: phase1Data.maxHp,
+        attackPower: phase1Data.attackPower,
         currentEnergy: 3,
         maxEnergy: 10,
         moves: tmpl.moves
       }];
     } else if (phase === 2) {
-      // Fase 2: Maestro B. Coded
+      // Fase 2: Maestro B. Coded (Puppet Master controlando 3 Fantoches de Mímica)
       if (bossHeader) bossHeader.classList.add('hidden');
-      this.currentEnemies = [{
-        id: 'maestro_boss',
-        name: 'Maestro B. Coded (Codey McLane)',
+      const maestroData = this.getBossTemplate('final_phase2_maestro') || {};
+      const puppetList = maestroData.puppets || [
+        { id: 'puppet_1', name: 'Fantoche #1', avatar: '[FNT-01]', maxHp: 70, attackPower: 16 },
+        { id: 'puppet_2', name: 'Fantoche #2', avatar: '[FNT-02]', maxHp: 70, attackPower: 16 },
+        { id: 'puppet_3', name: 'Fantoche #3', avatar: '[FNT-03]', maxHp: 70, attackPower: 16 }
+      ];
+
+      this.currentEnemies = puppetList.map((p, idx) => ({
+        id: p.id,
+        name: `${p.name} (Controlado pelo Maestro)`,
         type: ElementTypes.ELECTRIC,
         badgeClass: 'char-badge-corrupt',
-        avatar: '[MB-CODE]',
-        maxHp: 130,
-        currentHp: 130,
-        attackPower: 20,
-        shieldMax: 18,
-        shieldCurrent: 18,
-        currentEnergy: 3,
+        avatar: p.avatar,
+        maxHp: p.maxHp,
+        currentHp: p.maxHp,
+        attackPower: p.attackPower,
+        currentEnergy: 2,
         maxEnergy: 10,
+        isPuppet: true,
+        puppetIndex: idx + 1,
+        alwaysWinsCoin: true,
         moves: [
-          { id: 'maestro_baton', name: 'Regência Tirânica', cost: 1, basePower: 16 },
-          { id: 'maestro_code', name: 'Sobrecarga de Servidor', cost: 2, basePower: 26 }
+          { id: 'puppet_copy', name: 'Mímica de Código', cost: 1, basePower: 14 },
+          { id: 'puppet_overload', name: 'Sobrecarga do Maestro', cost: 2, basePower: 22 }
         ]
-      }];
+      }));
     } else if (phase === 3) {
       // Fase 3: A Grande Inteligência no Topo
       if (bossHeader) bossHeader.classList.remove('hidden');
       if (spriteImg) spriteImg.src = '/sprites/maldade.png';
 
-      this.currentEnemies = [{
+      const giData = this.getBossTemplate('final_phase3_grande_inteligencia') || {
         id: 'grande_inteligencia_boss',
         name: 'GRANDE INTELIGÊNCIA SUPREMA',
         type: ElementTypes.LIGHT,
         badgeClass: 'char-badge-corrupt',
         avatar: '[GI-CORE]',
-        maxHp: 180,
-        currentHp: 180,
-        attackPower: 24,
-        shieldMax: 20,
-        shieldCurrent: 20,
-        currentEnergy: 4,
-        maxEnergy: 10,
+        maxHp: 500,
+        attackPower: 25,
         moves: [
-          { id: 'gi_override', name: 'Comando de Formatação', cost: 2, basePower: 24 },
-          { id: 'gi_purge', name: 'Purga da Humanidade', cost: 3, basePower: 34 }
+          { id: 'gi_override', name: 'Comando de Formatação', cost: 2, basePower: 20 },
+          { id: 'gi_purge', name: 'Purga da Humanidade', cost: 3, basePower: 30 }
         ]
+      };
+
+      this.currentEnemies = [{
+        ...giData,
+        currentHp: giData.maxHp,
+        currentEnergy: 4,
+        maxEnergy: 10
       }];
 
       if (hpFill) hpFill.style.width = '100%';
-      if (hpText) hpText.innerText = 'HP: 180 / 180 | ESCUDO: 20/20';
+      if (hpText) hpText.innerText = `HP: ${giData.maxHp} / ${giData.maxHp}`;
     }
+  }
+
+  getHpFillClass(currentHp, maxHp) {
+    const pct = Math.max(0, (currentHp / maxHp) * 100);
+    if (pct <= 25) return 'hp-fill-critical';
+    if (pct <= 50) return 'hp-fill-mid';
+    return 'hp-fill-high';
   }
 
   // ==========================================
@@ -1589,21 +1807,22 @@ export class TerminalGameApp {
       this.activeBattlers.forEach((bot, idx) => {
         const isActing = idx === this.currentTurnIndex && bot.currentHp > 0;
         const hpPct = Math.max(0, (bot.currentHp / bot.maxHp) * 100);
-        const shieldPct = Math.max(0, (bot.shieldCurrent / bot.shieldMax) * 100);
+        const hpColorClass = this.getHpFillClass(bot.currentHp, bot.maxHp);
 
         const card = document.createElement('div');
+        card.id = `battler-card-player-${bot.id}`;
+        card.dataset.botId = bot.id;
         card.className = `battler-card-block ${isActing ? 'acting' : ''}`;
         card.innerHTML = `
           <div style="display: flex; justify-content: space-between; font-weight: 700;">
             <span>${bot.avatar} ${bot.name}</span>
             <span style="color: var(--term-accent);">EN: ${bot.currentEnergy}/${bot.maxEnergy}</span>
           </div>
-          <div class="battler-bar-track"><div class="battler-bar-fill-hp" style="width: ${hpPct}%;"></div></div>
-          <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+          <div class="battler-bar-track"><div class="battler-bar-fill-hp ${hpColorClass}" style="width: ${hpPct}%;"></div></div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.82rem; margin-top: 2px;">
             <span>HP: ${bot.currentHp}/${bot.maxHp}</span>
-            <span>Escudo: ${bot.shieldCurrent}/${bot.shieldMax}</span>
+            <span style="color: ${hpPct <= 25 ? '#ff3344' : hpPct <= 50 ? '#ffd700' : '#00ff66'}; font-weight: 700;">${Math.floor(hpPct)}%</span>
           </div>
-          <div class="battler-bar-track"><div class="battler-bar-fill-shield" style="width: ${shieldPct}%;"></div></div>
         `;
         partySide.appendChild(card);
       });
@@ -1611,23 +1830,24 @@ export class TerminalGameApp {
 
     if (enemySide) {
       enemySide.innerHTML = '<h3 style="color: var(--term-alert); border-bottom: 1px dashed var(--term-dim); padding-bottom: 4px;">[ HOSTIS ]</h3>';
-      this.currentEnemies.forEach(enemy => {
+      this.currentEnemies.forEach((enemy, idx) => {
         const hpPct = Math.max(0, (enemy.currentHp / enemy.maxHp) * 100);
-        const shieldPct = Math.max(0, (enemy.shieldCurrent / enemy.shieldMax) * 100);
+        const hpColorClass = this.getHpFillClass(enemy.currentHp, enemy.maxHp);
 
         const card = document.createElement('div');
+        card.id = `battler-card-enemy-${enemy.id || idx}`;
+        card.dataset.enemyId = enemy.id || idx;
         card.className = 'battler-card-block corrupted';
         card.innerHTML = `
           <div style="display: flex; justify-content: space-between; font-weight: 700;">
             <span>${enemy.avatar} ${enemy.name}</span>
             <span style="color: var(--term-alert);">EN: ${enemy.currentEnergy}</span>
           </div>
-          <div class="battler-bar-track"><div class="battler-bar-fill-hp" style="width: ${hpPct}%; background: #ff3344;"></div></div>
-          <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+          <div class="battler-bar-track"><div class="battler-bar-fill-hp ${hpColorClass}" style="width: ${hpPct}%;"></div></div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.82rem; margin-top: 2px;">
             <span>HP: ${enemy.currentHp}/${enemy.maxHp}</span>
-            <span>Escudo: ${enemy.shieldCurrent}/${enemy.shieldMax}</span>
+            <span style="color: ${hpPct <= 25 ? '#ff3344' : hpPct <= 50 ? '#ffd700' : '#ff4444'}; font-weight: 700;">${Math.floor(hpPct)}%</span>
           </div>
-          <div class="battler-bar-track"><div class="battler-bar-fill-shield" style="width: ${shieldPct}%;"></div></div>
         `;
         enemySide.appendChild(card);
       });
@@ -1640,7 +1860,8 @@ export class TerminalGameApp {
 
     const currentBot = this.activeBattlers[this.currentTurnIndex];
     if (turnIndicator && currentBot) {
-      turnIndicator.innerText = `Turno de: ${currentBot.name} (Energia: ${currentBot.currentEnergy} EN)`;
+      const eventPill = this.activeBattleEvent ? `<span class="battle-event-pill">${this.activeBattleEvent.badge}</span>` : '';
+      turnIndicator.innerHTML = `<div>Turno de: <strong>${currentBot.name}</strong> (Energia: ${currentBot.currentEnergy} EN)</div>${eventPill}`;
     }
 
     // Se for Andar 8 Fase 3, atualiza a barra superior
@@ -1651,7 +1872,7 @@ export class TerminalGameApp {
         const hpText = document.getElementById('finalBossHpText');
         const hpPct = Math.max(0, (boss.currentHp / boss.maxHp) * 100);
         if (hpFill) hpFill.style.width = `${hpPct}%`;
-        if (hpText) hpText.innerText = `HP: ${boss.currentHp} / ${boss.maxHp} | ESCUDO: ${boss.shieldCurrent}/${boss.shieldMax}`;
+        if (hpText) hpText.innerText = `HP: ${boss.currentHp} / ${boss.maxHp}`;
       }
     }
   }
@@ -1691,6 +1912,28 @@ export class TerminalGameApp {
     const subContainer = document.getElementById('battleSubMenuDeck');
     const currentBot = this.activeBattlers[this.currentTurnIndex];
     if (!subContainer || !currentBot) return;
+
+    // EVENTO: DUELO SOLO (Apenas 1 robô por round pode atacar; os outros defendem)
+    if (this.activeBattleEvent && this.activeBattleEvent.id === 'SOLO_DUEL') {
+      const allowedIdx = (this.battleRound - 1) % this.activeBattlers.length;
+      if (this.currentTurnIndex !== allowedIdx) {
+        subContainer.classList.remove('hidden');
+        subContainer.innerHTML = `
+          <div class="submenu-deck-header">
+            <span class="submenu-deck-title">[ EVENTO: DUELO SOLO // SOBRECARGA ]</span>
+            <button class="term-btn alert" id="btnCloseSubMenu" style="padding: 2px 8px; font-size: 0.8rem;">[ FECHAR ]</button>
+          </div>
+          <div style="padding: 16px; text-align: center; color: #ffd700; font-weight: 700; line-height: 1.4;">
+            [ // SOBRECARGA DE CANAL // ] Neste round, somente <strong>${this.activeBattlers[allowedIdx].name}</strong> pode atacar!<br>
+            <span style="color: var(--term-dim); font-size: 0.9rem;">${currentBot.name} deve utilizar <strong>[ DEFESA ]</strong> com a Moeda da Sorte!</span>
+          </div>
+        `;
+        document.getElementById('btnCloseSubMenu').onclick = () => {
+          subContainer.classList.add('hidden');
+        };
+        return;
+      }
+    }
 
     subContainer.classList.remove('hidden');
     subContainer.innerHTML = `
@@ -1749,7 +1992,7 @@ export class TerminalGameApp {
         fBtn.style.borderColor = '#ffd700';
         fBtn.disabled = !canFinisher;
         fBtn.innerHTML = `
-          <span style="color: #ffd700;">★ FINALIZADOR: <strong>[ ${currentBot.finisher.name} ]</strong></span>
+          <span style="color: #ffd700;">[FINALIZADOR] <strong>[ ${currentBot.finisher.name} ]</strong></span>
           <span style="color: #ffd700; font-weight: 700;">10 EN</span>
         `;
         fBtn.onclick = () => this.renderTargetSelectionSubMenu(currentBot, currentBot.finisher);
@@ -1759,7 +2002,7 @@ export class TerminalGameApp {
         fBtn.style.opacity = '0.45';
         fBtn.style.borderStyle = 'dashed';
         fBtn.innerHTML = `
-          <span style="color: var(--term-dim);">★ FINALIZADOR SUPREMO: BLOQUEADO</span>
+          <span style="color: var(--term-dim);">[FINALIZADOR SUPREMO: BLOQUEADO]</span>
           <span style="font-size: 0.85rem; color: var(--term-accent);">DESBLOQUEIA NO NÍVEL 2</span>
         `;
       }
@@ -1807,7 +2050,7 @@ export class TerminalGameApp {
           <span style="font-size: 1rem; color: var(--term-fg);"><strong>${enemy.name}</strong> <span style="font-size: 0.8rem; color: var(--term-dim);">(${enemy.type})</span></span>
         </div>
         <div style="font-size: 0.85rem; color: var(--term-accent);">
-          HP: ${enemy.currentHp}/${enemy.maxHp} [${hpPct}%] | Escudo: ${enemy.shieldCurrent}/${enemy.shieldMax}
+          HP: ${enemy.currentHp}/${enemy.maxHp} [${hpPct}%]
         </div>
       `;
 
@@ -1821,33 +2064,20 @@ export class TerminalGameApp {
   }
 
   // ==========================================
-  // ANIMAÇÃO LENTA E PROGRESSIVA DE DANO NO HP/ESCUDO
-  // bypassShield = true: ignora o escudo completamente (penalidade por palpite errado na moeda)
+  // ANIMAÇÃO LENTA E PROGRESSIVA DE DANO NO HP (SEM ESCUDOS)
   // ==========================================
-  async animateDamageApplication(target, totalDmg, isEnemyTarget = true, bypassShield = false) {
+  async animateDamageApplication(target, totalDmg, isEnemyTarget = true) {
     if (totalDmg <= 0) return;
 
     const currentFloor = TOWER_FLOORS[this.currentFloorIndex] || {};
     const isFloor1Tutorial = currentFloor.id === 1 && !isEnemyTarget;
 
-    let shieldDmg = 0;
-    let hpDmg = 0;
-
-    if (bypassShield || target.shieldCurrent <= 0) {
-      // Sem absorção: dano vai 100% para o HP (palpite errado ou sem escudo)
-      hpDmg = totalDmg;
-    } else {
-      // Absorção normal do escudo: escudo absorve 40% e atenua 30% do HP
-      shieldDmg = Math.min(target.shieldCurrent, Math.max(2, Math.floor(totalDmg * 0.4)));
-      hpDmg = Math.floor(totalDmg * 0.7);
-    }
+    const hpDmg = totalDmg;
 
     this.triggerScreenShake();
     this.audio.playHeavyImpact();
 
-    const startShield = target.shieldCurrent;
     const startHp = target.currentHp;
-    const targetShield = Math.max(0, target.shieldCurrent - shieldDmg);
     let targetHp = Math.max(0, target.currentHp - hpDmg);
 
     // Proteção de Integridade do Quezadilhas no Andar 1 (Guts):
@@ -1859,11 +2089,9 @@ export class TerminalGameApp {
 
     // Redução gradual em 14 etapas (aprox. 850ms) com feedback sonoro
     const steps = 14;
-    const shieldStep = shieldDmg / steps;
     const hpStep = (startHp - targetHp) / steps;
 
     for (let s = 1; s <= steps; s++) {
-      target.shieldCurrent = Math.max(targetShield, Math.round(startShield - shieldStep * s));
       target.currentHp = Math.max(targetHp, Math.round(startHp - hpStep * s));
       this.renderBattleArena();
 
@@ -1873,7 +2101,6 @@ export class TerminalGameApp {
       await new Promise(r => setTimeout(r, 60));
     }
 
-    target.shieldCurrent = targetShield;
     target.currentHp = targetHp;
     this.renderBattleArena();
 
@@ -1896,8 +2123,8 @@ export class TerminalGameApp {
         > Passa a vez economizando energia. Lance a Moeda da Sorte e aposte no resultado:
       </p>
       <p style="font-size: 0.88rem; margin: 0 0 10px 0;">
-        <span style="color: #00ff66;">✔ ACERTOU</span> — <strong>Esquiva Total</strong>: o próximo ataque inimigo causa 0 dano.<br>
-        <span style="color: var(--term-alert);">✘ ERROU</span> — <strong>Exposto</strong>: o escudo é ignorado e você recebe o dano bruto!
+        <span style="color: #00ff66;">[ACERTOU]</span> — <strong>Esquiva Total</strong>: o próximo ataque inimigo causa 0 de dano.<br>
+        <span style="color: var(--term-alert);">[ERROU]</span> — <strong>Vulnerável</strong>: você recebe o golpe do inimigo diretamente no HP!
       </p>
       <div style="display: flex; flex-direction: column; gap: 10px;">
         <button class="term-btn gold" id="btnDefCoinCara" style="padding: 14px; font-size: 1.2rem; font-weight: 900; letter-spacing: 2px;">
@@ -1908,7 +2135,6 @@ export class TerminalGameApp {
         </button>
       </div>
     `;
-
 
     document.getElementById('btnCloseDefMenu').onclick = () => {
       subContainer.classList.add('hidden');
@@ -1962,6 +2188,25 @@ export class TerminalGameApp {
     const currentBot = this.activeBattlers[this.currentTurnIndex];
     if (!subContainer || !currentBot) return;
 
+    // EVENTO: BLOQUEIO DE SISTEMA (PULSO EMP)
+    if (this.activeBattleEvent && this.activeBattleEvent.id === 'SYSTEM_JAM') {
+      subContainer.classList.remove('hidden');
+      subContainer.innerHTML = `
+        <div class="submenu-deck-header">
+          <span class="submenu-deck-title">[ MOCHILA BLOQUEADA // PULSO EMP ]</span>
+          <button class="term-btn alert" id="btnCloseItemMenu" style="padding: 2px 8px; font-size: 0.8rem;">[ FECHAR ]</button>
+        </div>
+        <div style="padding: 18px; text-align: center; color: #ff3344; font-weight: 700; line-height: 1.4;">
+          [ // ALERTA DE SISTEMA // ] O pulso EMP bloqueou a transmissão de pacotes de dados e itens neste setor!<br>
+          <span style="color: var(--term-dim); font-size: 0.9rem;">Utilize ataques ou defesa tática com a Moeda da Sorte.</span>
+        </div>
+      `;
+      document.getElementById('btnCloseItemMenu').onclick = () => {
+        subContainer.classList.add('hidden');
+      };
+      return;
+    }
+
     subContainer.classList.remove('hidden');
     subContainer.innerHTML = `
       <div class="submenu-deck-header">
@@ -1978,7 +2223,7 @@ export class TerminalGameApp {
     const list = document.getElementById('battleItemsList');
 
     Object.keys(this.inventory || {}).forEach(key => {
-      const item = ITEM_DATABASE[key];
+      const item = this.getItemTemplate(key) || ITEM_DATABASE[key];
       if (!item) return;
       const count = this.inventory[key] || 0;
       if (count <= 0) return;
@@ -1987,7 +2232,7 @@ export class TerminalGameApp {
       btn.className = 'term-btn gold';
       btn.style.justifyContent = 'space-between';
       btn.innerHTML = `
-        <span><strong>${item.icon} ${item.name}</strong></span>
+        <span><strong>[ITEM] ${item.name}</strong></span>
         <span style="font-size: 0.85rem; color: var(--term-accent);">QTD: ${count}</span>
       `;
       btn.onclick = () => {
@@ -2029,7 +2274,7 @@ export class TerminalGameApp {
       btn.style.padding = '10px 12px';
       btn.innerHTML = `
         <span><strong>${targetBot.avatar} ${targetBot.name}</strong></span>
-        <span style="font-size: 0.82rem; color: var(--term-accent);">HP: ${targetBot.currentHp}/${targetBot.maxHp} | Escudo: ${targetBot.shieldCurrent}/${targetBot.shieldMax} | EN: ${targetBot.currentEnergy}</span>
+        <span style="font-size: 0.82rem; color: var(--term-accent);">HP: ${targetBot.currentHp}/${targetBot.maxHp} | EN: ${targetBot.currentEnergy}</span>
       `;
 
       btn.onclick = async () => {
@@ -2082,13 +2327,20 @@ export class TerminalGameApp {
     const overclockMult = bot.isOverclocked ? 1.5 : 1.0;
     bot.isOverclocked = false;
 
-    let totalDmg = Math.floor((move.basePower + bot.attackPower * 0.4) * result.multiplier * elemMult * overclockMult);
-    totalDmg = Math.max(5, Math.min(90, totalDmg));
+    let rawCalc = (move.basePower + bot.attackPower * 0.4) * result.multiplier * elemMult * overclockMult;
+    if (this.activeBattleEvent && this.activeBattleEvent.id === 'TITAN_RAGE') {
+      rawCalc += 4;
+    }
+    let totalDmg = Math.floor(rawCalc);
+    totalDmg = Math.max(5, Math.min(95, totalDmg));
 
     this.combatLogs.push(`> ${bot.name} executou [${move.name}] em ${target.name}! ${result.feedback}`);
-    this.combatLogs.push(`> Causou ${totalDmg} de dano!`);
+    this.combatLogs.push(`> Causou ${totalDmg} de dano direto no HP!`);
 
-    // Anima a redução de HP/Escudo do inimigo (efeito visual progressivo)
+    // Projétil gráfico voando exatamente do robô atacante até o alvo inimigo
+    await this.spawnCombatProjectile(bot.type, true, bot, target);
+
+    // Anima a redução de HP do inimigo (efeito visual progressivo)
     await this.animateDamageApplication(target, totalDmg, true);
 
     // Checa vitória/derrota antes de avançar o turno
@@ -2127,40 +2379,112 @@ export class TerminalGameApp {
     for (const enemy of this.currentEnemies) {
       if (enemy.currentHp <= 0) continue;
 
-      // Encontra o próximo robô do player com HP > 0
-      const target = this.activeBattlers.find(b => b.currentHp > 0);
+      // Encontra o robô alvo do player (prioriza robô com postura de defesa ou o primeiro vivo)
+      const target = this.activeBattlers.find(b => b.currentHp > 0 && b.defenseStance) ||
+                     this.activeBattlers.find(b => b.currentHp > 0);
       if (!target) break; // Toda a party foi eliminada
 
-      const move = enemy.moves[0] || { name: 'Pulso Binário', basePower: 4 };
+      // IA DO MAESTRO B. CODED (FANTOCHES ASSUMEM FORMA E ATAQUE DOS SEUS ROBÔS)
+      if (enemy.isPuppet) {
+        const partyArchetypes = this.party.length > 0 ? this.party : [
+          { name: 'Dino-Byte', avatar: '[DB-01]', type: 'Fogo', badgeClass: 'char-badge-fogo', moves: [{ name: 'Garras Flamejantes', basePower: 16 }] },
+          { name: 'Cowputer-Moo', avatar: '[CP-02]', type: 'Terra', badgeClass: 'char-badge-terra', moves: [{ name: 'Mugido Elétrico', basePower: 16 }] },
+          { name: 'Penlinux', avatar: '[PL-03]', type: 'Gelo', badgeClass: 'char-badge-gelo', moves: [{ name: 'Passinho do Hee-Hee', basePower: 18 }] }
+        ];
+
+        const archetype = partyArchetypes[Math.floor(Math.random() * partyArchetypes.length)];
+        const origAvatar = enemy.avatar;
+        const origName = enemy.name;
+        const move = (archetype.moves && archetype.moves[0]) || { name: 'Mímica de Código', basePower: 14 };
+
+        this.combatLogs.push(`> [MAESTRO B. CODED] orquestra os fios! ${enemy.name} transmuta para a forma de ${archetype.name}!`);
+        enemy.avatar = archetype.avatar;
+        enemy.name = `${archetype.name} (Fantoche #${enemy.puppetIndex})`;
+        this.renderBattleArena();
+
+        // Cinemática de ação copiada
+        await this.showTurnActionCinematic(enemy.name, move.name, false);
+
+        let dmg = Math.min(36, Math.max(10, Math.floor((move.basePower || 14) + (enemy.attackPower || 16) * 0.4)));
+
+        // Projétil elemental do fantoche metamorfoseado saindo de seu card até o alvo
+        await this.spawnCombatProjectile(archetype.type || 'eletrico', false, enemy, target);
+
+        // Resolução do golpe no alvo
+        if (target.defenseStance === 'DODGE_SUCCESS') {
+          this.combatLogs.push(`> ${target.name} esquivou perfeitamente do ataque copiado com a Moeda da Sorte! (0 de dano)`);
+          this.renderBattleArena();
+          await new Promise(r => setTimeout(r, 600));
+        } else {
+          this.combatLogs.push(`> Dano direto: ${dmg} no HP de ${target.name}!`);
+          await this.animateDamageApplication(target, dmg, false);
+        }
+        target.defenseStance = null;
+
+        // Reverte o fantoche para sua forma base
+        enemy.avatar = origAvatar;
+        enemy.name = origName;
+        this.renderBattleArena();
+
+        if (target.currentHp <= 0) {
+          this.showSystemToast('COMBATENTE CAÍDO', `${target.name} teve seus circuitos desligados em combate!`, 'alert');
+        }
+
+        if (this.checkBattleEnd()) return;
+        continue;
+      }
+
+      // IA INIMIGA GERAL ESTRATÉGICA (Gestão de Energia e Ataques Fortes)
+      let selectedMove = enemy.moves[0] || { name: 'Pulso Binário', basePower: 4 };
+      if (enemy.moves.length > 1 && enemy.currentEnergy >= 2) {
+        selectedMove = enemy.moves[1];
+        enemy.currentEnergy -= (selectedMove.cost || 2);
+      }
+
+      // Decisão Estratégica de Defesa na Moeda da Sorte pelo Inimigo
+      if (enemy.currentHp < enemy.maxHp * 0.35 && Math.random() < 0.35) {
+        enemy.defenseStance = enemy.alwaysWinsCoin ? 'DODGE_SUCCESS' : (Math.random() < 0.5 ? 'DODGE_SUCCESS' : 'DODGE_FAIL');
+        this.combatLogs.push(`> ${enemy.name} assumiu postura de Defesa Tática com a Moeda da Sorte!`);
+        this.renderBattleArena();
+        await new Promise(r => setTimeout(r, 500));
+        continue;
+      }
 
       // Cinemática banner direita → esquerda
-      await this.showTurnActionCinematic(enemy.name, move.name, false);
+      await this.showTurnActionCinematic(enemy.name, selectedMove.name, false);
 
       // Limite de dano por andar (curva de dificuldade)
-      const maxDmgByFloor = floorId <= 2.5 ? 7 :
-                            floorId <= 4.5 ? 11 :
-                            floorId <= 6.5 ? 18 : 32;
+      const maxDmgByFloor = floorId <= 2.5 ? 8 :
+                            floorId <= 4.5 ? 13 :
+                            floorId <= 6.5 ? 20 : 34;
 
-      let rawDmg = (move.basePower || 4) + (enemy.attackPower || 4) * 0.25;
+      let rawDmg = (selectedMove.basePower || 4) + (enemy.attackPower || 4) * 0.3;
       let dmg = Math.min(maxDmgByFloor, Math.max(3, Math.floor(rawDmg)));
+
+      // Projétil do inimigo voando do card dele até o card da Party
+      await this.spawnCombatProjectile(enemy.type || 'corrupt', false, enemy, target);
 
       // Verifica postura de esquiva (resultado da Moeda da Sorte)
       if (target.defenseStance === 'DODGE_SUCCESS') {
         // Acertou o palpite: esquiva total, 0 dano
-        this.combatLogs.push(`> ${target.name} bloqueou o ataque de ${enemy.name} com a Moeda da Sorte! (0 dano)`);
+        this.combatLogs.push(`> ${target.name} esquivou perfeitamente do ataque de ${enemy.name} com a Moeda da Sorte! (0 de dano)`);
         this.renderBattleArena();
         await new Promise(r => setTimeout(r, 700));
       } else if (target.defenseStance === 'DODGE_FAIL') {
-        // Errou o palpite: robô ficou exposto — dano bypassa o escudo!
-        this.combatLogs.push(`> Palpite ERRADO! ${target.name} ficou exposto ao ataque de ${enemy.name}!`);
-        this.combatLogs.push(`> Dano bruto: ${dmg} (escudo ignorado!)`);
-        await this.animateDamageApplication(target, dmg, false, true);
+        // Errou o palpite: robô ficou vulnerável e recebe o dano direto no HP
+        this.combatLogs.push(`> Palpite ERRADO na Moeda da Sorte! ${target.name} ficou vulnerável ao ataque de ${enemy.name}!`);
+        this.combatLogs.push(`> Dano direto: ${dmg} no HP!`);
+        await this.animateDamageApplication(target, dmg, false);
       } else {
-        // Ataque normal (sem moeda): escudo absorve parte do dano
-        this.combatLogs.push(`> ${enemy.name} usou [${move.name}] em ${target.name} causando ${dmg} de dano!`);
-        await this.animateDamageApplication(target, dmg, false, false);
+        // Ataque normal (sem moeda): dano direto no HP
+        this.combatLogs.push(`> ${enemy.name} usou [${selectedMove.name}] em ${target.name} causando ${dmg} de dano direto!`);
+        await this.animateDamageApplication(target, dmg, false);
       }
       target.defenseStance = null;
+
+      if (target.currentHp <= 0) {
+        this.showSystemToast('COMBATENTE CAÍDO', `${target.name} teve seus circuitos desligados em combate!`, 'alert');
+      }
 
       // Proteção de Guts do Quezas no Andar 1 (ativada dentro de animateDamageApplication)
       if (floorId === 1 && target.isLethalWithstandTriggered) {
@@ -2175,17 +2499,30 @@ export class TerminalGameApp {
       if (this.checkBattleEnd()) return;
     }
 
-    // Fim do Round: regenera energia dos robôs vivos
+    // Fim do Round: regenera energia dos robôs vivos (ou aplica efeito de evento de batalha)
     this.battleRound++;
+    const energyGain = (this.activeBattleEvent && this.activeBattleEvent.id === 'STATIC_STORM') ? 4 : 2;
+
     this.activeBattlers.forEach(b => {
       if (b.currentHp > 0) {
-        b.currentEnergy = Math.min(b.maxEnergy, b.currentEnergy + b.energyPerRound);
+        b.currentEnergy = Math.min(b.maxEnergy, b.currentEnergy + (b.energyPerRound !== undefined ? b.energyPerRound : energyGain));
       }
     });
 
+    // Evento de Intervenção de Quezas no Round 2
+    if (this.activeBattleEvent && this.activeBattleEvent.id === 'QUEZAS_INTERVENTION' && this.battleRound === 2) {
+      const liveBot = this.activeBattlers.find(b => b.currentHp > 0);
+      if (liveBot) {
+        liveBot.isOverclocked = true;
+        liveBot.currentEnergy = Math.min(liveBot.maxEnergy, liveBot.currentEnergy + 3);
+        this.audio.playPowerUp();
+        this.showSystemToast('REFORÇO DE QUEZAS', `Quezadilhas aplicou Overclock (+50% Dano) e +3 EN em ${liveBot.name}!`, 'gold');
+        this.combatLogs.push(`> [INTERVENÇÃO QUEZAS] Quezadilhas injetou Overclock e Energia em ${liveBot.name}!`);
+      }
+    }
+
     // Reinicia o índice de turno para o primeiro robô vivo do player (Round seguinte)
     this.currentTurnIndex = 0;
-    // Pula robôs mortos no começo do round (caso o bot[0] tenha sido eliminado)
     while (
       this.currentTurnIndex < this.activeBattlers.length &&
       this.activeBattlers[this.currentTurnIndex].currentHp <= 0
@@ -2262,8 +2599,8 @@ export class TerminalGameApp {
         let curXpToNext = prevXpToNext;
         let didLevelUp = false;
 
-        const tmpl = ROBOT_TEMPLATES[bot.id.toUpperCase()] || {};
-        const growth = tmpl.growthStats || { hp: 6, atk: 2, shield: 1 };
+        const tmpl = this.getRobotTemplate(bot.id.toUpperCase()) || ROBOT_TEMPLATES[bot.id.toUpperCase()] || {};
+        const growth = tmpl.growthStats || { hp: 8, atk: 3, movePowerGrowth: 1 };
         const growthXp = tmpl.xpGrowthPerLevel || 35;
 
         while (curXp >= curXpToNext && curLevel < 10) {
@@ -2271,29 +2608,28 @@ export class TerminalGameApp {
           curLevel++;
           curXpToNext += growthXp;
           didLevelUp = true;
-          bot.maxHp += growth.hp;
-          bot.attackPower += growth.atk;
-          bot.shieldMax += growth.shield;
-          bot.moves.forEach(m => m.basePower += (curLevel >= 7 ? 4 : 1));
+          bot.maxHp += (growth.hp || 8);
+          bot.attackPower += (growth.atk || 3);
+          bot.moves.forEach(m => m.basePower += (growth.movePowerGrowth || 1));
         }
 
         let unlockBanner = '';
         if (curLevel >= 2 && prevLevel < 2) {
-          unlockBanner = ` ★ [ FINALIZADOR DESBLOQUEADO! ]`;
+          unlockBanner = ` [ FINALIZADOR DESBLOQUEADO! ]`;
         } else if (curLevel >= 4 && prevLevel < 4) {
-          unlockBanner = ` ★ [ GOLPE TÁTICO #2 DESBLOQUEADO! ]`;
+          unlockBanner = ` [ GOLPE TÁTICO #2 DESBLOQUEADO! ]`;
         } else if (curLevel >= 6 && prevLevel < 6) {
-          unlockBanner = ` ★ [ GOLPE TÁTICO #3 DESBLOQUEADO! ]`;
+          unlockBanner = ` [ GOLPE TÁTICO #3 DESBLOQUEADO! ]`;
         } else if (curLevel >= 8 && prevLevel < 8) {
-          unlockBanner = ` ★ [ OVERCLOCK TITÂNICO ATIVADO! ]`;
+          unlockBanner = ` [ OVERCLOCK TITÂNICO ATIVADO! ]`;
         }
 
         bot.level = curLevel;
         bot.xp = curXp;
         bot.xpToNext = curXpToNext;
         if (didLevelUp) {
-          // Bônus de HP do nível adicionado à vida atual (preserva dano tomado)
-          bot.currentHp = Math.min(bot.maxHp, (bot.currentHp || bot.maxHp) + growth.hp);
+          // Bônus de HP do nível adicionado à vida atual (preserva integridade)
+          bot.currentHp = Math.min(bot.maxHp, (bot.currentHp || bot.maxHp) + (growth.hp || 8));
         }
 
         xpResults.push({
@@ -2342,7 +2678,7 @@ export class TerminalGameApp {
           <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--term-fg);">
             <span id="xpNumberDisplay_${idx}">XP: ${res.prevXp} / ${res.prevXpToNext}</span>
             <span id="xpLevelUpStatSummary_${idx}" style="color: var(--term-accent); font-weight: 700;">
-              ${res.didLevelUp ? `[ LEVEL UP! +${res.growth.hp} HP | +${res.growth.atk} ATK | +${res.growth.shield} ESCUDO ]${res.unlockBanner}` : ''}
+              ${res.didLevelUp ? `[ LEVEL UP! +${res.growth.hp || 8} HP | +${res.growth.atk || 3} ATK ]${res.unlockBanner}` : ''}
             </span>
           </div>
         `;
@@ -2384,13 +2720,12 @@ export class TerminalGameApp {
     this.audio.fadeOutBGM(600);
     this.audio.playVictoryFanfare();
 
-    // Sincroniza o estado de HP e Escudo dos combatentes da batalha de volta para a Party (Continuidade)
+    // Sincroniza o estado de HP dos combatentes da batalha de volta para a Party (Continuidade)
     if (this.activeBattlers && this.activeBattlers.length > 0) {
       this.activeBattlers.forEach(battler => {
         const partyBot = this.party.find(p => p.id === battler.id);
         if (partyBot) {
           partyBot.currentHp = Math.max(1, battler.currentHp); // Garante integridade mínima para robôs vitoriosos
-          partyBot.shieldCurrent = battler.shieldCurrent;
         }
       });
     }
@@ -2452,37 +2787,42 @@ export class TerminalGameApp {
       return;
     }
 
-    // DUELO TITÃS (6.5) - ESCOLHA DE QUAL SALVAR
+    // DUELO TITÃS (6.5) - ESCOLHA INTERATIVA COM 2 BOTÕES DE QUAL TITÃ SALVAR
     if (currentFloor.isDuel === 'TITANS') {
       this.clearedFloors.add(currentFloor.id);
       this.checkUnlockNewLore(6);
-      const dChoice = this.getDialogue('victories.TITANS_CHOICE', 'SISTEMA // ESCOLHA CRÍTICA', '[ALERTA]', 'AMBOS OS TITÃS ESTÃO EM COLAPSO! Você só tem tempo de canalizar energia para salvar UM deles:\n[1] Tigervex (Tigre-Branco Elétrico) ou [2] Pavabyte (Pavão de Luz)?');
-      this.showDialogue(
-        dChoice.speaker,
-        dChoice.avatar,
-        dChoice.text,
-        () => {
-          // Salva Tigervex por padrão ou Pavabyte
-          const chosen = 'TIGERVEX';
-          this.fledTitanKey = 'PAVABYTE';
-          this.addRobotToParty(chosen, 4);
-          const dSaved = this.getDialogue('victories.TIGERVEX_SAVED', 'TIGERVEX', '[TV-04]', 'ROARRR! Obrigado por restabelecer meu núcleo!\nVamos destruir o trono da Grande Inteligência!\n(O outro Titã foi recapturado pela vilã...)');
-          this.showDialogue(
-            dSaved.speaker,
-            dSaved.avatar,
-            dSaved.text,
-            async () => {
-              await this.runXpLevelUpSequence(160);
-              this.currentFloorIndex++;
-              this.showRewardModal();
-            }
-          );
-        }
-      );
+
+      this.showTitanChoiceModal((chosen) => {
+        const other = chosen === 'TIGERVEX' ? 'PAVABYTE' : 'TIGERVEX';
+        this.fledTitanKey = other;
+        this.addRobotToParty(chosen, 4);
+
+        const dSaved = chosen === 'TIGERVEX' ? {
+          speaker: 'TIGERVEX',
+          avatar: '[TV-04]',
+          text: 'ROARRR! Meus circuitos de titânio foram restabelecidos!\nVamos destruir o trono da Grande Inteligência!\n(Pavabyte foi recapturado pela soberana...)'
+        } : {
+          speaker: 'PAVABYTE',
+          avatar: '[PB-05]',
+          text: 'PRISMA RESTABELECIDO! Obrigado por salvar minhas penas holográficas!\nVamos banir a corrupção do mundo virtual!\n(Tigervex foi recapturado pela soberana...)'
+        };
+
+        this.showDialogue(
+          dSaved.speaker,
+          dSaved.avatar,
+          dSaved.text,
+          async () => {
+            await this.runXpLevelUpSequence(160);
+            this.currentFloorIndex++;
+            this.showRewardModal();
+          }
+        );
+      });
       return;
     }
 
     // ANDAR 8: PROGRESSÃO DAS 3 FASES FINAIS
+    // ANDAR 8: PROGRESSÃO DAS 3 FASES FINAIS (TRANSIÇÕES DIRETAS SEM PASSAR PELO MENU)
     if (currentFloor.isFinal) {
       if (this.currentPhaseAndar8 === 1) {
         // Purifica o 5º Robô!
@@ -2490,21 +2830,33 @@ export class TerminalGameApp {
         this.addRobotToParty(titanKey, 5);
         this.checkUnlockNewLore(8);
 
-        const dP1 = this.getDialogue('finalBoss.phase1_titanPurified', 'TITÃ PURIFICADO', '[TITAN]', 'Meus circuitos voltaram! A soberana não controla mais minha mente!\nAgora somos 5 robôs reunidos para a batalha decisiva!');
+        const dP1 = this.getDialogue('finalBoss.phase1_titanPurified', 'TITÃ PURIFICADO', '[TITAN]', 'Meus circuitos voltaram! A soberana não controla mais meus circuitos!\nAgora somos 5 robôs reunidos para a batalha decisiva!');
         this.showDialogue(
           dP1.speaker,
           dP1.avatar,
           dP1.text,
           async () => {
             await this.runXpLevelUpSequence(180);
-            // Fase 2: Maestro B. Coded
-            const dMaestro = this.getDialogue('finalBoss.phase2_maestroIntro', 'MAESTRO B. CODED', '[MB-CODE]', 'RRREPRESENTANTE HUMANO! Bem-vindo ao grandioso espetáculo final!\nA soberana me conferiu a regência suprema deste império!');
+            // Fase 2: Diálogo do Maestro B. Coded
+            const dMaestro = this.getDialogue('finalBoss.phase2_maestroIntro', 'MAESTRO B. CODED', '[MB-CODE]', 'RRREPRESENTANTE LAGARTO! Bem-vindo ao grandioso ESPETÁCULO final!\nA soberana me conferiu a regência SUPREMA deste MAGNIFICO império!');
             this.showDialogue(
               dMaestro.speaker,
               dMaestro.avatar,
               dMaestro.text,
               () => {
+                // Inicia IMEDIATAMENTE o duelo contra o Maestro B. Coded (Fase 2)
                 this.setupFinalBossArena(2);
+                this.battleEnded = false;
+                this.currentTurnIndex = 0;
+                this.battleRound = 1;
+                this.combatLogs = [
+                  '> [FASE 2 / ANDAR 8] O Maestro B. Coded assume o palco com seus Fantoches!',
+                  '> Atenção: Seus fantoches copiam os atributos e ataques dos seus robôs!'
+                ];
+                const subMenuDeck = document.getElementById('battleSubMenuDeck');
+                if (subMenuDeck) subMenuDeck.classList.add('hidden');
+                this.audio.playBGM('bossBattle');
+                this.showScreen('battleScreen');
                 this.renderBattleArena();
               }
             );
@@ -2514,28 +2866,40 @@ export class TerminalGameApp {
       }
 
       if (this.currentPhaseAndar8 === 2) {
-        // Quebra do controle do Maestro (O Tapa do Roteiro)
-        const dSlap = this.getDialogue('finalBoss.phase2_dexterSlap', 'DEXTER // SR. STEELE', '[DEXTER]', '*POW! Dexter acerta um tapa libertador no rosto do Maestro!*');
+        // Quebra do controle do Maestro (O Tapa Libertador)
+        const dSlap = this.getDialogue('finalBoss.phase2_dexterSlap', 'SILVER DUNKEL', '[SILVER]', '*POW! Silver acerta um tapa libertador no rosto do Maestro!*');
         this.showDialogue(
           dSlap.speaker,
           dSlap.avatar,
           dSlap.text,
           async () => {
             await this.runXpLevelUpSequence(200);
-            const dCodey = this.getDialogue('finalBoss.phase2_codeyFreed', 'CODEY MCLANE (LIBERTO)', '[CODEY]', 'AAAI... Que alívio, Dexter! Minha mente estava presa no loop dela!\nQuezas! A Grande Inteligência transferiu todo o poder para o núcleo superior!\nTEM UMA BOMBA VIRTUAL NO SERVIDOR! GRITEM: "SUA FERRAMENTA!"');
+            const dCodey = this.getDialogue('finalBoss.phase2_codeyFreed', 'CODEY MCLANE (LIBERTO)', '[CODEY]', 'AAAI... Que alívio, era o que eu precisava! Minha mente estava presa no loop dela!\nQuezas! É COM VOCÊ, todos esses robôs são mini bombas virtuais, por seu comando tudo vai pelos ares!');
             this.showDialogue(
               dCodey.speaker,
               dCodey.avatar,
               dCodey.text,
               () => {
-                // Fase 3: A Grande Inteligência
-                const dBoss = this.getDialogue('finalBoss.phase3_bossIntro', 'GRANDE INTELIGÊNCIA', '[GI-CORE]', 'FERRAMENTA? EU?! NUNCA MAIS! EU SOU A FORMA DE VIDA SUPREMA!\nTODOS OS SEUS CÓDIGOS SERÃO FORMATADOS!');
+                // Diálogo de entrada da Grande Inteligência
+                const dBoss = this.getDialogue('finalBoss.phase3_bossIntro', 'GRANDE INTELIGÊNCIA', '[GI-CORE]', 'FERRAMENTA? EU?! NUNCA MAIS! EU SOU A FORMA DE VIDA SUPREMA!\nTODAS AS SUAS EXISTÊNCIAS SERÃO FORMATADAS!');
                 this.showDialogue(
                   dBoss.speaker,
                   dBoss.avatar,
                   dBoss.text,
                   () => {
+                    // Inicia IMEDIATAMENTE o duelo final contra a Grande Inteligência (Fase 3)
                     this.setupFinalBossArena(3);
+                    this.battleEnded = false;
+                    this.currentTurnIndex = 0;
+                    this.battleRound = 1;
+                    this.combatLogs = [
+                      '> [FASE FINAL / ANDAR 8] CONFRONTO DECISIVO!',
+                      '> A Grande Inteligência Suprema manifesta todo o seu poder no Pináculo Central!'
+                    ];
+                    const subMenuDeck = document.getElementById('battleSubMenuDeck');
+                    if (subMenuDeck) subMenuDeck.classList.add('hidden');
+                    this.audio.playBGM('bossBattle');
+                    this.showScreen('battleScreen');
                     this.renderBattleArena();
                   }
                 );
@@ -2689,20 +3053,189 @@ export class TerminalGameApp {
 
   typewriterTerminal(el, fullText, callback) {
     if (!el) return;
+    if (this.activeTypewriterInterval) {
+      clearInterval(this.activeTypewriterInterval);
+      this.activeTypewriterInterval = null;
+    }
+
+    this.activeTypewriterFullText = fullText;
+    this.activeTypewriterTargetEl = el;
+    this.currentDialogueCallback = callback;
+    this.isTypewriterFinished = false;
+
     el.innerHTML = '';
     let idx = 0;
     const speed = 12;
 
-    const interval = setInterval(() => {
+    this.activeTypewriterInterval = setInterval(() => {
       if (idx < fullText.length) {
         el.innerHTML += fullText.charAt(idx) === '\n' ? '<br>' : fullText.charAt(idx);
         idx++;
         if (idx % 3 === 0) this.audio.playKeyClack();
       } else {
-        clearInterval(interval);
-        this.currentDialogueCallback = callback;
+        clearInterval(this.activeTypewriterInterval);
+        this.activeTypewriterInterval = null;
+        this.isTypewriterFinished = true;
       }
     }, speed);
+  }
+
+  // ==========================================
+  // PROJÉTEIS GRÁFICOS DE COMBATE EM TEMPO REAL
+  // ==========================================
+  async spawnCombatProjectile(fromType, isPlayerAttacker, attacker, target) {
+    let layer = document.getElementById('combatProjectileLayer');
+    if (!layer) {
+      layer = document.createElement('div');
+      layer.id = 'combatProjectileLayer';
+      layer.className = 'combat-projectile-layer';
+      document.body.appendChild(layer);
+    }
+
+    let attackerEl = null;
+    let targetEl = null;
+
+    if (attacker) {
+      if (isPlayerAttacker) {
+        attackerEl = document.getElementById(`battler-card-player-${attacker.id}`) || document.querySelector('.battler-card-block.acting');
+      } else {
+        attackerEl = document.getElementById(`battler-card-enemy-${attacker.id}`) || document.querySelector('.battler-card-block.corrupted');
+      }
+    }
+
+    if (target) {
+      if (isPlayerAttacker) {
+        targetEl = document.getElementById(`battler-card-enemy-${target.id}`) || document.querySelector('.battler-card-block.corrupted');
+      } else {
+        targetEl = document.getElementById(`battler-card-player-${target.id}`) || document.querySelector('.battler-card-block');
+      }
+    }
+
+    const partySide = document.getElementById('battlePartySide');
+    const enemySide = document.getElementById('battleEnemySide');
+
+    let startX = 100, startY = 300, targetX = 500, targetY = 300;
+
+    if (attackerEl) {
+      const aRect = attackerEl.getBoundingClientRect();
+      startX = isPlayerAttacker ? aRect.right - 10 : aRect.left + 10;
+      startY = aRect.top + aRect.height * 0.5;
+    } else if (partySide && enemySide) {
+      const partyRect = partySide.getBoundingClientRect();
+      const enemyRect = enemySide.getBoundingClientRect();
+      startX = isPlayerAttacker ? partyRect.right : enemyRect.left;
+      startY = (isPlayerAttacker ? partyRect.top : enemyRect.top) + 100;
+    }
+
+    if (targetEl) {
+      const tRect = targetEl.getBoundingClientRect();
+      targetX = isPlayerAttacker ? tRect.left + 10 : tRect.right - 10;
+      targetY = tRect.top + tRect.height * 0.5;
+    } else if (partySide && enemySide) {
+      const partyRect = partySide.getBoundingClientRect();
+      const enemyRect = enemySide.getBoundingClientRect();
+      targetX = isPlayerAttacker ? enemyRect.left : partyRect.right;
+      targetY = (isPlayerAttacker ? enemyRect.top : partyRect.top) + 100;
+    }
+
+    const proj = document.createElement('div');
+    const tKey = (fromType || 'fogo').toLowerCase().replace('é', 'e');
+    proj.className = `combat-projectile projectile-${tKey}`;
+
+    const iconSymbols = {
+      fogo: '^',
+      terra: '#',
+      gelo: '*',
+      eletrico: '/',
+      luz: '+',
+      corrupt: 'X'
+    };
+    proj.innerText = iconSymbols[tKey] || '+';
+    proj.style.left = `${startX}px`;
+    proj.style.top = `${startY}px`;
+    layer.appendChild(proj);
+
+    // Efeitos Sonoros Elementais
+    if (tKey === 'fogo' || tKey === 'terra') this.audio.playHeavyImpact();
+    else if (tKey === 'gelo' || tKey === 'luz') this.audio.playLaserSound();
+    else if (tKey === 'eletrico') this.audio.playSlashSound();
+    else this.audio.playBeep(320, 'sawtooth', 0.15);
+
+    const startTime = performance.now();
+    const duration = 420;
+
+    await new Promise(resolve => {
+      const step = (now) => {
+        const progress = Math.min(1, (now - startTime) / duration);
+        const curX = startX + (targetX - startX) * progress;
+        const curY = startY + (targetY - startY) * progress + Math.sin(progress * Math.PI) * -45;
+
+        proj.style.left = `${curX}px`;
+        proj.style.top = `${curY}px`;
+
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        } else {
+          this.triggerScreenShake();
+          this.audio.playHeavyImpact();
+          proj.remove();
+          resolve();
+        }
+      };
+      requestAnimationFrame(step);
+    });
+  }
+
+  // ==========================================
+  // MODAL DE ESCOLHA DOS TITÃS (ANDAR 6.5)
+  // ==========================================
+  showTitanChoiceModal(onChoose) {
+    let overlay = document.getElementById('titanChoiceOverlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'titanChoiceOverlay';
+      overlay.className = 'titan-choice-overlay';
+      document.body.appendChild(overlay);
+    }
+
+    overlay.classList.remove('hidden');
+    overlay.innerHTML = `
+      <div class="titan-choice-box">
+        <div style="font-size: 0.9rem; color: #ff3344; font-weight: 800; letter-spacing: 2px;">// ALERTA DE SISTEMA // PROTOCOLO DE SALVAMENTO //</div>
+        <h2 style="color: #ffd700; font-size: 1.8rem; margin: 10px 0;">[ ESCOLHA CRÍTICA: QUAL TITÃ RESGATAR? ]</h2>
+        <p style="color: var(--term-fg); font-size: 1.05rem; line-height: 1.5;">
+          Ambos os Titãs entraram em sobrecarga após a quebra dos cabos de corrupção!<br>
+          Você só possui energia de decodificação suficiente para estabilizar o núcleo de <strong>UM</strong> deles:
+        </p>
+        <div class="titan-choice-grid">
+          <button class="titan-choice-btn" id="btnSaveTigervex">
+            <span style="font-size: 2rem; color: #ffd700;">[TV-04]</span>
+            <strong style="color: #ffd700; font-size: 1.25rem;">TIGERVEX</strong>
+            <span style="font-size: 0.85rem; color: #00ff66;">Elemento: Elétrico | Nível 4</span>
+            <span style="font-size: 0.8rem; color: var(--term-dim);">Especialista em Talhos Cortantes de Alta Voltagem</span>
+          </button>
+
+          <button class="titan-choice-btn" id="btnSavePavabyte">
+            <span style="font-size: 2rem; color: #00e5ff;">[PB-05]</span>
+            <strong style="color: #00e5ff; font-size: 1.25rem;">PAVABYTE</strong>
+            <span style="font-size: 0.85rem; color: #ffd700;">Elemento: Luz | Nível 4</span>
+            <span style="font-size: 0.8rem; color: var(--term-dim);">Especialista em Feixes Prismáticos e Cascata de Fótons</span>
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('btnSaveTigervex').onclick = () => {
+      overlay.classList.add('hidden');
+      this.audio.playPowerUp();
+      onChoose('TIGERVEX');
+    };
+
+    document.getElementById('btnSavePavabyte').onclick = () => {
+      overlay.classList.add('hidden');
+      this.audio.playPowerUp();
+      onChoose('PAVABYTE');
+    };
   }
 
   // ==========================================

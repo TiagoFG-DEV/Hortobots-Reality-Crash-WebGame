@@ -794,6 +794,9 @@ export class Terminal3DEngine {
 
         if (currentBounceIdx !== lastBounceIdx) {
           lastBounceIdx = currentBounceIdx;
+          if (window.gameInstance && window.gameInstance.audio) {
+            window.gameInstance.audio.playKeyClack();
+          }
         }
 
         coinGroup.position.y = groundFloorY + bounceY;
@@ -827,6 +830,10 @@ export class Terminal3DEngine {
             ${won ? '>> SUCESSO! ESQUIVA COMPLETA (0 DANO) <<' : '>> FALHA! GOLPE NÃO ESQUIVADO <<'}
           </span>
         `;
+      }
+      if (window.gameInstance && window.gameInstance.audio) {
+        if (won) window.gameInstance.audio.playPowerUp();
+        else window.gameInstance.audio.playBuzzer();
       }
     }, 2400);
 

@@ -12,11 +12,17 @@ const PORT = process.env.PORT || 3333;
 // Servir arquivos estáticos do Terminal
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Servir pasta de áudios e referências da raiz
-app.use('/audio', express.static(path.join(__dirname, '..', 'refs', 'audio')));
-app.use('/refs', express.static(path.join(__dirname, '..', 'refs')));
-app.use('/images', express.static(path.join(__dirname, '..', 'refs', 'images')));
-app.use('/sprites', express.static(path.join(__dirname, '..', 'refs', 'projects_and_3d', 'IVYL 4500', 'IVYL 4500', 'Ivyl3000', 'Sprites')));
+import fs from 'fs';
+
+// Servir pasta de áudios e referências
+const refsPath = fs.existsSync(path.join(__dirname, 'refs'))
+  ? path.join(__dirname, 'refs')
+  : path.join(__dirname, '..', 'refs');
+
+app.use('/audio', express.static(path.join(refsPath, 'audio')));
+app.use('/refs', express.static(refsPath));
+app.use('/images', express.static(path.join(refsPath, 'images')));
+app.use('/sprites', express.static(path.join(refsPath, 'projects_and_3d', 'IVYL 4500', 'IVYL 4500', 'Ivyl3000', 'Sprites')));
 
 // Fallback SPA
 app.use((req, res) => {

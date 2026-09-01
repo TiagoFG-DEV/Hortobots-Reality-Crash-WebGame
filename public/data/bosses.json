@@ -1,0 +1,158 @@
+{
+  "floor1_tutorial": {
+    "id": "corrupted_dino_tut",
+    "name": "Dino-Byte [CORROMPIDO]",
+    "type": "Fogo",
+    "avatar": "[DB-01]",
+    "badgeClass": "char-badge-corrupt",
+    "maxHp": 42,
+    "attackPower": 7,
+    "moves": [
+      {
+        "id": "corrupt_bite",
+        "name": "Mordida Corrompida",
+        "cost": 1,
+        "basePower": 7
+      }
+    ]
+  },
+  "duel_cowputer": {
+    "id": "cowputer_boss",
+    "name": "Cowputer-Moo [CORROMPIDA]",
+    "type": "Terra",
+    "avatar": "[CP-02]",
+    "badgeClass": "char-badge-terra",
+    "maxHp": 88,
+    "attackPower": 8,
+    "moves": [
+      {
+        "id": "cow_charge",
+        "name": "Investida Leve",
+        "cost": 1,
+        "basePower": 7
+      },
+      {
+        "id": "cow_shock",
+        "name": "Mugido Elétrico",
+        "cost": 2,
+        "basePower": 10
+      }
+    ]
+  },
+  "duel_penlinux": {
+    "id": "penlinux_boss",
+    "name": "Penlinux [CORROMPIDO]",
+    "type": "Gelo",
+    "avatar": "[PL-03]",
+    "badgeClass": "char-badge-gelo",
+    "maxHp": 50,
+    "attackPower": 10,
+    "moves": [
+      {
+        "id": "pen_slide_atk",
+        "name": "Deslize Cortante",
+        "cost": 1,
+        "basePower": 10
+      },
+      {
+        "id": "pen_hee_hee",
+        "name": "Passinho Estroboscópico",
+        "cost": 2,
+        "basePower": 14
+      }
+    ]
+  },
+  "duel_titans": [
+    {
+      "id": "titan_tiger",
+      "name": "Tigervex Gigante [CORROMPIDO]",
+      "type": "Elétrico",
+      "avatar": "[TV-04]",
+      "badgeClass": "char-badge-eletrico",
+      "maxHp": 120,
+      "attackPower": 13,
+      "moves": [
+        {
+          "id": "tiger_slash",
+          "name": "Corte de Titânio",
+          "cost": 1,
+          "basePower": 13
+        }
+      ]
+    },
+    {
+      "id": "titan_pava",
+      "name": "Pavabyte Gigante [CORROMPIDO]",
+      "type": "Luz",
+      "avatar": "[PB-05]",
+      "badgeClass": "char-badge-luz",
+      "maxHp": 120,
+      "attackPower": 12,
+      "moves": [
+        {
+          "id": "pava_beam",
+          "name": "Feixe Prismático",
+          "cost": 1,
+          "basePower": 12
+        }
+      ]
+    }
+  ],
+  "final_phase1_titan": {
+    "maxHp": 300,
+    "attackPower": 39
+  },
+  "final_phase2_maestro": {
+    "id": "maestro_boss",
+    "name": "Maestro B. Coded (Codey McLane)",
+    "type": "Elétrico",
+    "avatar": "[MB-CODE]",
+    "badgeClass": "char-badge-corrupt",
+    "maxHp": 255,
+    "attackPower": 20,
+    "isPuppetMaster": true,
+    "alwaysWinsCoin": true,
+    "puppets": [
+      { "id": "puppet_1", "name": "Fantoche #1", "avatar": "[FNT-01]", "maxHp": 70, "attackPower": 16 },
+      { "id": "puppet_2", "name": "Fantoche #2", "avatar": "[FNT-02]", "maxHp": 70, "attackPower": 16 },
+      { "id": "puppet_3", "name": "Fantoche #3", "avatar": "[FNT-03]", "maxHp": 70, "attackPower": 16 }
+    ],
+    "moves": [
+      {
+        "id": "maestro_baton",
+        "name": "Regência Tirânica",
+        "cost": 1,
+        "basePower": 18
+      },
+      {
+        "id": "maestro_code",
+        "name": "Sobrecarga de Servidor",
+        "cost": 2,
+        "basePower": 28
+      }
+    ]
+  },
+  "final_phase3_grande_inteligencia": {
+    "id": "grande_inteligencia_boss",
+    "name": "GRANDE INTELIGÊNCIA SUPREMA",
+    "type": "Luz",
+    "avatar": "[GI-CORE]",
+    "badgeClass": "char-badge-corrupt",
+    "maxHp": 500,
+    "attackPower": 28,
+    "moves": [
+      {
+        "id": "gi_override",
+        "name": "Comando de Formatação",
+        "cost": 2,
+        "basePower": 20
+      },
+      {
+        "id": "gi_purge",
+        "name": "Purga da Humanidade",
+        "cost": 3,
+        "basePower": 30
+      }
+    ]
+  }
+}

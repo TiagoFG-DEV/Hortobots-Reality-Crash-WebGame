@@ -1,0 +1,60 @@
+{
+  "events": {
+    "SOLO_DUEL": {
+      "id": "SOLO_DUEL",
+      "name": "SOBRECARGA DE CONTROLE: DUELO SOLO",
+      "badge": "[EVENTO // DUELO SOLO]",
+      "description": "Uma anomalia no setor bloqueia 4 robôs da sua party! Somente 1 robô pode atacar neste round (os outros só podem tentar desviar na Moeda da Sorte)!",
+      "effect": "solo_active_robot"
+    },
+    "SYSTEM_JAM": {
+      "id": "SYSTEM_JAM",
+      "name": "PULSO EMP: BLOQUEIO DE INVENTÁRIO",
+      "badge": "[EVENTO // EMP ATIVO]",
+      "description": "Radiação de alta frequência interfere nos transmissores de dados! O uso de itens da mochila está bloqueado!",
+      "effect": "disable_items"
+    },
+    "STATIC_STORM": {
+      "id": "STATIC_STORM",
+      "name": "TEMPESTADE DE ESTÁTICA BINÁRIA",
+      "badge": "[EVENTO // ESTÁTICA]",
+      "description": "Cargas elétricas flutuam pela arena! A recuperação de energia por rodada é dobrada (+4 EN) para todos!",
+      "effect": "double_energy_regen"
+    },
+    "QUEZAS_INTERVENTION": {
+      "id": "QUEZAS_INTERVENTION",
+      "name": "INTERVENÇÃO TÁTICA DE QUEZADILHAS",
+      "badge": "[EVENTO // REFORÇO QUEZAS]",
+      "description": "Quezadilhas hackeia os servidores da torre e injeta um overclock imediato (+50% Dano) no seu combatente principal!",
+      "effect": "quezas_overclock"
+    },
+    "TITAN_RAGE": {
+      "id": "TITAN_RAGE",
+      "name": "RESSONÂNCIA TITÂNICA",
+      "badge": "[EVENTO // RESSONÂNCIA]",
+      "description": "O núcleo dos Titãs reverbera com o trono da Grande Inteligência! Ataques causam +4 de dano adicional!",
+      "effect": "extra_raw_damage"
+    }
+  },
+  "floorEvents": {
+    "1.5": [
+      "SOLO_DUEL"
+    ],
+    "2.5": [
+      "SOLO_DUEL"
+    ],
+    "4.5": [
+      "STATIC_STORM",
+      "SOLO_DUEL"
+    ],
+    "6.5": [
+      "TITAN_RAGE",
+      "SOLO_DUEL"
+    ],
+    "8": [
+      "SYSTEM_JAM",
+      "SOLO_DUEL",
+      "QUEZAS_INTERVENTION"
+    ]
+  }
+}
