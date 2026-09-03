@@ -63,7 +63,7 @@ export class TerminalMinigames {
     if (!overlay || !digitEl) return;
 
     if (titleEl) titleEl.innerText = `[ ${actionTitle.toUpperCase()} ]`;
-    if (legendEl) legendEl.innerText = `> ${instructionText}`;
+    if (legendEl) legendEl.innerText = `// COMANDO: ${instructionText} //`;
 
     overlay.classList.remove('hidden');
 

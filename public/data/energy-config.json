@@ -1,0 +1,56 @@
+{
+  "description": "Configuração de Custos de Energia para Habilidades e Ataques do Modo Versus (Valores entre 1 e 5)",
+  "version": "1.0.0",
+  "robots": {
+    "DB": {
+      "name": "Dino-Byte",
+      "attacks": {
+        "db_l1": { "name": "Impacto Térmico", "energyCost": 1 },
+        "db_l2": { "name": "Garras QTE", "energyCost": 2 },
+        "db_l3": { "name": "Firewall Infernal", "energyCost": 4 }
+      },
+      "defense": { "name": "Escudo de Grupo Verde", "energyCost": 1 },
+      "support": { "name": "Reparo de Grupo", "energyCost": 2 }
+    },
+    "PL": {
+      "name": "Penlinux",
+      "attacks": {
+        "pl_l1": { "name": "Deslize Glacial", "energyCost": 1 },
+        "pl_l2": { "name": "Combo Glaciar", "energyCost": 2 },
+        "pl_l3": { "name": "Blizzard Plataforma", "energyCost": 4 }
+      },
+      "defense": { "name": "Escudo do Atacante", "energyCost": 1 },
+      "support": { "name": "Cura Progressiva", "energyCost": 2 }
+    },
+    "CP": {
+      "name": "Cowputer-Moo",
+      "attacks": {
+        "cp_l1": { "name": "Laço Circular", "energyCost": 1 },
+        "cp_l2": { "name": "Código do Xerife", "energyCost": 2 },
+        "cp_l3": { "name": "Pólvora Digital", "energyCost": 5 }
+      },
+      "defense": { "name": "Escudo Energético Amarelo", "energyCost": 1 },
+      "support": { "name": "Kit de Campo", "energyCost": 2 }
+    },
+    "PB": {
+      "name": "Pavabyte",
+      "attacks": {
+        "pb_l1": { "name": "Reflexo Prismático", "energyCost": 1 },
+        "pb_l2": { "name": "Teste de Reação", "energyCost": 3 },
+        "pb_l3": { "name": "Órbita Caótica", "energyCost": 4 }
+      },
+      "defense": { "name": "Escudo Duplo Azul", "energyCost": 1 },
+      "support": { "name": "Sobrecarga de Cura", "energyCost": 3 }
+    },
+    "TV": {
+      "name": "Tigervex",
+      "attacks": {
+        "tv_l1": { "name": "Talho Veloz", "energyCost": 1 },
+        "tv_l2": { "name": "Sequência Tesla", "energyCost": 2 },
+        "tv_l3": { "name": "Coração de Ferro", "energyCost": 5 }
+      },
+      "defense": { "name": "Escudo Elétrico Fraco", "energyCost": 1 },
+      "support": { "name": "Pulso de Reparo", "energyCost": 2 }
+    }
+  }
+}

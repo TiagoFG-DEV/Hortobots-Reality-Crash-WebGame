@@ -12,6 +12,13 @@ export class Terminal3DEngine {
     this.ascentRenderer = null;
     this.ascentAnimId = null;
     this.ascentMeshes = [];
+
+    // Fundo 3D da Tela de Título (Torre Realista Girando em Segundo Plano)
+    this.titleScene = null;
+    this.titleCamera = null;
+    this.titleRenderer = null;
+    this.titleAnimId = null;
+    this.titleTowerGroup = null;
   }
 
   // =========================================================================
@@ -243,7 +250,303 @@ export class Terminal3DEngine {
   }
 
   // =========================================================================
-  // 2. HOLOGRAMA 3D DO NÚCLEO MONOLÍTICO NO HUB (ELEVADOR)
+  // 2. MODELAGEM PROCEDURAL REALISTA DA TORRE (COMPARTILHADA ENTRE TÍTULO E HUB)
+  // =========================================================================
+  createRealisticTowerGroup(options = {}) {
+    const {
+      isBackground = false,
+      currentFloorNum = 1,
+      clearedFloorsSet = new Set(),
+      themeColor = 0x00ff88,
+      accentColor = 0xffd700,
+      dangerColor = 0xff3344
+    } = options;
+
+    const group = new THREE.Group();
+    const alphaFactor = isBackground ? 0.38 : 1.0;
+
+    // ─────────────────────────────────────────────────────────────────
+    // 1. BASE REFORÇADA MULTI-NÍVEL (Fundação Arquitetônica Escalonada)
+    // ─────────────────────────────────────────────────────────────────
+    // Nível Inferior mais largo com chanfro
+    const base1Geo = new THREE.CylinderGeometry(2.8, 3.4, 0.7, 16);
+    const base1Mat = new THREE.MeshBasicMaterial({
+      color: themeColor,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.4 * alphaFactor
+    });
+    const base1Mesh = new THREE.Mesh(base1Geo, base1Mat);
+    base1Mesh.position.y = -4.5;
+    group.add(base1Mesh);
+
+    // Nível Intermediário
+    const base2Geo = new THREE.CylinderGeometry(2.2, 2.7, 0.6, 16);
+    const base2Mat = new THREE.MeshBasicMaterial({
+      color: themeColor,
+      transparent: true,
+      opacity: 0.25 * alphaFactor
+    });
+    const base2Mesh = new THREE.Mesh(base2Geo, base2Mat);
+    base2Mesh.position.y = -3.9;
+    group.add(base2Mesh);
+
+    // Contrafortes angulares na base (8 pilares de sustentação externa)
+    for (let b = 0; b < 8; b++) {
+      const bAngle = (b / 8) * Math.PI * 2;
+      const bRad = 2.55;
+      const buttressGeo = new THREE.BoxGeometry(0.28, 1.1, 0.7);
+      const buttressMat = new THREE.MeshBasicMaterial({
+        color: 0x00e5ff,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.5 * alphaFactor
+      });
+      const buttress = new THREE.Mesh(buttressGeo, buttressMat);
+      buttress.position.set(Math.cos(bAngle) * bRad, -4.2, Math.sin(bAngle) * bRad);
+      buttress.rotation.y = -bAngle;
+      group.add(buttress);
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // 2. CORPO CILÍNDRICO (FUSTE) COM NÚCLEO DE ENERGIA
+    // ─────────────────────────────────────────────────────────────────
+    const shaftHeight = 7.6;
+    const shaftGeo = new THREE.CylinderGeometry(1.5, 1.7, shaftHeight, 16, 16, true);
+    const shaftMat = new THREE.MeshBasicMaterial({
+      color: themeColor,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.35 * alphaFactor
+    });
+    const shaftMesh = new THREE.Mesh(shaftGeo, shaftMat);
+    shaftMesh.position.y = 0.2;
+    group.add(shaftMesh);
+
+    // Núcleo Central de Laser Luminoso (Eixo Vertical)
+    const laserGeo = new THREE.CylinderGeometry(0.15, 0.15, shaftHeight + 2.5, 8);
+    const laserMat = new THREE.MeshBasicMaterial({
+      color: accentColor,
+      transparent: true,
+      opacity: 0.75 * alphaFactor
+    });
+    const laserMesh = new THREE.Mesh(laserGeo, laserMat);
+    laserMesh.position.y = 0.5;
+    group.add(laserMesh);
+
+    // ─────────────────────────────────────────────────────────────────
+    // 3. 8 ANDARES NÍTIDOS: PLATAFORMAS, CORNIJAS & BALAUSTRADAS
+    // ─────────────────────────────────────────────────────────────────
+    let currentFloorCubeMat = null;
+    const floorHeight = shaftHeight / 8;
+    const startY = -3.5;
+
+    for (let f = 1; f <= 8; f++) {
+      const y = startY + (f - 0.5) * floorHeight;
+      const isCleared = f < currentFloorNum || (f === 8 && clearedFloorsSet.has(8));
+      const isCurrent = f === currentFloorNum && !clearedFloorsSet.has(8);
+
+      // Plataforma circular saliente do andar
+      const platGeo = new THREE.CylinderGeometry(1.95, 1.95, 0.16, 16);
+      const platMat = new THREE.MeshBasicMaterial({
+        color: isCurrent ? accentColor : (isCleared ? themeColor : 0x004422),
+        wireframe: true,
+        transparent: true,
+        opacity: (isCurrent ? 0.85 : 0.45) * alphaFactor
+      });
+      const platMesh = new THREE.Mesh(platGeo, platMat);
+      platMesh.position.y = y - floorHeight * 0.4;
+      group.add(platMesh);
+
+      // Guarda-corpo circular exterior
+      const guardGeo = new THREE.TorusGeometry(1.96, 0.03, 6, 24);
+      const guardMat = new THREE.MeshBasicMaterial({
+        color: isCurrent ? accentColor : themeColor,
+        transparent: true,
+        opacity: 0.6 * alphaFactor
+      });
+      const guardMesh = new THREE.Mesh(guardGeo, guardMat);
+      guardMesh.rotation.x = Math.PI / 2;
+      guardMesh.position.y = y - floorHeight * 0.3;
+      group.add(guardMesh);
+
+      // 4 Colunas verticais conectando os andares
+      for (let c = 0; c < 4; c++) {
+        const cAngle = (c / 4) * Math.PI * 2 + (f * 0.2);
+        const colGeo = new THREE.CylinderGeometry(0.04, 0.04, floorHeight, 6);
+        const colMat = new THREE.MeshBasicMaterial({
+          color: themeColor,
+          transparent: true,
+          opacity: 0.3 * alphaFactor
+        });
+        const colMesh = new THREE.Mesh(colGeo, colMat);
+        colMesh.position.set(Math.cos(cAngle) * 1.65, y, Math.sin(cAngle) * 1.65);
+        group.add(colMesh);
+      }
+
+      // Cubo indicador de telemetria do andar
+      const cubeGeo = new THREE.BoxGeometry(0.42, 0.42, 0.42);
+      let cubeMat;
+      if (isCurrent) {
+        cubeMat = new THREE.MeshBasicMaterial({
+          color: accentColor,
+          transparent: true,
+          opacity: 0.95
+        });
+        currentFloorCubeMat = cubeMat;
+      } else if (isCleared) {
+        cubeMat = new THREE.MeshBasicMaterial({
+          color: 0x00ff88,
+          transparent: true,
+          opacity: 0.85 * alphaFactor
+        });
+      } else {
+        cubeMat = new THREE.MeshBasicMaterial({
+          color: dangerColor,
+          wireframe: true,
+          transparent: true,
+          opacity: 0.35 * alphaFactor
+        });
+      }
+      const cubeMesh = new THREE.Mesh(cubeGeo, cubeMat);
+      const cubeAngle = (f - 1) * (Math.PI * 0.55);
+      cubeMesh.position.set(Math.cos(cubeAngle) * 2.05, y, Math.sin(cubeAngle) * 2.05);
+      group.add(cubeMesh);
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // 4. ESCADARIA EM ESPIRAL REALISTA (HÉLICE CONTÍNUA COM DEGRAUS)
+    // ─────────────────────────────────────────────────────────────────
+    const spiralSteps = 84;
+    const spiralRadius = 2.15;
+    const spiralCurvePoints = [];
+
+    for (let s = 0; s <= spiralSteps; s++) {
+      const sProgress = s / spiralSteps;
+      const sAngle = sProgress * Math.PI * 5.0; // 2.5 voltas ao redor do fuste
+      const sY = startY + sProgress * shaftHeight;
+
+      // Degrau individual projetado
+      const stepGeo = new THREE.BoxGeometry(0.55, 0.05, 0.20);
+      const stepMat = new THREE.MeshBasicMaterial({
+        color: 0x00e5ff,
+        transparent: true,
+        opacity: (0.45 + (s % 2) * 0.25) * alphaFactor
+      });
+      const stepMesh = new THREE.Mesh(stepGeo, stepMat);
+      stepMesh.position.set(Math.cos(sAngle) * spiralRadius, sY, Math.sin(sAngle) * spiralRadius);
+      stepMesh.rotation.y = -sAngle + Math.PI / 2;
+      group.add(stepMesh);
+
+      // Ponto para o corrimão helicoidal externo
+      const handrailRadius = spiralRadius + 0.24;
+      spiralCurvePoints.push(new THREE.Vector3(
+        Math.cos(sAngle) * handrailRadius,
+        sY + 0.22,
+        Math.sin(sAngle) * handrailRadius
+      ));
+    }
+
+    // Corrimão tubular contínuo da escada espiral
+    const handrailCurve = new THREE.CatmullRomCurve3(spiralCurvePoints);
+    const handrailGeo = new THREE.TubeGeometry(handrailCurve, 72, 0.04, 6, false);
+    const handrailMat = new THREE.MeshBasicMaterial({
+      color: 0x00e5ff,
+      transparent: true,
+      opacity: 0.65 * alphaFactor
+    });
+    const handrailMesh = new THREE.Mesh(handrailGeo, handrailMat);
+    group.add(handrailMesh);
+
+    // ─────────────────────────────────────────────────────────────────
+    // 5. TETO CÔNICO, PINÁCULO & FAROL NO TOPO
+    // ─────────────────────────────────────────────────────────────────
+    const topY = startY + shaftHeight;
+
+    // Cornija / Parapeito ameado superior
+    const corniceGeo = new THREE.CylinderGeometry(2.0, 1.8, 0.35, 16);
+    const corniceMat = new THREE.MeshBasicMaterial({
+      color: themeColor,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.5 * alphaFactor
+    });
+    const corniceMesh = new THREE.Mesh(corniceGeo, corniceMat);
+    corniceMesh.position.y = topY + 0.18;
+    group.add(corniceMesh);
+
+    // Cúpula cônica imponente da torre
+    const coneGeo = new THREE.ConeGeometry(1.9, 2.6, 16, 4, true);
+    const coneMat = new THREE.MeshBasicMaterial({
+      color: themeColor,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.45 * alphaFactor
+    });
+    const coneMesh = new THREE.Mesh(coneGeo, coneMat);
+    coneMesh.position.y = topY + 1.6;
+    group.add(coneMesh);
+
+    // Anel decorativo na metade da cúpula cônica
+    const coneRingGeo = new THREE.TorusGeometry(1.0, 0.04, 6, 20);
+    const coneRingMat = new THREE.MeshBasicMaterial({
+      color: accentColor,
+      transparent: true,
+      opacity: 0.7 * alphaFactor
+    });
+    const coneRing = new THREE.Mesh(coneRingGeo, coneRingMat);
+    coneRing.rotation.x = Math.PI / 2;
+    coneRing.position.y = topY + 1.8;
+    group.add(coneRing);
+
+    // Pináculo afiado (agulha transmissora no ápice)
+    const spireGeo = new THREE.CylinderGeometry(0.04, 0.22, 2.2, 8);
+    const spireMat = new THREE.MeshBasicMaterial({
+      color: accentColor,
+      transparent: true,
+      opacity: 0.85 * alphaFactor
+    });
+    const spireMesh = new THREE.Mesh(spireGeo, spireMat);
+    spireMesh.position.y = topY + 3.8;
+    group.add(spireMesh);
+
+    // Farol luminoso pulsante na ponta do pináculo
+    const beaconGeo = new THREE.SphereGeometry(0.18, 12, 12);
+    const beaconMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.95
+    });
+    const beaconMesh = new THREE.Mesh(beaconGeo, beaconMat);
+    beaconMesh.position.y = topY + 4.9;
+    group.add(beaconMesh);
+
+    // ─────────────────────────────────────────────────────────────────
+    // 6. CAMPO DE PARTÍCULAS / POEIRA CIBERNÉTICA
+    // ─────────────────────────────────────────────────────────────────
+    const partCount = isBackground ? 120 : 60;
+    const partGeo = new THREE.BufferGeometry();
+    const partPos = new Float32Array(partCount * 3);
+    for (let p = 0; p < partCount * 3; p += 3) {
+      partPos[p] = (Math.random() - 0.5) * 8.5;
+      partPos[p + 1] = -4.5 + Math.random() * 14.0;
+      partPos[p + 2] = (Math.random() - 0.5) * 8.5;
+    }
+    partGeo.setAttribute('position', new THREE.BufferAttribute(partPos, 3));
+    const partMat = new THREE.PointsMaterial({
+      color: themeColor,
+      size: 0.15,
+      transparent: true,
+      opacity: 0.45 * alphaFactor
+    });
+    const particles = new THREE.Points(partGeo, partMat);
+    group.add(particles);
+
+    return { group, currentFloorCubeMat, beaconMat, particles };
+  }
+
+  // =========================================================================
+  // 3. HOLOGRAMA 3D DA TORRE REALISTA NO HUB (ELEVADOR)
   // =========================================================================
   initHub3DCoreHologram(containerId = 'hub3DCoreCanvasContainer', clearedFloorsSet = new Set(), currentFloorVal = 1) {
     const container = document.getElementById(containerId);
@@ -264,8 +567,6 @@ export class Terminal3DEngine {
       return;
     }
 
-    // Normaliza para o número real do andar (1 a 8)
-    // Encontros/duelos intermediários (ex: 2.5, 4.5, 6.5) pertencem ao andar base e não avançam o indicador da torre
     let currentFloorNum = 1;
     if (typeof currentFloorVal === 'number') {
       currentFloorNum = Math.min(8, Math.max(1, Math.floor(currentFloorVal)));
@@ -273,8 +574,8 @@ export class Terminal3DEngine {
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-    camera.position.set(0, 0, 10.5);
-    camera.lookAt(0, 0, 0);
+    camera.position.set(0, 0.5, 14.0);
+    camera.lookAt(0, 0.5, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
@@ -284,107 +585,27 @@ export class Terminal3DEngine {
     renderer.domElement.style.height = '100%';
     container.appendChild(renderer.domElement);
 
-    const group = new THREE.Group();
-
-    // 1. Cilindro Poligonal Alto da Torre (12 Lados, Altura 7.8, Wireframe Cibernético)
-    const towerGeo = new THREE.CylinderGeometry(1.4, 1.6, 7.8, 12, 10, true);
-    const towerMat = new THREE.MeshBasicMaterial({
-      color: 0x00ff66,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.45
+    const { group, currentFloorCubeMat, beaconMat, particles } = this.createRealisticTowerGroup({
+      isBackground: false,
+      currentFloorNum,
+      clearedFloorsSet
     });
-    const towerMesh = new THREE.Mesh(towerGeo, towerMat);
-    group.add(towerMesh);
-
-    // 2. Coluna Central de Laser / Núcleo
-    const coreLaserGeo = new THREE.CylinderGeometry(0.18, 0.18, 8.4, 8);
-    const coreLaserMat = new THREE.MeshBasicMaterial({
-      color: 0xffd700,
-      transparent: true,
-      opacity: 0.75
-    });
-    const coreLaser = new THREE.Mesh(coreLaserGeo, coreLaserMat);
-    group.add(coreLaser);
-
-    // 3. Espiral Única Envolvendo a Torre (Hélice Contínua Subindo)
-    const spiralPoints = [];
-    const totalSteps = 90;
-    for (let i = 0; i <= totalSteps; i++) {
-      const progress = i / totalSteps;
-      const y = -3.6 + progress * 7.2;
-      const angle = progress * Math.PI * 4; // 2 voltas ao redor do cilindro
-      const r = 2.0;
-      spiralPoints.push(new THREE.Vector3(Math.cos(angle) * r, y, Math.sin(angle) * r));
-    }
-    const spiralCurve = new THREE.CatmullRomCurve3(spiralPoints);
-    const spiralGeo = new THREE.TubeGeometry(spiralCurve, 70, 0.06, 8, false);
-    const spiralMat = new THREE.MeshBasicMaterial({
-      color: 0x00e5ff,
-      transparent: true,
-      opacity: 0.8
-    });
-    const spiralMesh = new THREE.Mesh(spiralGeo, spiralMat);
-    group.add(spiralMesh);
-
-    // 4. 8 Quadrados / Cubos Representando os 8 Andares da Torre
-    let currentFloorCubeMat = null;
-
-    for (let f = 1; f <= 8; f++) {
-      const progress = (f - 0.5) / 8;
-      const y = -3.6 + progress * 7.2;
-      const angle = progress * Math.PI * 4;
-      const r = 2.0;
-
-      // Andares anteriores são verdes (concluídos)
-      const isCleared = f < currentFloorNum || (f === 8 && clearedFloorsSet.has(8));
-      // Andar atual é amarelo pulsante
-      const isCurrent = f === currentFloorNum && !clearedFloorsSet.has(8);
-
-      const cubeGeo = new THREE.BoxGeometry(0.55, 0.55, 0.55);
-      let cubeMat;
-
-      if (isCurrent) {
-        cubeMat = new THREE.MeshBasicMaterial({
-          color: 0xffd700,
-          transparent: true,
-          opacity: 0.95
-        });
-        currentFloorCubeMat = cubeMat;
-      } else if (isCleared) {
-        cubeMat = new THREE.MeshBasicMaterial({
-          color: 0x00ff66,
-          transparent: true,
-          opacity: 0.9
-        });
-      } else {
-        cubeMat = new THREE.MeshBasicMaterial({
-          color: 0xff3344,
-          wireframe: true,
-          transparent: true,
-          opacity: 0.4
-        });
-      }
-
-      const cubeMesh = new THREE.Mesh(cubeGeo, cubeMat);
-      cubeMesh.position.set(Math.cos(angle) * r, y, Math.sin(angle) * r);
-      group.add(cubeMesh);
-    }
-
 
     scene.add(group);
 
-    // 5. Animação de Rotação em EIXO ÚNICO HORIZONTAL (Y)
     const animate = () => {
       this.coreAnimId = requestAnimationFrame(animate);
-
-      // Rotação horizontal contínua em sentido único
       group.rotation.y += 0.012;
 
-      // Pulso / Piscar do quadrado do andar atual
       if (currentFloorCubeMat) {
         const pulse = 0.35 + 0.65 * Math.abs(Math.sin(Date.now() * 0.006));
         currentFloorCubeMat.opacity = pulse;
+      }
+      if (beaconMat) {
+        beaconMat.opacity = 0.5 + 0.5 * Math.abs(Math.sin(Date.now() * 0.008));
+      }
+      if (particles) {
+        particles.rotation.y -= 0.003;
       }
 
       renderer.render(scene, camera);
@@ -411,9 +632,412 @@ export class Terminal3DEngine {
   }
 
   // =========================================================================
+  // 4. FUNDO 3D DA TELA DE TÍTULO (TORRE REALISTA GIRANDO EM SEGUNDO PLANO)
+  // =========================================================================
+  createRealisticTowerGroup(options = {}) {
+    const group = new THREE.Group();
+    const holoGreen = 0x00ff88;
+    const holoCyan = 0x00e5ff;
+    const holoGold = 0xffd700;
+
+    // Materiais Holográficos Cibernéticos
+    const wireGreenMat = new THREE.MeshBasicMaterial({
+      color: holoGreen,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.78,
+      blending: THREE.AdditiveBlending
+    });
+
+    const holoTransMat = new THREE.MeshBasicMaterial({
+      color: 0x003318,
+      transparent: true,
+      opacity: 0.35,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+
+    const wireCyanMat = new THREE.MeshBasicMaterial({
+      color: holoCyan,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.8,
+      blending: THREE.AdditiveBlending
+    });
+
+    const beaconMat = new THREE.MeshBasicMaterial({
+      color: holoGold,
+      transparent: true,
+      opacity: 0.95,
+      blending: THREE.AdditiveBlending
+    });
+
+    const createEdges = (mesh, color = 0x00ffaa, opacity = 0.85) => {
+      const edges = new THREE.EdgesGeometry(mesh.geometry);
+      const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({
+        color,
+        transparent: true,
+        opacity,
+        blending: THREE.AdditiveBlending
+      }));
+      mesh.add(line);
+      return line;
+    };
+
+    // 1. BASE REFORÇADA ESCALONADA (Y = -5.2 a -4.2)
+    const baseGeo1 = new THREE.CylinderGeometry(3.6, 4.2, 0.5, 12);
+    const baseMesh1 = new THREE.Mesh(baseGeo1, holoTransMat);
+    baseMesh1.position.y = -5.0;
+    createEdges(baseMesh1, holoGreen, 0.9);
+    group.add(baseMesh1);
+
+    const baseGeo2 = new THREE.CylinderGeometry(3.1, 3.6, 0.5, 12);
+    const baseMesh2 = new THREE.Mesh(baseGeo2, wireGreenMat);
+    baseMesh2.position.y = -4.5;
+    createEdges(baseMesh2, holoGreen, 0.85);
+    group.add(baseMesh2);
+
+    // Anel Emissor Holográfico no Solo
+    const emitterRingGeo = new THREE.TorusGeometry(4.4, 0.06, 8, 36);
+    const emitterRing = new THREE.Mesh(emitterRingGeo, wireCyanMat);
+    emitterRing.rotation.x = Math.PI / 2;
+    emitterRing.position.y = -5.2;
+    group.add(emitterRing);
+
+    // 8 Contrafortes Radiais na Base
+    for (let b = 0; b < 8; b++) {
+      const angle = (b / 8) * Math.PI * 2;
+      const buttressGeo = new THREE.BoxGeometry(0.25, 0.9, 1.2);
+      const buttress = new THREE.Mesh(buttressGeo, wireGreenMat);
+      buttress.position.set(Math.cos(angle) * 3.3, -4.75, Math.sin(angle) * 3.3);
+      buttress.rotation.y = -angle;
+      createEdges(buttress, holoCyan, 0.8);
+      group.add(buttress);
+    }
+
+    // 2. COLUNA ESTRUTURAL CENTRAL (FUSTE) (Y = -4.2 a +4.0)
+    const coreGeo = new THREE.CylinderGeometry(0.9, 1.1, 8.4, 16);
+    const coreMesh = new THREE.Mesh(coreGeo, holoTransMat);
+    coreMesh.position.y = -0.1;
+    createEdges(coreMesh, holoGreen, 0.7);
+    group.add(coreMesh);
+
+    // Feixe de Dados Laser Central Luminous Core
+    const beamGeo = new THREE.CylinderGeometry(0.18, 0.18, 8.6, 8);
+    const beamMat = new THREE.MeshBasicMaterial({
+      color: 0x00ffff,
+      transparent: true,
+      opacity: 0.9,
+      blending: THREE.AdditiveBlending
+    });
+    const beamMesh = new THREE.Mesh(beamGeo, beamMat);
+    beamMesh.position.y = -0.1;
+    group.add(beamMesh);
+
+    // 4 Pilares Verticais Principais (Trusses nos 4 quadrantes)
+    for (let p = 0; p < 4; p++) {
+      const a = (p / 4) * Math.PI * 2 + Math.PI / 4;
+      const pylonGeo = new THREE.CylinderGeometry(0.1, 0.1, 8.4, 6);
+      const pylon = new THREE.Mesh(pylonGeo, wireCyanMat);
+      pylon.position.set(Math.cos(a) * 2.35, -0.1, Math.sin(a) * 2.35);
+      group.add(pylon);
+    }
+
+    // 3. OS 8 ANDARES NÍTIDOS DA TORRE MNEMOSYNE (Y = -3.8 a +3.8)
+    const telemetryRings = [];
+    const numFloors = 8;
+    const startY = -3.6;
+    const floorSpacing = 0.94;
+
+    for (let f = 0; f < numFloors; f++) {
+      const fy = startY + f * floorSpacing;
+
+      // Plataforma anular do andar
+      const platGeo = new THREE.CylinderGeometry(2.35, 2.45, 0.16, 16);
+      const platMesh = new THREE.Mesh(platGeo, holoTransMat);
+      platMesh.position.y = fy;
+      createEdges(platMesh, holoGreen, 0.85);
+      group.add(platMesh);
+
+      // Balaustrada / Anel externo do andar
+      const balustradeGeo = new THREE.TorusGeometry(2.5, 0.04, 6, 24);
+      const balustrade = new THREE.Mesh(balustradeGeo, wireCyanMat);
+      balustrade.rotation.x = Math.PI / 2;
+      balustrade.position.y = fy + 0.15;
+      group.add(balustrade);
+
+      // 8 Vigas de suporte radial por andar
+      for (let s = 0; s < 8; s++) {
+        const sa = (s / 8) * Math.PI * 2;
+        const strutGeo = new THREE.BoxGeometry(0.06, 0.14, 1.4);
+        const strut = new THREE.Mesh(strutGeo, wireGreenMat);
+        strut.position.set(Math.cos(sa) * 1.6, fy, Math.sin(sa) * 1.6);
+        strut.rotation.y = -sa;
+        group.add(strut);
+      }
+
+      // Anel Holográfico de Telemetria (Gira em velocidade própria)
+      const tRingGeo = new THREE.RingGeometry(2.6, 2.72, 16);
+      const tRingMat = new THREE.MeshBasicMaterial({
+        color: f === 0 ? holoGold : holoGreen,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.65,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide
+      });
+      const tRing = new THREE.Mesh(tRingGeo, tRingMat);
+      tRing.rotation.x = Math.PI / 2;
+      tRing.position.y = fy + 0.08;
+      group.add(tRing);
+      telemetryRings.push(tRing);
+
+      // Cubo de status / telemetria do andar
+      const cubeGeo = new THREE.BoxGeometry(0.24, 0.24, 0.24);
+      const cubeMat = new THREE.MeshBasicMaterial({
+        color: (f + 1) === 1 ? holoGold : holoCyan,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.9,
+        blending: THREE.AdditiveBlending
+      });
+      const cube = new THREE.Mesh(cubeGeo, cubeMat);
+      cube.position.set(2.4, fy + 0.22, 0);
+      group.add(cube);
+    }
+
+    // 4. ESCADARIA / HÉLICE DUPLA ESPIRAL (Ascendendo do piso ao topo)
+    const numSteps = 56;
+    for (let i = 0; i < numSteps; i++) {
+      const t = i / numSteps;
+      const angle = t * Math.PI * 6; // 3 voltas completas
+      const sy = -3.8 + t * 7.6;
+      const r = 1.65;
+
+      const stepGeo = new THREE.BoxGeometry(0.35, 0.06, 0.18);
+      const stepMesh = new THREE.Mesh(stepGeo, wireGreenMat);
+      stepMesh.position.set(Math.cos(angle) * r, sy, Math.sin(angle) * r);
+      stepMesh.rotation.y = -angle;
+      group.add(stepMesh);
+    }
+
+    // 5. CÚPULA SUPERIOR & PINÁCULO DE TRANSMISSÃO (Y = +4.0 a +5.6)
+    const roofBaseGeo = new THREE.CylinderGeometry(2.6, 2.35, 0.25, 16);
+    const roofBase = new THREE.Mesh(roofBaseGeo, holoTransMat);
+    roofBase.position.y = 4.0;
+    createEdges(roofBase, holoGreen, 0.9);
+    group.add(roofBase);
+
+    const coneGeo = new THREE.ConeGeometry(2.4, 1.1, 16, 2, true);
+    const coneMesh = new THREE.Mesh(coneGeo, wireGreenMat);
+    coneMesh.position.y = 4.65;
+    createEdges(coneMesh, holoGreen, 0.85);
+    group.add(coneMesh);
+
+    const spireGeo = new THREE.CylinderGeometry(0.04, 0.28, 1.4, 8);
+    const spireMesh = new THREE.Mesh(spireGeo, wireCyanMat);
+    spireMesh.position.y = 5.6;
+    createEdges(spireMesh, holoCyan, 0.95);
+    group.add(spireMesh);
+
+    const beaconGeo = new THREE.SphereGeometry(0.38, 12, 12);
+    const beaconMesh = new THREE.Mesh(beaconGeo, beaconMat);
+    beaconMesh.position.y = 6.35;
+    group.add(beaconMesh);
+
+    const beaconRingGeo = new THREE.TorusGeometry(0.65, 0.04, 6, 16);
+    const beaconRing = new THREE.Mesh(beaconRingGeo, wireCyanMat);
+    beaconRing.rotation.x = Math.PI / 2;
+    beaconRing.position.y = 6.35;
+    group.add(beaconRing);
+
+    // 6. DISCO DE VARREDURA HOLOGRÁFICA (Scanning Ring)
+    const scanRingGeo = new THREE.TorusGeometry(2.8, 0.08, 6, 32);
+    const scanRingMat = new THREE.MeshBasicMaterial({
+      color: 0x00ffaa,
+      transparent: true,
+      opacity: 0.85,
+      blending: THREE.AdditiveBlending
+    });
+    const scanRing = new THREE.Mesh(scanRingGeo, scanRingMat);
+    scanRing.rotation.x = Math.PI / 2;
+    scanRing.position.y = 0;
+    group.add(scanRing);
+
+    // 7. PARTÍCULAS / POEIRA CIBERNÉTICA DO PROJETOR HOLOGRÁFICO
+    const particleCount = 140;
+    const pGeo = new THREE.BufferGeometry();
+    const pPos = new Float32Array(particleCount * 3);
+    for (let p = 0; p < particleCount * 3; p += 3) {
+      const pAngle = Math.random() * Math.PI * 2;
+      const pRad = 0.5 + Math.random() * 3.8;
+      pPos[p] = Math.cos(pAngle) * pRad;
+      pPos[p + 1] = -5.0 + Math.random() * 11.5;
+      pPos[p + 2] = Math.sin(pAngle) * pRad;
+    }
+    pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+    const pMat = new THREE.PointsMaterial({
+      color: 0x00ff88,
+      size: 0.12,
+      transparent: true,
+      opacity: 0.65,
+      blending: THREE.AdditiveBlending
+    });
+    const particles = new THREE.Points(pGeo, pMat);
+    group.add(particles);
+
+    return {
+      group,
+      wireGreenMat,
+      wireCyanMat,
+      beaconMat,
+      beaconRing,
+      scanRing,
+      particles,
+      telemetryRings
+    };
+  }
+
+  initTitle3DBackground(containerId = 'title3DCanvasContainer') {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    this.disposeTitle3DBackground();
+    container.innerHTML = '';
+
+    if (typeof THREE === 'undefined') return;
+
+    const width = container.clientWidth || (window.innerWidth * 0.46);
+    const height = container.clientHeight || window.innerHeight;
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x020703, 0.015);
+
+    // Câmera posicionada para que a torre preencha do topo até a base da tela, perfeitamente centrada na direita
+    const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+    camera.position.set(0, 0.4, 14.0);
+    camera.lookAt(0, 0.4, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.domElement.style.display = 'block';
+    renderer.domElement.style.width = '100%';
+    renderer.domElement.style.height = '100%';
+    container.appendChild(renderer.domElement);
+
+    const towerData = this.createRealisticTowerGroup({
+      isBackground: true,
+      currentFloorNum: 1,
+      clearedFloorsSet: new Set()
+    });
+
+    const { group, wireGreenMat, wireCyanMat, beaconMat, beaconRing, scanRing, particles, telemetryRings } = towerData;
+    scene.add(group);
+
+    // Iluminação Holográfica Ambiental
+    const ambientLight = new THREE.AmbientLight(0x00ff88, 1.2);
+    scene.add(ambientLight);
+
+    const holoPoint = new THREE.PointLight(0x00ff88, 3.5, 30);
+    holoPoint.position.set(3, 2, 8);
+    scene.add(holoPoint);
+
+    const cyanPoint = new THREE.PointLight(0x00e5ff, 2.5, 30);
+    cyanPoint.position.set(-3, -1, 7);
+    scene.add(cyanPoint);
+
+    // Animação Contínua: Rotação, Oscilação do Raio Scanner, e Cintilação/Flicker Holográfico Realista!
+    let glitchCooldown = 0;
+    const animate = () => {
+      this.titleAnimId = requestAnimationFrame(animate);
+
+      const now = performance.now();
+
+      // Rotação suave contínua
+      group.rotation.y += 0.0075;
+
+      // Anéis de telemetria giram em direções alternadas
+      telemetryRings.forEach((r, i) => {
+        r.rotation.z += (i % 2 === 0 ? 0.012 : -0.009);
+      });
+
+      // Feixe de varredura holográfica subindo e descendo pela torre
+      if (scanRing) {
+        scanRing.position.y = Math.sin(now * 0.0016) * 4.4;
+      }
+
+      // Farol pulsando no topo
+      if (beaconMat) {
+        beaconMat.opacity = 0.5 + 0.5 * Math.sin(now * 0.005);
+      }
+      if (beaconRing) {
+        beaconRing.rotation.z += 0.02;
+      }
+
+      // Poeira cibernética
+      if (particles) {
+        particles.rotation.y -= 0.0025;
+      }
+
+      // Cintilação / Flicker de Holograma:
+      // Variação na opacidade e brilho simulando tubo CRT analógico
+      const flicker = 0.85 + (Math.random() - 0.5) * 0.25;
+      if (wireGreenMat) {
+        wireGreenMat.opacity = Math.max(0.35, Math.min(1.0, 0.78 * flicker));
+      }
+
+      // Micro glitch dropout esporádico (piscada analógica de holograma de TV)
+      glitchCooldown++;
+      if (glitchCooldown > 120 && Math.random() < 0.08) {
+        glitchCooldown = 0;
+        group.position.x = (Math.random() - 0.5) * 0.09;
+        if (wireGreenMat) wireGreenMat.opacity = 0.25;
+        setTimeout(() => {
+          group.position.x = 0;
+        }, 60);
+      }
+
+      renderer.render(scene, camera);
+    };
+
+    animate();
+
+    // Redimensionamento de janela
+    const onResize = () => {
+      if (!this.titleRenderer || !this.titleCamera || !container) return;
+      const w = container.clientWidth || window.innerWidth;
+      const h = container.clientHeight || window.innerHeight;
+      this.titleCamera.aspect = w / h;
+      this.titleCamera.updateProjectionMatrix();
+      this.titleRenderer.setSize(w, h);
+    };
+    window.addEventListener('resize', onResize);
+
+    this.titleScene = scene;
+    this.titleCamera = camera;
+    this.titleRenderer = renderer;
+    this.titleTowerGroup = group;
+  }
+
+  disposeTitle3DBackground() {
+    if (this.titleAnimId) {
+      cancelAnimationFrame(this.titleAnimId);
+      this.titleAnimId = null;
+    }
+    if (this.titleRenderer) {
+      this.titleRenderer.dispose();
+      this.titleRenderer = null;
+    }
+    this.titleScene = null;
+    this.titleCamera = null;
+    this.titleTowerGroup = null;
+  }
+
+  // =========================================================================
   // 3. CINEMÁTICA 3D PROCEDURAL DA MOEDA DA SORTE (POLÍGONO 20 LADOS COM FÍSICA)
   // =========================================================================
-  run3DCoinFlipCinematic(playerGuess, outcome, onComplete) {
+  run3DCoinFlipCinematic(playerGuess, outcome, onComplete, customSuccessText = null, customFailText = null) {
     const overlay = document.getElementById('coin3DFullOverlay');
     const container = document.getElementById('coin3DCanvasContainer');
     const guessBadge = document.getElementById('coin3DPlayerGuessBadge');
@@ -440,7 +1064,7 @@ export class Terminal3DEngine {
       setTimeout(() => {
         const won = playerGuess === outcome;
         if (statusText) {
-          statusText.innerHTML = `DEU <strong>${outcome}</strong>!<br><span style="color:${won ? '#00ff66' : '#ff3344'}; font-size: 1.4rem;">${won ? '>> ESQUIVA COMPLETA (0 DANO) <<' : '>> GOLPE RECEBIDO <<'}</span>`;
+          statusText.innerHTML = `DEU <strong>${outcome}</strong>!<br><span style="color:${won ? '#00ff66' : '#ff3344'}; font-size: 1.4rem;">${won ? (customSuccessText || '>> ESQUIVA COMPLETA (0 DANO) <<') : (customFailText || '>> GOLPE RECEBIDO <<')}</span>`;
         }
         setTimeout(() => {
           overlay.classList.add('hidden');
@@ -827,7 +1451,7 @@ export class Terminal3DEngine {
         statusText.innerHTML = `
           DEU <strong style="color: #ffd700; font-size: 1.15rem;">${outcome === 'CARA' ? 'CARA (SORRISO)' : 'COROA (COROA)'}</strong>!<br>
           <span style="color: ${won ? '#00ff66' : '#ff3344'}; font-size: 0.95rem; font-weight: 700; letter-spacing: 1px; display: inline-block; margin-top: 4px;">
-            ${won ? '>> SUCESSO! ESQUIVA COMPLETA (0 DANO) <<' : '>> FALHA! GOLPE NÃO ESQUIVADO <<'}
+            ${won ? (customSuccessText || '>> SUCESSO! ESQUIVA COMPLETA (0 DANO) <<') : (customFailText || '>> FALHA! GOLPE NÃO ESQUIVADO <<')}
           </span>
         `;
       }

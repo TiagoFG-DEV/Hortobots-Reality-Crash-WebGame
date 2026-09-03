@@ -2,6 +2,7 @@
 import { TerminalAudioManager } from './terminal-audio.js';
 import { TerminalMinigames } from './terminal-minigames.js';
 import { Terminal3DEngine } from './terminal-3d.js';
+import { StoryBoard } from './story-board.js';
 
 // ===================================================
 // CONSTANTES & TABELA DE TIPOS ELEMENTAIS
@@ -470,7 +471,7 @@ const TOWER_FLOORS = [
     name: 'Duelo 6: Câmara dos Titãs',
     theme: 'Confronto Tigervex & Pavabyte',
     biome: 'ice',
-    bgm: 'iceBattle',
+    bgm: 'duelGrand',
     isDuel: 'TITANS',
     tacticalRestriction: 'Convocação Total (Toda a Party)',
     maxCapacity: 5,
@@ -516,6 +517,7 @@ export class TerminalGameApp {
     this.audio = new TerminalAudioManager();
     this.engine3D = new Terminal3DEngine();
     this.minigames = new TerminalMinigames(document.getElementById('terminalBlackoutOverlay'), this.audio, this.engine3D);
+    this.storyBoard = null;
     window.gameInstance = this;
 
     // Estado da Party e Inventário (Começa Vazio)
@@ -556,6 +558,7 @@ export class TerminalGameApp {
 
     this.initUI();
     this.checkSavedCheckpoint();
+    this.showTitle();
   }
 
   // ==========================================
@@ -662,18 +665,97 @@ export class TerminalGameApp {
       };
     }
 
-    // Botões de Título
+    // Início de BGM do Título na primeira interação
+    const startTitleMusic = () => {
+      if (!this.audio.currentTrack) {
+        this.audio.playBGM('title', 800);
+      }
+    };
+    window.addEventListener('click', startTitleMusic, { once: true });
+    window.addEventListener('keydown', startTitleMusic, { once: true });
+
+    // ── Fitas Cassete do Menu de Título Estilo FNAF ────────────────
+    const tapeSlots = document.querySelectorAll('.fnaf-tape-slot');
+    tapeSlots.forEach(slot => {
+      slot.addEventListener('mouseenter', () => {
+        this.audio.playKeyClack();
+      });
+    });
+
     const startBtn = document.getElementById('termStartBtn');
-    if (startBtn) startBtn.onclick = () => this.startNewCampaign();
+    if (startBtn) {
+      startBtn.onclick = () => this.triggerTapeTransition(startBtn, () => this.startNewCampaign());
+    }
+
+    const resumeBtn = document.getElementById('termResumeBtn') || document.getElementById('termContinueBtn');
+    if (resumeBtn) {
+      resumeBtn.onclick = () => this.triggerTapeTransition(resumeBtn, () => this.restoreFromCheckpoint());
+    }
 
     const continueBtn = document.getElementById('termContinueBtn');
-    if (continueBtn) continueBtn.onclick = () => this.restoreFromCheckpoint();
+    if (continueBtn && continueBtn !== resumeBtn) {
+      continueBtn.onclick = () => this.triggerTapeTransition(continueBtn, () => this.restoreFromCheckpoint());
+    }
 
-    const loreBtn = document.getElementById('termLoreBtn');
-    if (loreBtn) {
-      loreBtn.onclick = () => {
-        this.showScreen('elevatorScreen');
-        this.switchHubTab('tabBtnLore');
+    const versusBtn = document.getElementById('termVersusBtn');
+    if (versusBtn) {
+      versusBtn.onclick = () => {
+        this.triggerTapeTransition(versusBtn, () => {
+          document.getElementById('titleScreen')?.classList.add('hidden');
+          if (typeof window.enterVersusMode === 'function') {
+            window.enterVersusMode();
+          } else {
+            const vsSelect = document.getElementById('versusModeSelectScreen');
+            if (vsSelect) {
+              vsSelect.classList.remove('hidden');
+              this.audio.playBGM('versusLobby', 600);
+            }
+          }
+        });
+      };
+    }
+
+    const aboutBtn = document.getElementById('termAboutBtn');
+    if (aboutBtn) {
+      aboutBtn.onclick = () => this.showAboutModal();
+    }
+
+    const closeAbout = () => {
+      this.audio.playKeyClack();
+      document.getElementById('devAboutModal')?.classList.add('hidden');
+    };
+
+    document.getElementById('aboutModalCloseBtn')?.addEventListener('click', closeAbout);
+    document.getElementById('aboutActionCloseBtn')?.addEventListener('click', closeAbout);
+    document.getElementById('aboutBackdrop')?.addEventListener('click', closeAbout);
+    document.getElementById('devAboutCloseBtn')?.addEventListener('click', closeAbout);
+    document.getElementById('devAboutOkBtn')?.addEventListener('click', closeAbout);
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('devAboutModal');
+        if (modal && !modal.classList.contains('hidden')) {
+          closeAbout();
+        }
+      }
+    });
+
+    // Botão com símbolo de casinha para voltar ao menu principal
+    const homeBtn = document.getElementById('termHomeBtn');
+    if (homeBtn) {
+      homeBtn.onclick = async () => {
+        // Se estiver numa tela do Versus, volta ao título direto
+        const isVersusActive = ['versusLoginScreen', 'versusModeSelectScreen'].some(id => !document.getElementById(id)?.classList.contains('hidden'));
+        if (isVersusActive) {
+          this.audio.playKeyClack();
+          this.showTitle();
+          return;
+        }
+
+        // Se estiver no Modo História, salva e retorna
+        await this.saveGameToJSON();
+        this.showSystemToast('PROGRESSO SALVO', 'Partida salva em arquivo .json! Retornando ao menu principal...', 'gold');
+        this.showTitle();
       };
     }
 
@@ -757,6 +839,179 @@ export class TerminalGameApp {
         }
       }
     });
+    ['versusLoginScreen', 'versusModeSelectScreen', 'versusArenaScreen'].forEach(vs => {
+      document.getElementById(vs)?.classList.add('hidden');
+    });
+
+    // Se sair da tela de título, descarta o fundo 3D da tela de título
+    if (screenId !== 'titleScreen' && this.engine3D && typeof this.engine3D.disposeTitle3DBackground === 'function') {
+      this.engine3D.disposeTitle3DBackground();
+    }
+
+    // O botão de casinha (Home) só aparece fora da tela de título e fora de duelos
+    const homeBtn = document.getElementById('termHomeBtn');
+    if (homeBtn) {
+      if (screenId === 'titleScreen' || screenId === 'battleScreen') {
+        homeBtn.classList.add('hidden');
+      } else {
+        homeBtn.classList.remove('hidden');
+      }
+    }
+  }
+
+  showTitle() {
+    this.showScreen('titleScreen');
+    this.audio.playBGM('title');
+    this.checkSavedCheckpoint();
+
+    // Inicializa o fundo 3D com a Torre Realista girando suavemente
+    if (this.engine3D && typeof this.engine3D.initTitle3DBackground === 'function') {
+      this.engine3D.initTitle3DBackground('title3DCanvasContainer');
+    }
+  }
+
+  // ─── Transição de Fita Cassete + Estática CRT Analógica (Estilo FNAF) ───
+  triggerTapeTransition(tapeEl, onComplete) {
+    if (this._isTapeTransitioning) return;
+    this._isTapeTransitioning = true;
+
+    // 1. Som analógico mecânico de clique de fita entrando no deck
+    this.audio.playKeyClack();
+
+    // 2. Fita desliza para a esquerda entrando no leitor
+    if (tapeEl) {
+      tapeEl.classList.add('tape-sliding');
+    }
+
+    // 3. Efeito furioso de TV bugando com estática analógica
+    const overlay = document.getElementById('titleStaticGlitchOverlay');
+    const canvas = document.getElementById('titleStaticCanvas');
+    let animId = null;
+
+    if (overlay && canvas) {
+      overlay.classList.remove('hidden');
+      const ctx = canvas.getContext('2d');
+      const W = (canvas.width = 360);
+      const H = (canvas.height = 240);
+
+      let frame = 0;
+      const renderStatic = () => {
+        animId = requestAnimationFrame(renderStatic);
+        frame++;
+        const img = ctx.createImageData(W, H);
+        const d = img.data;
+
+        // A estática cresce até preencher completamente e cegar o monitor
+        const threshold = Math.min(1.0, 0.45 + (frame / 20) * 0.55);
+
+        for (let i = 0; i < d.length; i += 4) {
+          if (Math.random() < threshold) {
+            const val = Math.random() < 0.65 ? Math.floor(Math.random() * 255) : 0;
+            // Cores fósforo verde/analógicas de tubo CRT
+            d[i] = val > 160 ? 0 : Math.floor(val * 0.35); // R
+            d[i + 1] = val; // G
+            d[i + 2] = Math.floor(val * 0.6); // B
+            d[i + 3] = 255;
+          } else {
+            d[i] = 0;
+            d[i + 1] = 0;
+            d[i + 2] = 0;
+            d[i + 3] = 255;
+          }
+        }
+        ctx.putImageData(img, 0, 0);
+
+        // Faixas de ruído analógico horizontal (TV desintonizando)
+        if (Math.random() < 0.7) {
+          ctx.fillStyle = 'rgba(0, 255, 136, 0.35)';
+          ctx.fillRect(0, Math.random() * H, W, 2 + Math.random() * 12);
+        }
+        if (Math.random() < 0.5) {
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+          ctx.fillRect(0, Math.random() * H, W, 1 + Math.random() * 4);
+        }
+      };
+      renderStatic();
+    }
+
+    // 4. Som de ruído elétrico/laser bugando a frequência
+    this.audio.playLaserSound();
+
+    // 5. Após 600ms, limpa o overlay e aciona a tela de destino
+    setTimeout(() => {
+      if (animId) cancelAnimationFrame(animId);
+      if (overlay) overlay.classList.add('hidden');
+      if (tapeEl) tapeEl.classList.remove('tape-sliding');
+      this._isTapeTransitioning = false;
+
+      if (typeof onComplete === 'function') {
+        onComplete();
+      }
+    }, 600);
+  }
+
+  // ─── Modal About: Mensagem do Desenvolvedor via JSON ───
+  async openAboutModal() {
+    this.audio.playKeyClack();
+    const modal = document.getElementById('devAboutModal');
+    if (!modal) return;
+
+    modal.classList.remove('hidden');
+
+    try {
+      const res = await fetch('/data/about.json');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      const headerTitle = document.getElementById('aboutModalHeaderTitle');
+      const authorEl = document.getElementById('aboutAuthor');
+      const dateEl = document.getElementById('aboutDate');
+      const clearEl = document.getElementById('aboutClearance');
+      const statEl = document.getElementById('aboutStatement');
+      const highEl = document.getElementById('aboutHighlights');
+      const sigEl = document.getElementById('aboutSignature');
+
+      if (headerTitle && data.title) headerTitle.textContent = `// ${data.title} //`;
+      if (authorEl && data.author) authorEl.textContent = data.author;
+      if (dateEl && data.date) dateEl.textContent = data.date;
+      if (clearEl && data.securityClearance) clearEl.textContent = data.securityClearance;
+      if (statEl && data.statement) statEl.textContent = data.statement;
+
+      if (highEl && Array.isArray(data.patchHighlights)) {
+        highEl.innerHTML = data.patchHighlights.map(h => `<li>${h}</li>`).join('');
+      }
+      if (sigEl && data.signature) sigEl.textContent = data.signature;
+    } catch (err) {
+      console.warn('Falha ao carregar /data/about.json:', err);
+      const statEl = document.getElementById('aboutStatement');
+      if (statEl) statEl.textContent = 'Mensagem do desenvolvedor registrada no sistema. Transmissão ativa.';
+    }
+  }
+
+  openAboutModal() {
+    this.showAboutModal();
+  }
+
+  // ─── Atualização Dinâmica do Checkpoint na Fita 02 ───
+  async checkSavedCheckpoint() {
+    try {
+      const data = await this.loadGameFromJSON();
+      const subEl = document.getElementById('termResumeFloorSub');
+      const tapeSlot = document.getElementById('termResumeBtn');
+
+      if (data && subEl) {
+        const fIdx = data.floorIndex || 0;
+        const floorName = (TOWER_FLOORS && TOWER_FLOORS[fIdx]) ? TOWER_FLOORS[fIdx].name : `Andar ${fIdx + 1}`;
+        subEl.textContent = `[ RETOMAR: ANDAR ${fIdx + 1} // ${floorName.toUpperCase()} ]`;
+        if (tapeSlot) {
+          tapeSlot.querySelector('.tape-indicator-led')?.classList.add('active');
+        }
+      } else if (subEl) {
+        subEl.textContent = '[ INVASÃO RECENTE // PRONTO ]';
+      }
+    } catch (e) {
+      // ignore
+    }
   }
 
   setBiomeTheme(biome) {
@@ -902,7 +1157,7 @@ export class TerminalGameApp {
     this.currentFloorIndex = 0;
     this.lastCheckpointFloorIndex = 0;
     this.clearedFloors.clear();
-    this.unlockedLoreIds.clear();
+    this.unlockedLoreIds = new Set(['lore_01']);
     this.fledTitanKey = null;
     this.inventory = {};
 
@@ -993,34 +1248,17 @@ export class TerminalGameApp {
   }
 
   // ==========================================
-  // SISTEMA DE CHECKPOINTS / PONTO SEGURO ROGUELIKE
+  // SISTEMA DE SALVAMENTO & RETOMADA EM .JSON (LOCAL & SERVIDOR)
   // ==========================================
-  checkSavedCheckpoint() {
-    const raw = localStorage.getItem('quezas_terminal_checkpoint');
-    const continueBtn = document.getElementById('termContinueBtn');
-    if (!continueBtn) return;
-
-    if (raw) {
-      try {
-        const data = JSON.parse(raw);
-        const floor = TOWER_FLOORS[data.floorIndex] || TOWER_FLOORS[0];
-        continueBtn.innerText = `[ CONTINUAR DO PONTO SEGURO: ${floor.name.toUpperCase()} ]`;
-        continueBtn.classList.remove('hidden');
-      } catch (e) {
-        continueBtn.classList.add('hidden');
-      }
-    } else {
-      continueBtn.classList.add('hidden');
-    }
-  }
-
-  saveCheckpoint(floorIndex) {
-    this.lastCheckpointFloorIndex = floorIndex;
+  async saveGameToJSON() {
+    const currentFloor = TOWER_FLOORS[this.currentFloorIndex] || TOWER_FLOORS[0];
     const payload = {
-      floorIndex,
+      floorIndex: this.currentFloorIndex,
+      lastCheckpointFloorIndex: this.lastCheckpointFloorIndex,
+      floorName: currentFloor.name,
       party: this.party.map(b => ({
         ...b,
-        currentHp: b.maxHp,
+        currentHp: b.currentHp !== undefined ? b.currentHp : b.maxHp,
         stunTurns: 0,
         isOverclocked: false,
         defenseStance: null
@@ -1032,47 +1270,108 @@ export class TerminalGameApp {
       fledTitanKey: this.fledTitanKey,
       savedAt: Date.now()
     };
+
+    // 1. Salva localmente no navegador (localStorage)
     try {
+      localStorage.setItem('quezas_story_save.json', JSON.stringify(payload));
       localStorage.setItem('quezas_terminal_checkpoint', JSON.stringify(payload));
-      this.checkSavedCheckpoint();
     } catch (e) {
-      console.warn('Falha ao salvar checkpoint em localStorage', e);
+      console.warn('Erro ao salvar no localStorage:', e);
+    }
+
+    // 2. Salva em arquivo físico .json no servidor (/api/story-save)
+    try {
+      await fetch('/api/story-save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    } catch (e) {
+      console.warn('Erro ao persistir /api/story-save no servidor:', e);
+    }
+
+    await this.checkSavedCheckpoint();
+    return payload;
+  }
+
+  async loadGameFromJSON() {
+    // 1. Tenta carregar do arquivo .json do servidor
+    try {
+      const res = await fetch('/api/story-save');
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.saved && data.party) {
+          return data;
+        }
+      }
+    } catch (e) {
+      console.warn('Falha ao ler /api/story-save do servidor, usando fallback local:', e);
+    }
+
+    // 2. Fallback: localStorage
+    try {
+      const raw = localStorage.getItem('quezas_story_save.json') || localStorage.getItem('quezas_terminal_checkpoint');
+      if (raw) {
+        return JSON.parse(raw);
+      }
+    } catch (e) {
+      console.warn('Falha ao ler save local:', e);
+    }
+
+    return null;
+  }
+
+  async checkSavedCheckpoint() {
+    const resumeBtn = document.getElementById('termResumeBtn') || document.getElementById('termContinueBtn');
+    if (!resumeBtn) return;
+
+    const data = await this.loadGameFromJSON();
+    if (data && (data.floorIndex !== undefined || data.floorName)) {
+      const floor = TOWER_FLOORS[data.floorIndex] || TOWER_FLOORS[0];
+      const floorName = data.floorName || floor.name;
+      resumeBtn.innerText = `[ RETOMAR INVASÃO: ${floorName.toUpperCase()} ]`;
+      resumeBtn.classList.remove('hidden', 'disabled');
+      resumeBtn.removeAttribute('disabled');
+      resumeBtn.style.opacity = '1';
+      resumeBtn.style.pointerEvents = 'auto';
+    } else {
+      resumeBtn.innerText = '[ RETOMAR INVASÃO (SEM DADOS) ]';
+      resumeBtn.classList.add('disabled');
+      resumeBtn.style.opacity = '0.5';
     }
   }
 
-  restoreFromCheckpoint() {
-    const raw = localStorage.getItem('quezas_terminal_checkpoint');
-    if (raw) {
-      try {
-        const data = JSON.parse(raw);
-        this.currentFloorIndex = data.floorIndex || 0;
-        this.lastCheckpointFloorIndex = data.floorIndex || 0;
-        this.party = (data.party || []).map(b => ({
-          ...b,
-          currentHp: b.maxHp,
-          stunTurns: 0,
-          isOverclocked: false,
-          defenseStance: null
-        }));
-        this.activeBattlerIds = data.activeBattlerIds || (this.party[0] ? [this.party[0].id] : []);
-        this.inventory = data.inventory || { energy_drink: 3, nano_patch: 3, quezas_jalapeno: 2, antivirus_patch: 2 };
-        this.clearedFloors = new Set(data.clearedFloors || []);
-        this.unlockedLoreIds = new Set(data.unlockedLoreIds || ['lore_01']);
-        this.fledTitanKey = data.fledTitanKey || null;
+  async saveCheckpoint(floorIndex) {
+    this.lastCheckpointFloorIndex = floorIndex;
+    await this.saveGameToJSON();
+  }
 
-        this.showHub();
-        return;
-      } catch (e) {
-        console.warn('Erro ao restaurar checkpoint', e);
-      }
+  async restoreFromCheckpoint() {
+    const data = await this.loadGameFromJSON();
+    if (data) {
+      this.currentFloorIndex = data.floorIndex || 0;
+      this.lastCheckpointFloorIndex = data.lastCheckpointFloorIndex || data.floorIndex || 0;
+      this.party = (data.party || []).map(b => ({
+        ...b,
+        currentHp: b.currentHp !== undefined ? b.currentHp : b.maxHp,
+        stunTurns: 0,
+        isOverclocked: false,
+        defenseStance: null
+      }));
+      this.activeBattlerIds = data.activeBattlerIds || (this.party[0] ? [this.party[0].id] : []);
+      this.inventory = data.inventory || { energy_drink: 3, nano_patch: 3, quezas_jalapeno: 2, antivirus_patch: 2 };
+      this.clearedFloors = new Set(data.clearedFloors || []);
+      this.unlockedLoreIds = new Set(data.unlockedLoreIds || ['lore_01']);
+      this.fledTitanKey = data.fledTitanKey || null;
+
+      this.audio.playPowerUp();
+      const floorName = TOWER_FLOORS[this.currentFloorIndex]?.name || 'Andar 1';
+      this.showSystemToast('PARTIDA RETOMADA', `Invasão restaurada no ${floorName} a partir do arquivo .json!`, 'gold');
+      this.showHub();
+      return;
     }
 
-    // Se falhar ou não houver dados, reinicia no andar do último checkpoint
-    this.currentFloorIndex = this.lastCheckpointFloorIndex || 0;
-    this.party.forEach(b => {
-      b.currentHp = b.maxHp;
-    });
-    this.showHub();
+    this.showSystemToast('SEM DADOS', 'Nenhuma partida salva encontrada no arquivo .json.', 'alert');
   }
 
   checkUnlockNewLore(floorNumber) {
@@ -1385,48 +1684,57 @@ export class TerminalGameApp {
     if (!container) return;
     container.innerHTML = '';
 
-    const allEntries = this.loreEntries && this.loreEntries.length > 0 ? this.loreEntries : LORE_ENTRIES;
-    const unlockedEntries = allEntries.filter(e => this.unlockedLoreIds.has(e.id));
-    const unlockedCount = unlockedEntries.length;
+    const allEntries = (this.loreEntries && this.loreEntries.length > 0) ? this.loreEntries : LORE_ENTRIES;
+
+    // Garante que o arquivo do Andar 1 (lore_01) e andares alcançados/purificados estejam desbloqueados
+    if (!this.unlockedLoreIds) this.unlockedLoreIds = new Set();
+    this.unlockedLoreIds.add('lore_01');
+
+    allEntries.forEach(entry => {
+      const reqFloor = entry.unlockFloor || entry.floorRequired || 1;
+      if (this.clearedFloors && (this.clearedFloors.has(reqFloor) || (this.currentFloorIndex + 1) >= reqFloor)) {
+        this.unlockedLoreIds.add(entry.id);
+      }
+    });
+
+    const unlockedCount = allEntries.filter(e => this.unlockedLoreIds.has(e.id)).length;
     const totalCount = allEntries.length;
     const pct = Math.floor((unlockedCount / totalCount) * 100);
 
     if (counterEl) counterEl.innerText = `ARQUIVOS DESCOBERTOS: ${unlockedCount}/${totalCount} [${pct}%]`;
     if (fillEl) fillEl.style.width = `${pct}%`;
 
-    if (unlockedEntries.length === 0) {
-      container.innerHTML = `
-        <div style="border: 1px dashed var(--term-dim); padding: 40px; text-align: center; background: rgba(0,0,0,0.6);">
-          <div style="font-size: 1.2rem; font-weight: 700; color: var(--term-accent); margin-bottom: 8px;">[ NENHUM ARQUIVO DESCOBERTO ]</div>
-          <p style="color: var(--term-fg); font-size: 0.95rem;">Purifique os setores da Torre Central para recuperar fragmentos criptografados do Protocolo Mnemosyne.</p>
-        </div>
-      `;
-      return;
-    }
-
-    unlockedEntries.forEach(entry => {
-      const card = document.createElement('div');
-      card.className = 'lore-entry-card';
-      card.innerHTML = `
-        <div class="lore-card-header">
-          <span class="lore-classification-tag">${entry.classification}</span>
-          <span class="lore-status-badge unlocked">[ STATUS: DESCRIPTOGRAFADO ]</span>
-        </div>
-        <div class="lore-card-title">[ ${entry.year} ] - ${entry.title}</div>
-        <div class="lore-author-tag">// FONTE / REGISTRO: ${entry.author}</div>
-        <div class="lore-card-body">${entry.text}</div>
-      `;
-      container.appendChild(card);
-    });
-  }
-
-  checkUnlockNewLore(floorNum) {
-    const allEntries = this.loreEntries && this.loreEntries.length > 0 ? this.loreEntries : LORE_ENTRIES;
+    // Renderiza TODOS os 8 documentos do JSON com layout imersivo (desbloqueados e bloqueados)
     allEntries.forEach(entry => {
-      if (entry.floorRequired <= floorNum && !this.unlockedLoreIds.has(entry.id)) {
-        this.unlockedLoreIds.add(entry.id);
-        this.showSystemToast('ARQUIVO CONFIDENCIAL', `Novo documento descriptografado: [ ${entry.title.toUpperCase()} ]`, 'gold');
+      const isUnlocked = this.unlockedLoreIds.has(entry.id);
+      const reqFloor = entry.unlockFloor || entry.floorRequired || 1;
+      const card = document.createElement('div');
+      card.className = `lore-entry-card ${isUnlocked ? 'unlocked' : 'locked'}`;
+
+      if (isUnlocked) {
+        card.innerHTML = `
+          <div class="lore-card-header">
+            <span class="lore-classification-tag">${entry.classification}</span>
+            <span class="lore-status-badge unlocked">[ STATUS: DESCRIPTOGRAFADO ]</span>
+          </div>
+          <div class="lore-card-title">[ ${entry.year} ] - ${entry.title}</div>
+          <div class="lore-author-tag">// FONTE / REGISTRO: ${entry.author}</div>
+          <div class="lore-card-body">${entry.text}</div>
+        `;
+      } else {
+        card.innerHTML = `
+          <div class="lore-card-header">
+            <span class="lore-classification-tag">${entry.classification}</span>
+            <span class="lore-status-badge locked">[ STATUS: CRIPTOGRAFADO // ACESSO NEGADO ]</span>
+          </div>
+          <div class="lore-card-title">[ CRONOLOGIA BLOQUEADA: ${entry.year} ] - ${entry.title}</div>
+          <div class="lore-author-tag">// REGISTRO PROTEGIDO: ${entry.author}</div>
+          <div class="lore-locked-requirement">> REQUISITO: Purifique o Setor do Andar ${reqFloor} da Torre Central para descriptografar.</div>
+          <div class="lore-encrypted-hash">// HASH CRIPTOGRÁFICO: 0x${entry.id.toUpperCase()} ··· PROTOCOLO MNEMOSYNE [DADOS CORROMPIDOS // CHAVE DE SEGURANÇA BLOQUEADA]</div>
+        `;
       }
+
+      container.appendChild(card);
     });
   }
 
@@ -1802,6 +2110,27 @@ export class TerminalGameApp {
     const logTerminal = document.getElementById('battleLogTerminal');
     const turnIndicator = document.getElementById('activeRobotTurnIndicator');
 
+    // Sincroniza o Tabuleiro 2D Tático do Modo História
+    const canvas = document.getElementById('storyBoardCanvas');
+    if (canvas && !this.storyBoard) {
+      this.storyBoard = new StoryBoard(canvas);
+    }
+    if (this.storyBoard) {
+      this.storyBoard.setBattlers(this.activeBattlers, this.currentEnemies, this.currentTurnIndex);
+    }
+
+    // Atualiza o Console Superior de Logs (Limitado a 3 linhas com barra de rolagem estilizada)
+    if (logTerminal) {
+      logTerminal.innerHTML = this.combatLogs.map(l => {
+        let cls = 'log-entry';
+        if (l.includes('dano') || l.includes('Dano') || l.includes('Causou') || l.includes('causando') || l.includes('DIRETO') || l.includes('QUEBROU')) cls += ' damage';
+        else if (l.includes('defendeu') || l.includes('Defesa') || l.includes('Escudo') || l.includes('esquivou') || l.includes('Moeda')) cls += ' defense';
+        else if (l.includes('ROUND') || l.includes('Round') || l.includes('FIM') || l.includes('TURNO')) cls += ' round';
+        return `<div class="${cls}"><span class="log-cursor">></span><span>${l}</span></div>`;
+      }).join('');
+      logTerminal.scrollTop = logTerminal.scrollHeight;
+    }
+
     if (partySide) {
       partySide.innerHTML = '<h3 style="color: var(--term-accent); border-bottom: 1px dashed var(--term-dim); padding-bottom: 4px;">[ SUA PARTY ]</h3>';
       this.activeBattlers.forEach((bot, idx) => {
@@ -1966,7 +2295,7 @@ export class TerminalGameApp {
           <span><strong>[ ${move.name} ]</strong></span>
           <span style="font-size: 0.85rem; color: var(--term-accent);">CUSTO: ${move.cost} EN | PODER: ${move.basePower}</span>
         `;
-        btn.onclick = () => this.renderTargetSelectionSubMenu(currentBot, move);
+        btn.onclick = () => this.startStoryTargetSelection(currentBot, move);
       } else {
         btn.className = 'term-btn';
         btn.disabled = true;
@@ -1995,7 +2324,7 @@ export class TerminalGameApp {
           <span style="color: #ffd700;">[FINALIZADOR] <strong>[ ${currentBot.finisher.name} ]</strong></span>
           <span style="color: #ffd700; font-weight: 700;">10 EN</span>
         `;
-        fBtn.onclick = () => this.renderTargetSelectionSubMenu(currentBot, currentBot.finisher);
+        fBtn.onclick = () => this.startStoryTargetSelection(currentBot, currentBot.finisher);
       } else {
         fBtn.className = 'term-btn';
         fBtn.disabled = true;
@@ -2011,56 +2340,27 @@ export class TerminalGameApp {
   }
 
   // ==========================================
-  // SELEÇÃO DE ALVO ANTES DO MINIGAME
+  // SELEÇÃO DE ALVO DIRETA NO TABULEIRO (EVIDÊNCIA & LINHA COLORIDA)
   // ==========================================
-  renderTargetSelectionSubMenu(bot, move) {
+  startStoryTargetSelection(bot, move) {
     const subContainer = document.getElementById('battleSubMenuDeck');
-    if (!subContainer) return;
+    if (subContainer) subContainer.classList.add('hidden');
 
     const aliveEnemies = this.currentEnemies.filter(e => e.currentHp > 0);
     if (aliveEnemies.length === 0) return;
 
-    subContainer.classList.remove('hidden');
-    subContainer.innerHTML = `
-      <div class="submenu-deck-header">
-        <span class="submenu-deck-title">[ ALVO DO GOLPE: ${move.name.toUpperCase()} ]</span>
-        <button class="term-btn alert" id="btnBackToMovesList" style="padding: 2px 8px; font-size: 0.8rem;">[ << VOLTAR ]</button>
-      </div>
-      <p style="font-size: 0.9rem; color: var(--term-dim); margin: 6px 0 10px 0;">
-        > Selecione em qual hostil você deseja desferir o golpe:
-      </p>
-      <div class="submenu-items-list" id="targetEnemiesList"></div>
-    `;
+    if (this.storyBoard) {
+      this.audio.playKeyClack();
+      this.storyBoard.startTargetSelection(bot, async (targetEnemy) => {
+        // 1. Traça suavemente a linha tracejada da cor do robô até o alvo escolhido
+        await this.storyBoard.animateTargetLockLine(bot, targetEnemy, 420);
 
-    document.getElementById('btnBackToMovesList').onclick = () => {
-      this.renderAttackSubMenu();
-    };
-
-    const list = document.getElementById('targetEnemiesList');
-    aliveEnemies.forEach(enemy => {
-      const btn = document.createElement('button');
-      btn.className = 'term-btn gold';
-      btn.style.justifyContent = 'space-between';
-      btn.style.padding = '12px 14px';
-
-      const hpPct = Math.floor((enemy.currentHp / enemy.maxHp) * 100);
-      btn.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 1.1rem; color: #ff3344;"><strong>${enemy.avatar}</strong></span>
-          <span style="font-size: 1rem; color: var(--term-fg);"><strong>${enemy.name}</strong> <span style="font-size: 0.8rem; color: var(--term-dim);">(${enemy.type})</span></span>
-        </div>
-        <div style="font-size: 0.85rem; color: var(--term-accent);">
-          HP: ${enemy.currentHp}/${enemy.maxHp} [${hpPct}%]
-        </div>
-      `;
-
-      btn.onclick = () => {
-        subContainer.classList.add('hidden');
-        this.executePlayerAttack(bot, move, enemy);
-      };
-
-      list.appendChild(btn);
-    });
+        // 2. Dispara a execução do ataque (minigame, dash e dano)
+        this.executePlayerAttack(bot, move, targetEnemy);
+      });
+    } else {
+      this.executePlayerAttack(bot, move, aliveEnemies[0]);
+    }
   }
 
   // ==========================================
@@ -2336,12 +2636,22 @@ export class TerminalGameApp {
 
     this.combatLogs.push(`> ${bot.name} executou [${move.name}] em ${target.name}! ${result.feedback}`);
     this.combatLogs.push(`> Causou ${totalDmg} de dano direto no HP!`);
+    target.currentHp = Math.max(0, target.currentHp - totalDmg);
+    this.renderBattleArena();
 
-    // Projétil gráfico voando exatamente do robô atacante até o alvo inimigo
-    await this.spawnCombatProjectile(bot.type, true, bot, target);
-
-    // Anima a redução de HP do inimigo (efeito visual progressivo)
-    await this.animateDamageApplication(target, totalDmg, true);
+    // Animação no Tabuleiro 2D (avanço, projétil, impacto com VFX, drenagem suave de vida e delay)
+    if (this.storyBoard) {
+      await this.storyBoard.animateAttackSequence(bot, target, totalDmg, true, {
+        shieldBroken: false,
+        postDelay: 1200
+      });
+    } else {
+      await this.spawnCombatProjectile(bot.type, true, bot, target);
+      await this.animateDamageApplication(target, totalDmg, true);
+      await new Promise(r => setTimeout(r, 1200));
+    }
+    this.audio.playHeavyImpact();
+    this.renderBattleArena();
 
     // Checa vitória/derrota antes de avançar o turno
     if (this.checkBattleEnd()) return;
@@ -2461,24 +2771,57 @@ export class TerminalGameApp {
       let rawDmg = (selectedMove.basePower || 4) + (enemy.attackPower || 4) * 0.3;
       let dmg = Math.min(maxDmgByFloor, Math.max(3, Math.floor(rawDmg)));
 
-      // Projétil do inimigo voando do card dele até o card da Party
-      await this.spawnCombatProjectile(enemy.type || 'corrupt', false, enemy, target);
+      // 1. Linha de mira vermelha no robô aliado alvo
+      if (this.storyBoard) {
+        await this.storyBoard.animateTargetLockLine(enemy, target, 350);
+      }
 
-      // Verifica postura de esquiva (resultado da Moeda da Sorte)
+      // 2. Verifica postura de esquiva (resultado da Moeda da Sorte)
       if (target.defenseStance === 'DODGE_SUCCESS') {
         // Acertou o palpite: esquiva total, 0 dano
         this.combatLogs.push(`> ${target.name} esquivou perfeitamente do ataque de ${enemy.name} com a Moeda da Sorte! (0 de dano)`);
         this.renderBattleArena();
-        await new Promise(r => setTimeout(r, 700));
+        if (this.storyBoard) {
+          await this.storyBoard.animateAttackSequence(enemy, target, 0, false, {
+            deflected: true,
+            postDelay: 1200
+          });
+        }
+        this.renderBattleArena();
+        await new Promise(r => setTimeout(r, 400));
       } else if (target.defenseStance === 'DODGE_FAIL') {
-        // Errou o palpite: robô ficou vulnerável e recebe o dano direto no HP
-        this.combatLogs.push(`> Palpite ERRADO na Moeda da Sorte! ${target.name} ficou vulnerável ao ataque de ${enemy.name}!`);
+        // Errou o palpite: robô ficou vulnerável e recebe o dano direto no HP com quebra de escudo
+        this.combatLogs.push(`> Falha na Moeda da Sorte! Escudo de ${target.name} QUEBROU!`);
         this.combatLogs.push(`> Dano direto: ${dmg} no HP!`);
-        await this.animateDamageApplication(target, dmg, false);
+        target.currentHp = Math.max(0, target.currentHp - dmg);
+        this.renderBattleArena();
+        if (this.storyBoard) {
+          await this.storyBoard.animateAttackSequence(enemy, target, dmg, false, {
+            shieldBroken: true,
+            postDelay: 1300
+          });
+        } else {
+          await this.spawnCombatProjectile(enemy.type || 'corrupt', false, enemy, target);
+          await this.animateDamageApplication(target, dmg, false);
+          await new Promise(r => setTimeout(r, 1200));
+        }
+        this.renderBattleArena();
       } else {
         // Ataque normal (sem moeda): dano direto no HP
         this.combatLogs.push(`> ${enemy.name} usou [${selectedMove.name}] em ${target.name} causando ${dmg} de dano direto!`);
-        await this.animateDamageApplication(target, dmg, false);
+        target.currentHp = Math.max(0, target.currentHp - dmg);
+        this.renderBattleArena();
+        if (this.storyBoard) {
+          await this.storyBoard.animateAttackSequence(enemy, target, dmg, false, {
+            shieldBroken: false,
+            postDelay: 1200
+          });
+        } else {
+          await this.spawnCombatProjectile(enemy.type || 'corrupt', false, enemy, target);
+          await this.animateDamageApplication(target, dmg, false);
+          await new Promise(r => setTimeout(r, 1200));
+        }
+        this.renderBattleArena();
       }
       target.defenseStance = null;
 
@@ -2499,7 +2842,12 @@ export class TerminalGameApp {
       if (this.checkBattleEnd()) return;
     }
 
-    // Fim do Round: regenera energia dos robôs vivos (ou aplica efeito de evento de batalha)
+    // Fim do Round: Transição com delay cinematográfico e recarga de energia
+    this.combatLogs.push(`--- FIM DO ROUND ${this.battleRound} // SISTEMAS REINICIALIZADOS (+ENERGIA) ---`);
+    this.renderBattleArena();
+    this.audio.playPowerUp();
+    await new Promise(r => setTimeout(r, 1400));
+
     this.battleRound++;
     const energyGain = (this.activeBattleEvent && this.activeBattleEvent.id === 'STATIC_STORM') ? 4 : 2;
 
@@ -2855,7 +3203,7 @@ export class TerminalGameApp {
                 ];
                 const subMenuDeck = document.getElementById('battleSubMenuDeck');
                 if (subMenuDeck) subMenuDeck.classList.add('hidden');
-                this.audio.playBGM('bossBattle');
+                this.audio.playBGM('duelGrand');
                 this.showScreen('battleScreen');
                 this.renderBattleArena();
               }
@@ -2940,6 +3288,9 @@ export class TerminalGameApp {
       overlay.classList.remove('hidden');
     }
 
+    this.audio.fadeOutBGM(400).then(() => {
+      this.audio.playBGM('lastGoodbye', 600);
+    });
     this.audio.playBeep(120, 'sawtooth', 0.8);
 
     setTimeout(() => {

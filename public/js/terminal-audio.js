@@ -12,20 +12,44 @@ export class TerminalAudioManager {
 
     // MÚSICAS ORIGINAIS DO JOGO (PRESERVADAS RIGOROSAMENTE)
     this.tracks = {
-      title: '/audio/Relax and Choose Your Champion.mp3',
+      // Som Padrão dos Menus (Lobby Theme ou Violet Tyrant on Tape)
+      title: '/audio/Lobby Theme.mp3',
       lobby: '/audio/Lobby Theme.mp3',
-      elevator: '/audio/Elevador Theme.mp3',
+      elevator: '/audio/Lobby Theme.mp3',
+      menuAlt: '/audio/Violet Tyrant on Tape.mp3',
+      violetTape: '/audio/Violet Tyrant on Tape.mp3',
+
+      // Batalhas Oficiais do Jogo
       forestBattle: "/audio/Lizard's Roar.mp3",
       desertBattle: '/audio/Cowputer-Fight.mp3',
-      iceBattle: '/audio/Dance With the Penguim!.mp3',
+      iceBattle: '/audio/Dance With The Penguim!.mp3',
+      duelGrand: '/audio/Duel of Grand Inteligence.mp3',
       bossBattle: '/audio/Crown of the Violet Tyrant.mp3',
+
+      // Faixas Narrativas / Especiais
       credits: '/audio/The Final Credits.mp3',
       chapolin: '/audio/CHAPOLIN COLORADO.mp3',
       giEntrance: '/audio/G.I Entrance.mp3',
       lastGoodbye: '/audio/Last Goodbye.mp3',
-      violetTape: '/audio/Violet Tyrant on Tape.mp3',
-      relaxLizard: '/audio/Relax, Lizardilhas.mp3'
+      relaxLizard: '/audio/Relax, Lizardilhas.mp3',
+      popTheme: '/audio/Lizardilhas POP Theme.mp3',
+      champion: '/audio/Relax and Choose Your Champion.mp3',
+
+      // Músicas para o modo VERSUS:
+      versusLobby: '/audio/Lobby Theme.mp3',
+      versusDraft: '/audio/Violet Tyrant on Tape.mp3',
+      versusBattle: '/audio/Crown of the Violet Tyrant.mp3',
+      versusVictory: '/audio/The Final Credits.mp3'
     };
+
+    // Coleção Oficial das 5 Músicas de Batalha
+    this.battleTracksList = [
+      { key: 'forestBattle', name: "Lizard's Roar", url: "/audio/Lizard's Roar.mp3" },
+      { key: 'desertBattle', name: 'Cowputer-Fight', url: '/audio/Cowputer-Fight.mp3' },
+      { key: 'iceBattle', name: 'Dance With The Penguim!', url: '/audio/Dance With The Penguim!.mp3' },
+      { key: 'duelGrand', name: 'Duel of Grand Inteligence', url: '/audio/Duel of Grand Inteligence.mp3' },
+      { key: 'bossBattle', name: 'Crown of the Violet Tyrant', url: '/audio/Crown of the Violet Tyrant.mp3' }
+    ];
 
     // BANCO DE SOUND EFFECTS RETRO (JOGOS CLÁSSICOS 8-BIT / ARCADE)
     this.sfxBank = {
@@ -39,6 +63,22 @@ export class TerminalAudioManager {
       denied: 'https://assets.mixkit.co/active_storage/sfx/2574/2574-preview.mp3',
       victory: 'https://assets.mixkit.co/active_storage/sfx/1433/1433-preview.mp3'
     };
+
+    this._setupAutoplayUnlock();
+  }
+
+  _setupAutoplayUnlock() {
+    const unlock = () => {
+      this.initCtx();
+      if (this.currentTrack && this.bgmAudio.paused && !this.isMuted) {
+        this.bgmAudio.play().then(() => {
+          this.fadeInBGM(600);
+        }).catch(() => {});
+      }
+    };
+    window.addEventListener('click', unlock, { once: true });
+    window.addEventListener('keydown', unlock, { once: true });
+    window.addEventListener('touchstart', unlock, { once: true });
   }
 
   initCtx() {
@@ -51,19 +91,25 @@ export class TerminalAudioManager {
     }
   }
 
-  playBGM(key, fadeDurationMs = 500) {
+  playBGM(key, fadeDurationMs = 600) {
     if (this.isMuted) return;
     const url = this.tracks[key];
-    if (!url) return;
+    if (!url) {
+      console.warn(`[Audio] Faixa não encontrada: ${key}`);
+      return;
+    }
 
     if (this.currentTrack === key && !this.bgmAudio.paused) return;
 
-    // Transição suave de Fade Out -> Troca de Faixa -> Fade In
-    if (this.fadeInterval) clearInterval(this.fadeInterval);
+    if (this.fadeInterval) {
+      clearInterval(this.fadeInterval);
+      this.fadeInterval = null;
+    }
 
+    // Transição suave de Fade Out -> Troca de Faixa -> Fade In
     if (!this.bgmAudio.paused && this.bgmAudio.currentTime > 0) {
       const steps = 15;
-      const stepTime = fadeDurationMs / steps;
+      const stepTime = Math.max(16, Math.floor(fadeDurationMs / steps));
       let currentVol = this.bgmAudio.volume;
 
       this.fadeInterval = setInterval(() => {
@@ -72,12 +118,15 @@ export class TerminalAudioManager {
 
         if (currentVol <= 0.02) {
           clearInterval(this.fadeInterval);
+          this.fadeInterval = null;
           this.currentTrack = key;
           this.bgmAudio.src = url;
           this.bgmAudio.volume = 0;
           this.bgmAudio.play().then(() => {
             this.fadeInBGM(fadeDurationMs);
-          }).catch(() => {});
+          }).catch((err) => {
+            console.warn('[Audio] Aguardando interação para reprodução de BGM:', err);
+          });
         }
       }, stepTime);
     } else {
@@ -86,15 +135,18 @@ export class TerminalAudioManager {
       this.bgmAudio.volume = 0;
       this.bgmAudio.play().then(() => {
         this.fadeInBGM(fadeDurationMs);
-      }).catch(() => {});
+      }).catch((err) => {
+        console.warn('[Audio] Aguardando interação para reprodução de BGM:', err);
+      });
     }
   }
 
   fadeInBGM(durationMs = 600) {
     if (this.fadeInterval) clearInterval(this.fadeInterval);
     const steps = 15;
-    const stepTime = durationMs / steps;
+    const stepTime = Math.max(16, Math.floor(durationMs / steps));
     let currentVol = 0;
+    this.bgmAudio.volume = 0;
 
     this.fadeInterval = setInterval(() => {
       currentVol = Math.min(this.targetVolume, currentVol + (this.targetVolume / steps));
@@ -102,21 +154,25 @@ export class TerminalAudioManager {
 
       if (currentVol >= this.targetVolume) {
         clearInterval(this.fadeInterval);
+        this.fadeInterval = null;
         this.bgmAudio.volume = this.targetVolume;
       }
     }, stepTime);
   }
 
-  fadeOutBGM(durationMs = 800) {
+  fadeOutBGM(durationMs = 700) {
     return new Promise((resolve) => {
-      if (this.fadeInterval) clearInterval(this.fadeInterval);
+      if (this.fadeInterval) {
+        clearInterval(this.fadeInterval);
+        this.fadeInterval = null;
+      }
       if (this.bgmAudio.paused) {
         this.currentTrack = null;
         resolve();
         return;
       }
       const steps = 15;
-      const stepTime = durationMs / steps;
+      const stepTime = Math.max(16, Math.floor(durationMs / steps));
       let currentVol = this.bgmAudio.volume;
 
       this.fadeInterval = setInterval(() => {
@@ -125,6 +181,7 @@ export class TerminalAudioManager {
 
         if (currentVol <= 0.02) {
           clearInterval(this.fadeInterval);
+          this.fadeInterval = null;
           this.bgmAudio.pause();
           this.bgmAudio.volume = this.targetVolume;
           this.currentTrack = null;
@@ -132,6 +189,22 @@ export class TerminalAudioManager {
         }
       }, stepTime);
     });
+  }
+
+  getRandomBattleTrackKey() {
+    if (!this.battleTracksList || !this.battleTracksList.length) return 'bossBattle';
+    const track = this.battleTracksList[Math.floor(Math.random() * this.battleTracksList.length)];
+    return track.key;
+  }
+
+  playBattleBGM(specificKey = null, fadeDurationMs = 600) {
+    const key = specificKey || this.getRandomBattleTrackKey();
+    this.playBGM(key, fadeDurationMs);
+  }
+
+  playMenuBGM(preferAlt = false, fadeDurationMs = 600) {
+    const key = preferAlt ? 'violetTape' : 'lobby';
+    this.playBGM(key, fadeDurationMs);
   }
 
   stopBGM() {
@@ -259,3 +332,16 @@ export class TerminalAudioManager {
     } catch (e) {}
   }
 }
+
+let _globalAudioInstance = null;
+export function getAudio() {
+  if (typeof window !== 'undefined') {
+    if (window.gameInstance && window.gameInstance.audio) return window.gameInstance.audio;
+    if (window._versusAudio) return window._versusAudio;
+    window._versusAudio = new TerminalAudioManager();
+    return window._versusAudio;
+  }
+  if (!_globalAudioInstance) _globalAudioInstance = new TerminalAudioManager();
+  return _globalAudioInstance;
+}
+

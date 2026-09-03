@@ -1,0 +1,65 @@
+{
+  "TESTPLAYER": {
+    "name": "TESTPLAYER",
+    "wins": 0,
+    "losses": 0,
+    "totalMedals": 0,
+    "totalMatches": 0,
+    "createdAt": 1788440013044,
+    "lastSeen": 1788441309725
+  },
+  "PXZ05": {
+    "name": "PXZ05",
+    "wins": 0,
+    "losses": 0,
+    "totalMedals": 0,
+    "totalMatches": 0,
+    "createdAt": 1788442531622,
+    "lastSeen": 1788442531622
+  },
+  "TACTICAL": {
+    "name": "TACTICAL",
+    "wins": 0,
+    "losses": 0,
+    "totalMedals": 0,
+    "totalMatches": 0,
+    "createdAt": 1788444702839,
+    "lastSeen": 1788445996427
+  },
+  "FS": {
+    "name": "FS",
+    "wins": 0,
+    "losses": 0,
+    "totalMedals": 0,
+    "totalMatches": 0,
+    "createdAt": 1788447557768,
+    "lastSeen": 1788447557768
+  },
+  "PILOT_ALPHA": {
+    "name": "PILOT_ALPHA",
+    "wins": 0,
+    "losses": 0,
+    "totalMedals": 0,
+    "totalMatches": 0,
+    "createdAt": 1788448799536,
+    "lastSeen": 1788448799536
+  },
+  "B": {
+    "name": "B",
+    "wins": 0,
+    "losses": 0,
+    "totalMedals": 0,
+    "totalMatches": 0,
+    "createdAt": 1788449854241,
+    "lastSeen": 1788449854241
+  },
+  "CYBER_ACE": {
+    "name": "CYBER_ACE",
+    "wins": 0,
+    "losses": 0,
+    "totalMedals": 0,
+    "totalMatches": 0,
+    "createdAt": 1788450540587,
+    "lastSeen": 1788450540587
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "floorIndex": 2,
+  "lastCheckpointFloorIndex": 0,
+  "floorName": "Andar 2.2: Clareira dos Dados",
+  "party": [
+    {
+      "id": "dinobyte",
+      "name": "Dino-Byte",
+      "type": "Fogo",
+      "badgeClass": "char-badge-fogo",
+      "avatar": "[DB-01]",
+      "description": "Dinossauro térmico com garras incandescentes e blindagem de dados.",
+      "catchphrase": "Sente o poder do lagarto!",
+      "baseHp": 50,
+      "attackPower": 10,
+      "xpBaseToNext": 75,
+      "xpGrowthPerLevel": 35,
+      "growthStats": {
+        "hp": 8,
+        "atk": 3,
+        "movePowerGrowth": 1
+      },
+      "moves": [
+        {
+          "id": "jurassic_bite",
+          "name": "Mordida Jurássica",
+          "cost": 2,
+          "basePower": 8,
+          "minigame": "dino_targets",
+          "unlockLevel": 1,
+          "desc": "Chuva de meteoros térmicos. Desvie dos projéteis e colete nós de ignição."
+        },
+        {
+          "id": "flame_claw",
+          "name": "Garras Flamejantes",
+          "cost": 4,
+          "basePower": 13,
+          "minigame": "dino_arrows",
+          "unlockLevel": 4,
+          "desc": "Barragem de garras laser. Posicione o núcleo nas brechas seguras."
+        },
+        {
+          "id": "draconic_firewall",
+          "name": "Firewall Dracônico",
+          "cost": 6,
+          "basePower": 19,
+          "minigame": "dino_timing",
+          "unlockLevel": 6,
+          "desc": "Vórtice espiral de labaredas. Mantenha o núcleo em órbita desviando do fogo."
+        }
+      ],
+      "finisher": {
+        "id": "lizards_roar",
+        "name": "Rugido Hiperbárico do Lagarto",
+        "cost": 10,
+        "basePower": 40,
+        "unlockLevel": 2,
+        "minigame": "chained_finisher",
+        "desc": "O golpe supremo que desencadeia a barragem tríplice de 10 segundos!"
+      },
+      "level": 2,
+      "xp": 95,
+      "xpToNext": 110,
+      "maxHp": 58,
+      "currentHp": 42,
+      "energyPerRound": 2,
+      "maxEnergy": 10,
+      "currentEnergy": 2,
+      "stunTurns": 0,
+      "isOverclocked": false,
+      "defenseStance": null
+    }
+  ],
+  "activeBattlerIds": [
+    "dinobyte"
+  ],
+  "inventory": {
+    "nano_patch": 2
+  },
+  "clearedFloors": [
+    1,
+    2.1
+  ],
+  "unlockedLoreIds": [
+    "lore_01",
+    "lore_02",
+    "lore_03"
+  ],
+  "fledTitanKey": null,
+  "savedAt": 1788464765542,
+  "saved": true
+}
