@@ -1143,13 +1143,13 @@ export class VersusBoard {
     }
   }
 
-  // ── Shield Holographic Hex Arcs (Com duração de 3 rodadas) ────────
+  // ── Shield Holographic Hex Arcs (Com duração de 2 rodadas) ────────
   _drawShield(robot, x, y, robotR) {
     const ctx = this.ctx;
     const shieldR = robotR + 13;
-    const shieldMax = robot.shield.targets === 'all' ? 10 : 10;
-    const shieldPct = Math.min(1, Math.max(0.1, (robot.shield.hp || 10) / shieldMax));
-    const roundsLeft = robot.shield.roundsLeft !== undefined ? robot.shield.roundsLeft : 3;
+    const shieldMax = 3;
+    const shieldPct = Math.min(1, Math.max(0.1, (robot.shield.hp || 3) / shieldMax));
+    const roundsLeft = robot.shield.roundsLeft !== undefined ? robot.shield.roundsLeft : 2;
 
     ctx.save();
     ctx.shadowColor = robot.shield.color || '#00e5ff';
@@ -1493,7 +1493,7 @@ export class VersusBoard {
     this.domes.push({
       x: from.x, y: from.y, baseR: 28, progress: 0, life: 1, color: shieldColor
     });
-    this.emitFloatingText('+ESCUDO [3 ROUNDS]', from.x, from.y - 45, shieldColor, 16);
+    this.emitFloatingText('+ESCUDO [3 HP · 2R]', from.x, from.y - 45, shieldColor, 16);
     this.shake(6);
     await this._wait(600);
   }
@@ -1505,7 +1505,7 @@ export class VersusBoard {
       x: to.x, y: to.y, r: 10, maxR: 60, speed: 4, life: 1, color: '#00e5ff'
     });
     this.emitParticles(to.x, to.y, '#00e5ff', 35, { speed: 5 });
-    this.emitFloatingText('REVIVIDO COM 100 HP!', to.x, to.y - 40, '#00e5ff', 18);
+    this.emitFloatingText('REVIVIDO COM 10 HP!', to.x, to.y - 40, '#00e5ff', 18);
     this.shake(8);
     await this._wait(500);
   }
@@ -1678,14 +1678,14 @@ export class VersusBoard {
     const pos = this._cellCenter(robot.col, robot.row);
     this.emitParticles(pos.x, pos.y, '#00ff88', 35, { speed: 5 });
     this.emitParticles(pos.x, pos.y, '#00e5ff', 25, { speed: 7, shape: 'star' });
-    this.emitFloatingText('REVIVIDO [100 HP]!', pos.x, pos.y - 45, '#00ff88', 19);
+    this.emitFloatingText('REVIVIDO [10 HP]!', pos.x, pos.y - 45, '#00ff88', 19);
     await this._wait(700);
   }
 
   async animateKillBonus(robot) {
     const pos = this._cellCenter(robot.col, robot.row);
     this.emitParticles(pos.x, pos.y, '#ffd700', 20, { speed: 3.5 });
-    this.emitFloatingText('+15 HP  +3 ENERGIA', pos.x, pos.y - 65, '#ffd700', 15);
+    this.emitFloatingText('+2 HP  +1 ENERGIA', pos.x, pos.y - 65, '#ffd700', 15);
     await this._wait(500);
   }
 

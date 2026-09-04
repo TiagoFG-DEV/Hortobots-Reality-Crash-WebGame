@@ -6,101 +6,101 @@
 export const VERSUS_ROBOTS = {
   DB: {
     id: 'DB', name: 'Dino-Byte', color: '#ff3344', colorName: 'RED',
-    baseHp: 200, baseAtk: 1, baseEnergy: 0,
+    baseHp: 10, baseAtk: 1, baseEnergy: 0,
     attacks: [
-      { id: 'db_l1', name: 'Impacto Térmico',    level: 1, energyCost: 1, minigame: 'click_targets',  desc: 'Clique os meteoros antes que somam!' },
-      { id: 'db_l2', name: 'Garras QTE',          level: 2, energyCost: 2, minigame: 'arrow_qte',     desc: 'Pressione as setas em sequência rápida!' },
-      { id: 'db_l3', name: 'Firewall Infernal',   level: 3, energyCost: 4, minigame: 'gravity_dodge', desc: 'Esquive com gravidade — pule com ESPAÇO!' },
+      { id: 'db_l1', name: 'Impacto Térmico',    level: 1, energyCost: 1, minigame: 'click_targets',  desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
+      { id: 'db_l2', name: 'Garras QTE',          level: 2, energyCost: 3, minigame: 'arrow_qte',     desc: 'Custo: 3 EN · 50% ATK' },
+      { id: 'db_l3', name: 'Firewall Infernal',   level: 3, energyCost: 5, minigame: 'gravity_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 10)' },
     ],
     defense: {
       name: 'Escudo de Grupo Verde',
-      desc: 'Escudo verde de 10HP cobrindo os 3 aliados. Quebra para TODOS se receber >10 em qualquer robô.',
-      shieldHp: 10, targets: 'all', shieldColor: '#00ff88', energyCost: 1,
+      desc: 'Escudo de 3 HP nos aliados (dura 2 rounds). Custo: 0 EN.',
+      shieldHp: 3, rounds: 2, targets: 'all', shieldColor: '#00ff88', energyCost: 0,
     },
     support: {
       name: 'Reparo de Grupo',
-      desc: '+10 HP no aliado escolhido.',
-      effect: { type: 'heal', amount: 10, target: 'one' },
+      desc: 'Cura até 4 HP ou revive com 10 HP. Custo: 2 EN.',
+      effect: { type: 'heal', amount: 4, target: 'one' },
       energyCost: 2,
     },
   },
   PL: {
     id: 'PL', name: 'Penlinux', color: '#00e5ff', colorName: 'CYAN',
-    baseHp: 200, baseAtk: 1, baseEnergy: 0,
+    baseHp: 10, baseAtk: 1, baseEnergy: 0,
     attacks: [
-      { id: 'pl_l1', name: 'Deslize Glacial',    level: 1, energyCost: 1, minigame: 'swipe_path',     desc: 'Arraste o cursor pelo caminho de gelo!' },
-      { id: 'pl_l2', name: 'Combo Glaciar',       level: 2, energyCost: 2, minigame: 'typing_sprint',  desc: 'Digite a palavra antes do tempo acabar!' },
-      { id: 'pl_l3', name: 'Blizzard Plataforma', level: 3, energyCost: 4, minigame: 'platform_dodge', desc: 'Pule entre plataformas coletando gemas!' },
+      { id: 'pl_l1', name: 'Deslize Glacial',    level: 1, energyCost: 1, minigame: 'swipe_path',     desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
+      { id: 'pl_l2', name: 'Combo Glaciar',       level: 2, energyCost: 3, minigame: 'typing_sprint',  desc: 'Custo: 3 EN · 50% ATK' },
+      { id: 'pl_l3', name: 'Blizzard Plataforma', level: 3, energyCost: 5, minigame: 'platform_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 10)' },
     ],
     defense: {
       name: 'Escudo do Atacante',
-      desc: 'Escudo azul de 10HP somente no robô que vai atacar.',
-      shieldHp: 10, targets: 'attacker', shieldColor: '#00e5ff', energyCost: 1,
+      desc: 'Escudo azul de 3 HP no atacante (dura 2 rounds). Custo: 0 EN.',
+      shieldHp: 3, rounds: 2, targets: 'attacker', shieldColor: '#00e5ff', energyCost: 0,
     },
     support: {
       name: 'Cura Progressiva',
-      desc: '+3 HP por 5 rounds seguidos. Para se o robô cair.',
-      effect: { type: 'hot', amount: 3, rounds: 5, target: 'one' },
+      desc: 'Cura até 4 HP ou revive com 10 HP. Custo: 2 EN.',
+      effect: { type: 'heal', amount: 4, target: 'one' },
       energyCost: 2,
     },
   },
   CP: {
     id: 'CP', name: 'Cowputer-Moo', color: '#ffd700', colorName: 'GOLD',
-    baseHp: 200, baseAtk: 1, baseEnergy: 0,
+    baseHp: 10, baseAtk: 1, baseEnergy: 0,
     attacks: [
-      { id: 'cp_l1', name: 'Laço Circular',    level: 1, energyCost: 1, minigame: 'circle_click',  desc: 'Clique os pontos no sentido do laço!' },
-      { id: 'cp_l2', name: 'Código do Xerife', level: 2, energyCost: 2, minigame: 'dual_keys',     desc: 'Pressione duas teclas simultaneamente!' },
-      { id: 'cp_l3', name: 'Pólvora Digital',  level: 3, energyCost: 5, minigame: 'shooter_dodge', desc: 'Desvie e destrua projéteis inimigos!' },
+      { id: 'cp_l1', name: 'Laço Circular',    level: 1, energyCost: 1, minigame: 'circle_click',  desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
+      { id: 'cp_l2', name: 'Código do Xerife', level: 2, energyCost: 3, minigame: 'dual_keys',     desc: 'Custo: 3 EN · 50% ATK' },
+      { id: 'cp_l3', name: 'Pólvora Digital',  level: 3, energyCost: 5, minigame: 'shooter_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 10)' },
     ],
     defense: {
       name: 'Escudo Energético Amarelo',
-      desc: 'Escudo amarelo de 10HP em si mesmo. Gera +1 energia por round enquanto ativo.',
-      shieldHp: 10, targets: 'self', shieldColor: '#ffd700', energyPerRound: 1, energyCost: 1,
+      desc: 'Escudo de 3 HP em si mesmo (dura 2 rounds). Custo: 0 EN.',
+      shieldHp: 3, rounds: 2, targets: 'self', shieldColor: '#ffd700', energyCost: 0,
     },
     support: {
       name: 'Kit de Campo',
-      desc: '+5 HP e +1 energia ao aliado escolhido.',
-      effect: { type: 'heal_energy', healAmount: 5, energyAmount: 1, target: 'one' },
+      desc: 'Cura até 4 HP ou revive com 10 HP. Custo: 2 EN.',
+      effect: { type: 'heal', amount: 4, target: 'one' },
       energyCost: 2,
     },
   },
   PB: {
     id: 'PB', name: 'Pavabyte', color: '#ff69b4', colorName: 'PINK',
-    baseHp: 200, baseAtk: 1, baseEnergy: 0,
+    baseHp: 10, baseAtk: 1, baseEnergy: 0,
     attacks: [
-      { id: 'pb_l1', name: 'Reflexo Prismático', level: 1, energyCost: 1, minigame: 'mirror_sequence', desc: 'Clique os espelhos na ordem certa!' },
-      { id: 'pb_l2', name: 'Teste de Reação',    level: 2, energyCost: 3, minigame: 'reaction_test',   desc: 'Pressione ESPAÇO assim que a tela acender!' },
-      { id: 'pb_l3', name: 'Órbita Caótica',     level: 3, energyCost: 4, minigame: 'orbit_dodge',     desc: 'Controle a velocidade orbital para desviar!' },
+      { id: 'pb_l1', name: 'Reflexo Prismático', level: 1, energyCost: 1, minigame: 'mirror_sequence', desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
+      { id: 'pb_l2', name: 'Teste de Reação',    level: 2, energyCost: 3, minigame: 'reaction_test',   desc: 'Custo: 3 EN · 50% ATK' },
+      { id: 'pb_l3', name: 'Órbita Caótica',     level: 3, energyCost: 5, minigame: 'orbit_dodge',     desc: 'Custo: 5 EN · 110% ATK (Máx 10)' },
     ],
     defense: {
       name: 'Escudo Duplo Azul',
-      desc: 'Escudo azul de 10HP nos outros 2 aliados (não em si).',
-      shieldHp: 10, targets: 'others', shieldColor: '#00e5ff', energyCost: 1,
+      desc: 'Escudo azul de 3 HP nos outros aliados (dura 2 rounds). Custo: 0 EN.',
+      shieldHp: 3, rounds: 2, targets: 'others', shieldColor: '#00e5ff', energyCost: 0,
     },
     support: {
       name: 'Sobrecarga de Cura',
-      desc: '+20 HP ao aliado, mas gasta 2 energia do alvo.',
-      effect: { type: 'heal_cost', healAmount: 20, targetEnergyCost: 2, target: 'one' },
-      energyCost: 3,
+      desc: 'Cura até 4 HP ou revive com 10 HP. Custo: 2 EN.',
+      effect: { type: 'heal', amount: 4, target: 'one' },
+      energyCost: 2,
     },
   },
   TV: {
     id: 'TV', name: 'Tigervex', color: '#ff8c00', colorName: 'ORANGE',
-    baseHp: 200, baseAtk: 1, baseEnergy: 0,
+    baseHp: 10, baseAtk: 1, baseEnergy: 0,
     attacks: [
-      { id: 'tv_l1', name: 'Talho Veloz',      level: 1, energyCost: 1, minigame: 'slash_draw',      desc: 'Arraste rapidamente sobre as linhas!' },
-      { id: 'tv_l2', name: 'Sequência Tesla',  level: 2, energyCost: 2, minigame: 'arrow_sequence',  desc: '5 setas em 2 segundos — rápido!' },
-      { id: 'tv_l3', name: 'Coração de Ferro', level: 3, energyCost: 5, minigame: 'green_heart_dodge', desc: 'Defenda-se usando as setas direcionais!' },
+      { id: 'tv_l1', name: 'Talho Veloz',      level: 1, energyCost: 1, minigame: 'slash_draw',      desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
+      { id: 'tv_l2', name: 'Sequência Tesla',  level: 2, energyCost: 3, minigame: 'arrow_sequence',  desc: 'Custo: 3 EN · 50% ATK' },
+      { id: 'tv_l3', name: 'Coração de Ferro', level: 3, energyCost: 5, minigame: 'green_heart_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 10)' },
     ],
     defense: {
       name: 'Escudo Elétrico Fraco',
-      desc: 'Escudo azul fraco de 5HP nos 3 aliados.',
-      shieldHp: 5, targets: 'all', shieldColor: '#88aaff', energyCost: 1,
+      desc: 'Escudo de 3 HP nos 3 aliados (dura 2 rounds). Custo: 0 EN.',
+      shieldHp: 3, rounds: 2, targets: 'all', shieldColor: '#88aaff', energyCost: 0,
     },
     support: {
       name: 'Pulso de Reparo',
-      desc: '+5 HP para todos os 3 aliados.',
-      effect: { type: 'heal_all', amount: 5, target: 'all' },
+      desc: 'Cura até 4 HP ou revive com 10 HP. Custo: 2 EN.',
+      effect: { type: 'heal', amount: 4, target: 'one' },
       energyCost: 2,
     },
   },
@@ -305,8 +305,23 @@ export class VersusEngine {
       attackerRobot.currentEnergy = Math.max(0, attackerRobot.currentEnergy - attackMove.energyCost);
     }
 
-    // REGRA DO USUÁRIO: Nenhum ataque pode exceder 100% do attackPower do robô (0 a 100% estrito)
-    const rawDamage = Math.max(1, Math.round(attackerRobot.attackPower * ratio));
+    // REGRA DO USUÁRIO:
+    // O primeiro ataque custa 1 energia, dá 25% de ataque (mínimo 1).
+    // O segundo custa 3 energias, dá 50% de ataque.
+    // O terceiro custa 5 energias, dá 110% de ataque (máximo 10).
+    const atkLevel = attackMove?.level || 1;
+    const curAtk = attackerRobot.attackPower || 1;
+    let baseDmg = 1;
+
+    if (atkLevel === 1) {
+      baseDmg = Math.max(1, Math.round(curAtk * 0.25));
+    } else if (atkLevel === 2) {
+      baseDmg = Math.max(1, Math.round(curAtk * 0.50));
+    } else {
+      baseDmg = Math.min(10, Math.max(1, Math.round(curAtk * 1.10)));
+    }
+
+    const rawDamage = Math.max(1, Math.round(baseDmg * ratio));
 
     const killed = this._applyDamage(targetRobot, myEnemySide, rawDamage, events);
     if (killed) {
@@ -317,27 +332,22 @@ export class VersusEngine {
 
   _applyDamage(target, targetTeam, rawDamage, events) {
     let damage = rawDamage;
-    let shieldBroke = false;
 
+    // REGRA DO USUÁRIO:
+    // Se o ataque for mais forte que o escudo, o escudo desconta o próprio HP do ataque
+    // e o robô alvo recebe o resultado da subtração (Dano - HP do escudo).
+    // Ou seja, o escudo não bloqueia mais o ataque completo!
     if (target.shield && target.shield.hp > 0) {
-      const isGroupShield = target.shield.targets === 'all';
-      const absorbed = Math.min(target.shield.hp, damage);
-      target.shield.hp -= absorbed;
-      damage -= absorbed;
-
-      events.push({ type: 'shield_hit', target: target.id, absorbed, remaining: target.shield.hp });
-
-      if (isGroupShield && rawDamage > target.shield.hp + absorbed) {
-        // Break for all
-        targetTeam.forEach(r => {
-          if (r.shield && r.shield.targets === 'all') r.shield = null;
-        });
-        shieldBroke = true;
-        events.push({ type: 'shield_break_all' });
-      } else if (target.shield && target.shield.hp <= 0) {
+      const shieldHp = target.shield.hp;
+      if (damage >= shieldHp) {
+        damage -= shieldHp;
+        target.shield.hp = 0;
         target.shield = null;
-        shieldBroke = true;
-        events.push({ type: 'shield_break', target: target.id });
+        events.push({ type: 'shield_break', target: target.id, absorbed: shieldHp, remainingDamage: damage });
+      } else {
+        target.shield.hp -= damage;
+        events.push({ type: 'shield_hit', target: target.id, absorbed: damage, remaining: target.shield.hp });
+        damage = 0;
       }
     }
 
@@ -355,14 +365,14 @@ export class VersusEngine {
   }
 
   _onKill(attacker, events) {
-    attacker.currentHp = Math.min(attacker.maxHp, attacker.currentHp + 15);
-    attacker.currentEnergy += 3;
+    attacker.currentHp = Math.min(attacker.maxHp, attacker.currentHp + 2);
+    attacker.currentEnergy = Math.min(10, attacker.currentEnergy + 1);
     const side = attacker.side;
     this.medals[side]++;
     events.push({
       type: 'kill_reward',
       attacker: attacker.id,
-      hpGain: 15, energyGain: 3,
+      hpGain: 2, energyGain: 1,
       medals: this.medals[side],
       side,
     });
@@ -379,11 +389,12 @@ export class VersusEngine {
     const myTeam = defenderRobot.side === 'PLAYER' ? this.playerTeam : this.enemyTeam;
     const def = defenderRobot.defense;
 
+    // REGRA DO USUÁRIO: Os escudos têm no máximo 3 de HP totais e duram só 2 rounds!
     const makeShield = (targets) => ({
-      hp: def.shieldHp,
+      hp: 3,
       color: def.shieldColor,
       targets,
-      roundsLeft: 3, // O escudo quebra automaticamente após 3 rounds!
+      roundsLeft: 2,
       energyPerRound: def.energyPerRound || 0
     });
 
@@ -404,7 +415,7 @@ export class VersusEngine {
       });
     }
 
-    events.push({ type: 'defense_success', defender: defenderRobot.id, shieldType: def.targets, shieldColor: def.shieldColor, roundsLeft: 3 });
+    events.push({ type: 'defense_success', defender: defenderRobot.id, shieldType: def.targets, shieldColor: def.shieldColor, roundsLeft: 2 });
     return events;
   }
 
@@ -413,59 +424,35 @@ export class VersusEngine {
     const events = [];
     const myTeam = supporterRobot.side === 'PLAYER' ? this.playerTeam : this.enemyTeam;
 
-    if (supporterRobot.currentEnergy < supporterRobot.support.energyCost) {
+    const cost = supporterRobot.support?.energyCost !== undefined ? supporterRobot.support.energyCost : 2;
+    if (supporterRobot.currentEnergy < cost) {
       events.push({ type: 'support_no_energy', supporter: supporterRobot.id });
       return events;
     }
-    supporterRobot.currentEnergy -= supporterRobot.support.energyCost;
+    supporterRobot.currentEnergy -= cost;
 
-    // REGRA DE RESSURREIÇÃO: Se o robô alvo tombar (mesmo antes de receber o suporte), é sempre revivido para 100 HP!
+    // REGRA DO USUÁRIO: revive com 10 HP mesmo, esquece reviver com 50%!
     if (targetRobot && (!targetRobot.isAlive || targetRobot.currentHp <= 0)) {
-      targetRobot.currentHp = 100;
+      targetRobot.currentHp = 10;
+      targetRobot.maxHp = 10;
       targetRobot.isAlive = true;
       targetRobot.shield = null;
-      events.push({ type: 'revive', target: targetRobot.id, targetName: targetRobot.name, hp: 100 });
+      events.push({ type: 'revive', target: targetRobot.id, targetName: targetRobot.name, hp: 10 });
       return events;
     }
 
-    const eff = supporterRobot.support.effect;
-    if (eff.type === 'heal' && targetRobot) {
-      targetRobot.currentHp = Math.min(targetRobot.maxHp, targetRobot.currentHp + eff.amount);
-      events.push({ type: 'support_heal', target: targetRobot.id, amount: eff.amount, hp: targetRobot.currentHp });
-    } else if (eff.type === 'hot' && targetRobot) {
-      targetRobot.hotEffect = { amount: eff.amount, roundsLeft: eff.rounds };
-      events.push({ type: 'support_hot', target: targetRobot.id, amount: eff.amount, rounds: eff.rounds });
-    } else if (eff.type === 'heal_energy' && targetRobot) {
-      targetRobot.currentHp = Math.min(targetRobot.maxHp, targetRobot.currentHp + eff.healAmount);
-      targetRobot.currentEnergy += eff.energyAmount;
-      events.push({ type: 'support_heal_energy', target: targetRobot.id, heal: eff.healAmount, energy: eff.energyAmount });
-    } else if (eff.type === 'heal_cost' && targetRobot) {
-      if (targetRobot.currentEnergy >= eff.targetEnergyCost) {
-        targetRobot.currentEnergy -= eff.targetEnergyCost;
-        targetRobot.currentHp = Math.min(targetRobot.maxHp, targetRobot.currentHp + eff.healAmount);
-        events.push({ type: 'support_heavy_heal', target: targetRobot.id, heal: eff.healAmount });
-      } else {
-        events.push({ type: 'support_fail_no_target_energy', target: targetRobot.id });
-      }
-    } else if (eff.type === 'heal_all') {
-      myTeam.filter(r => r.isAlive).forEach(r => {
-        r.currentHp = Math.min(r.maxHp, r.currentHp + eff.amount);
-      });
-      events.push({ type: 'support_heal_all', amount: eff.amount });
+    // REGRA DO USUÁRIO: O suporte cura no máximo até 4 de HP
+    const healAmount = Math.min(4, supporterRobot.support?.effect?.amount || 4);
+    if (targetRobot) {
+      targetRobot.currentHp = Math.min(targetRobot.maxHp, targetRobot.currentHp + healAmount);
+      events.push({ type: 'support_heal', target: targetRobot.id, amount: healAmount, hp: targetRobot.currentHp });
     }
     return events;
   }
 
   // ─── Round/Turn Processing ────────────────────────────────────────
-  //
-  // Structure:
-  //   - One FULL round = PLAYER acts → ENEMY acts
-  //   - endPlayerTurn(): PLAYER done, switch to ENEMY
-  //   - endEnemyTurn():  ENEMY done, advance round number, process HoT, reset roles
-  //
   endPlayerTurn() {
     this.turnSide = 'ENEMY';
-    // Reset roles for enemy's own selection (bot)
     this.enemyTeam.forEach(r => { r.action = null; r._chosenAttack = null; });
   }
 
@@ -477,22 +464,22 @@ export class VersusEngine {
     this._processHotEffects(this.playerTeam);
     this._processHotEffects(this.enemyTeam);
 
-    // Contagem de 3 rodadas do escudo: quebra automática se expirar
+    // Contagem de 2 rodadas do escudo: quebra automática se expirar
     this._processShieldDurations();
 
-    // Bônus de descanso: robôs que pouparam energia ganham +1 Energia!
-    this._processRestBonuses();
+    // Regeneração de energia a cada round (+1 base para vivos, +1 bônus se poupou)
+    this._processEnergyPerRound();
 
-    // BÔNUS DE SOBRECARGA: Aumenta em +5 o ataque de todos os robôs vivos que NÃO foram atacados neste round (máx 50)
+    // REGRA DO USUÁRIO: o ataque cresce 1 por round até no max chegar em 10 onde sobrecarrega o robô
     const buffedRobots = this._processAttackBuffs();
 
-    // Limpa contadores e conjunto de alvos do round
+    // Limpa contadores de golpes
     [...this.playerTeam, ...this.enemyTeam].forEach(r => {
       r.attackHitsThisRound = 0;
     });
     this.targetedRobotsThisRound.clear();
 
-    // Checa se algum robô atingiu 50 para ativar o Alerta de Emergência
+    // Checa se algum robô atingiu 10 para ativar a sobrecarga
     this._checkAttackOverload();
 
     // Reset ONLY role assignments — stats persist
@@ -506,16 +493,16 @@ export class VersusEngine {
     const allRobots = [...this.playerTeam, ...this.enemyTeam];
 
     allRobots.forEach(bot => {
-      if (bot.isAlive && !this.targetedRobotsThisRound.has(bot.id)) {
-        if (bot.attackPower < 50) {
+      if (bot.isAlive) {
+        if (bot.attackPower < 10) {
           const oldAtk = bot.attackPower;
-          bot.attackPower = Math.min(50, bot.attackPower + 5);
+          bot.attackPower = Math.min(10, bot.attackPower + 1);
           buffed.push({
             bot,
             oldAtk,
             newAtk: bot.attackPower,
             diff: bot.attackPower - oldAtk,
-            isOverloaded: bot.attackPower >= 50
+            isOverloaded: bot.attackPower >= 10
           });
         }
       }
@@ -526,7 +513,7 @@ export class VersusEngine {
 
   _checkAttackOverload() {
     const allRobots = [...this.playerTeam, ...this.enemyTeam];
-    this.isAttackOverloaded = allRobots.some(r => r.isAlive && r.attackPower >= 50);
+    this.isAttackOverloaded = allRobots.some(r => r.isAlive && r.attackPower >= 10);
     return this.isAttackOverloaded;
   }
 
@@ -534,7 +521,7 @@ export class VersusEngine {
     const allRobots = [...this.playerTeam, ...this.enemyTeam];
     allRobots.forEach(r => {
       if (r.shield) {
-        r.shield.roundsLeft = (r.shield.roundsLeft !== undefined ? r.shield.roundsLeft : 3) - 1;
+        r.shield.roundsLeft = (r.shield.roundsLeft !== undefined ? r.shield.roundsLeft : 2) - 1;
         if (r.shield.roundsLeft <= 0) {
           r.shield = null;
         }
@@ -542,13 +529,22 @@ export class VersusEngine {
     });
   }
 
-  _processRestBonuses() {
+  _processEnergyPerRound() {
     const allRobots = [...this.playerTeam, ...this.enemyTeam];
     allRobots.forEach(r => {
-      if ((r.action === 'rest' || !r.action) && r.isAlive) {
+      if (r.isAlive) {
+        // Base +1 de energia por round para todos os vivos
         r.currentEnergy = Math.min(10, r.currentEnergy + 1);
+        // Se poupou energia (ação rest ou sem ação), ganha +1 bônus
+        if (r.action === 'rest' || !r.action) {
+          r.currentEnergy = Math.min(10, r.currentEnergy + 1);
+        }
       }
     });
+  }
+
+  _processRestBonuses() {
+    this._processEnergyPerRound();
   }
 
   // Legacy wrapper kept for compatibility
@@ -587,19 +583,29 @@ export class VersusEngine {
     const aliveBot = this.enemyTeam.filter(r => r.isAlive);
     if (aliveBot.length === 0) return null;
 
-    // Attack with robot that has best energy
-    const attacker = aliveBot.reduce((best, r) => r.currentEnergy >= best.currentEnergy ? r : best, aliveBot[0]);
-    // Defense with one that has no shield
-    const defender = aliveBot.find(r => !r.shield && r !== attacker) || aliveBot.find(r => r !== attacker) || aliveBot[0];
-    // Support with remaining
-    const supporter = aliveBot.find(r => r !== attacker && r !== defender) || aliveBot[0];
+    // Robôs com pelo menos 1 de energia podem atacar (no Round 1 com 0 de energia, ninguém ataca)
+    const attackersWithEnergy = aliveBot.filter(r => r.currentEnergy >= 1);
+    let attacker = null;
+    let chosenAttack = null;
 
-    // Pick attack based on energy
-    const validAttacks = attacker.attacks.filter(a => a.energyCost <= attacker.currentEnergy || a.energyCost === 0);
-    const chosenAttack = validAttacks[validAttacks.length - 1] || attacker.attacks[0]; // Use highest available
+    if (attackersWithEnergy.length > 0) {
+      attacker = attackersWithEnergy.reduce((best, r) => r.currentEnergy >= best.currentEnergy ? r : best, attackersWithEnergy[0]);
+      const validAttacks = attacker.attacks.filter(a => a.energyCost <= attacker.currentEnergy);
+      chosenAttack = validAttacks[validAttacks.length - 1] || null;
+      if (!chosenAttack) attacker = null;
+    }
 
-    // Support target — prefer most damaged ally
-    const supportTarget = this.enemyTeam.filter(r => r.isAlive).sort((a, b) => a.currentHp - b.currentHp)[0];
+    // Escudo custa 0 de energia: robô vivo sem escudo pode erguer barreira
+    const defenderCandidates = aliveBot.filter(r => r !== attacker);
+    const defender = defenderCandidates.find(r => !r.shield) || defenderCandidates[0] || (attacker ? null : aliveBot[0]);
+
+    // Suporte custa 2 de energia
+    const supporterCandidates = aliveBot.filter(r => r !== attacker && r !== defender && r.currentEnergy >= 2);
+    const supporter = supporterCandidates[0] || null;
+
+    // Alvo de suporte: aliado caído (revive com 10 HP) ou mais danificado
+    const deadAlly = this.enemyTeam.find(r => !r.isAlive);
+    const supportTarget = deadAlly || this.enemyTeam.filter(r => r.isAlive).sort((a, b) => a.currentHp - b.currentHp)[0];
 
     return {
       attacker, defender, supporter, chosenAttack, supportTarget,
@@ -611,7 +617,7 @@ export class VersusEngine {
     const aliveBot = this.enemyTeam.filter(r => r.isAlive);
     if (aliveBot.length === 0) return;
 
-    // Reseta ações dos bots para descanso como padrão
+    // Reseta ações dos bots para descanso (rest) como padrão
     this.enemyTeam.forEach(r => {
       r.action = 'rest';
       r._chosenAttack = null;
@@ -620,11 +626,11 @@ export class VersusEngine {
     const actions = this.generateBotActions();
     if (!actions) return;
 
-    if (actions.attacker) {
+    if (actions.attacker && actions.chosenAttack) {
       actions.attacker.action = 'attack';
       actions.attacker._chosenAttack = actions.chosenAttack;
 
-      // Define estrategicamente o alvo do atacante inimigo sem alterar sua linha original
+      // Define estrategicamente o alvo do atacante inimigo
       const alivePlayer = this.playerTeam.filter(r => r.isAlive);
       if (alivePlayer.length > 0) {
         const target = alivePlayer[Math.floor(Math.random() * alivePlayer.length)];

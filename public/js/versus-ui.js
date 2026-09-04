@@ -752,7 +752,7 @@ function buildCompactDraftList() {
         <div class="compact-draft-glyph" style="background:${r.color}; box-shadow:0 0 10px ${r.color}55">${id}</div>
         <div class="compact-draft-info">
           <strong>${r.name}</strong>
-          <span>200 HP · ${r.baseAtk || 1} ATK · ${elem}</span>
+          <span>${r.baseHp || 10} HP · ${r.baseAtk || 1} ATK · ${elem}</span>
         </div>
       </div>
       <div class="compact-draft-pick-badge" id="draft-badge-${id}"></div>
@@ -996,20 +996,22 @@ function renderCommandCards() {
     if (!bot.isAlive) {
       buttonsHTML = `<div class="robot-cmd-fallen-msg">[ COMBATENTE CAÍDO — USE SUPORTE PARA REVIVER ]</div>`;
     } else if (!bot.action || bot.action === 'rest') {
-      // Nenhum papel escolhido: exibe os 4 botões (com bloqueio cinza para papéis já ocupados)
+      // Nenhum papel escolhido: exibe os 4 botões (com bloqueio cinza para papéis já ocupados ou sem energia)
+      const canAtk = bot.currentEnergy >= 1;
+      const canSup = bot.currentEnergy >= (bot.support?.energyCost || 2);
       buttonsHTML = `
         <div class="robot-cmd-action-buttons">
-          <button class="cmd-action-btn atk ${isAtkTaken ? 'locked-role' : ''}" data-robot="${bot.id}" data-action="attack" ${isAtkTaken ? 'disabled' : ''}>
-            [ ATK ] ATAQUE
+          <button class="cmd-action-btn atk ${isAtkTaken || !canAtk ? 'locked-role' : ''}" data-robot="${bot.id}" data-action="attack" ${isAtkTaken || !canAtk ? 'disabled' : ''} title="${!canAtk ? 'Sem energia suficiente (mín 1 EN)' : ''}">
+            [ ATK ] ATAQUE ${!canAtk ? '(0 EN)' : ''}
           </button>
           <button class="cmd-action-btn def ${isDefTaken ? 'locked-role' : ''}" data-robot="${bot.id}" data-action="defense" ${isDefTaken ? 'disabled' : ''}>
-            [ DEF ] DEFESA
+            [ DEF ] DEFESA (0 EN)
           </button>
-          <button class="cmd-action-btn sup ${isSupTaken ? 'locked-role' : ''}" data-robot="${bot.id}" data-action="support" ${isSupTaken ? 'disabled' : ''}>
-            [ SUP ] SUPORTE
+          <button class="cmd-action-btn sup ${isSupTaken || !canSup ? 'locked-role' : ''}" data-robot="${bot.id}" data-action="support" ${isSupTaken || !canSup ? 'disabled' : ''} title="${!canSup ? 'Sem energia suficiente (mín 2 EN)' : ''}">
+            [ SUP ] SUPORTE ${!canSup ? '(-2 EN)' : ''}
           </button>
           <button class="cmd-action-btn rst ${bot.action === 'rest' ? 'selected' : ''}" data-robot="${bot.id}" data-action="rest">
-            [ REST ] POUPAR
+            [ REST ] POUPAR (+1 EN)
           </button>
         </div>
       `;
@@ -1059,10 +1061,11 @@ function renderCommandCards() {
       const skillsHTML = (bot.attacks || []).map((atk, ai) => {
         const isChosen = (bot._chosenAttack?.name === atk.name) || (!bot._chosenAttack && ai === 0);
         const canAfford = bot.currentEnergy >= (atk.energyCost || 0);
+        const percentLabel = atk.level === 1 ? '25%' : atk.level === 2 ? '50%' : '110%';
         return `
-          <button class="cmd-chip-btn ${isChosen ? 'active' : ''} ${!canAfford ? 'disabled' : ''}" data-robot="${bot.id}" data-type="skill" data-index="${ai}">
+          <button class="cmd-chip-btn ${isChosen ? 'active' : ''} ${!canAfford ? 'disabled' : ''}" data-robot="${bot.id}" data-type="skill" data-index="${ai}" title="${atk.desc || ''}">
             <strong>${atk.name}</strong>
-            <span class="chip-cost">${atk.energyCost > 0 ? `${atk.energyCost} EN` : 'GRÁTIS'}</span>
+            <span class="chip-cost">${atk.energyCost > 0 ? `${atk.energyCost} EN (${percentLabel})` : 'GRÁTIS'}</span>
           </button>
         `;
       }).join('');
@@ -1073,17 +1076,17 @@ function renderCommandCards() {
         </div>
       `;
     } else if (action === 'defense') {
-      const shieldInfo = bot.shield ? `Escudo Ativo (${bot.shield.roundsLeft || 3} Rodadas restantes)` : `Erguer Barreira Holográfica (Dura 3 Rodadas)`;
+      const shieldInfo = bot.shield ? `Escudo Ativo (${bot.shield.roundsLeft || 2} Rodadas restantes)` : `Erguer Barreira Holográfica (3 HP · Dura 2 Rodadas)`;
       subpanelHTML = `
         <div class="robot-cmd-subpanel defense-panel">
           <span class="cmd-panel-badge">[DEFESA]</span> ${shieldInfo}
         </div>
       `;
     } else if (action === 'support') {
-      const cost = (bot.support && bot.support.energyCost) ? bot.support.energyCost : 1;
+      const cost = (bot.support && bot.support.energyCost) ? bot.support.energyCost : 2;
       subpanelHTML = `
         <div class="robot-cmd-subpanel">
-          <span class="cmd-panel-badge" style="color:#00ff88;border-color:#00ff88">[SUPORTE]</span> Custo: ${cost} Energia. Cura +30 HP ou Revive com 50% HP.
+          <span class="cmd-panel-badge" style="color:#00ff88;border-color:#00ff88">[SUPORTE]</span> Custo: ${cost} Energia. Cura até 4 HP ou Revive com 10 HP cheio.
         </div>
       `;
     }
@@ -1103,7 +1106,7 @@ function renderCommandCards() {
             <div class="cmd-hp-bar"><div class="cmd-hp-fill" style="width:${hpPct}%;background:${hpPct > 35 ? '#00ff88' : '#ff4455'}"></div></div>
           </div>
           <div class="cmd-energy-badge">ENERGIA: <strong>${bot.currentEnergy}</strong>/10</div>
-          <div class="cmd-atk-badge" style="font-size:0.75rem;font-weight:700;color:${bot.attackPower >= 50 ? '#ff1133' : '#ffd700'};margin-top:2px;">ATK: <strong>${bot.attackPower}</strong>/50 ${bot.attackPower >= 50 ? '[SOBRECARGA]' : ''}</div>
+          <div class="cmd-atk-badge" style="font-size:0.75rem;font-weight:700;color:${bot.attackPower >= 10 ? '#ff1133' : '#ffd700'};margin-top:2px;">ATK: <strong>${bot.attackPower}</strong>/10 ${bot.attackPower >= 10 ? '[SOBRECARGA]' : ''}</div>
         </div>
       </div>
       <span class="cmd-collapsed-badge" style="${badgeStyle}">${badgeText}</span>
@@ -1176,10 +1179,26 @@ function attachCommandCardListeners() {
       getAudio().playPowerUp();
 
       if (action === 'attack') {
+        const minCost = Math.min(...(robot.attacks || []).map(a => a.energyCost || 1));
+        if (robot.currentEnergy < minCost) {
+          getAudio().playAccessDenied();
+          addLog(`[ENERGIA] ${robot.name} não possui energia suficiente para atacar (${robot.currentEnergy}/${minCost} EN)!`, 'miss');
+          robot.action = 'rest';
+          renderCommandCards();
+          return;
+        }
         if (!robot._chosenAttack) robot._chosenAttack = robot.attacks[0];
         // Abre tela escura com freeze e destaque nos alvos adversários
         openTargetSelection(robot, 'attack');
       } else if (action === 'support') {
+        const supCost = robot.support?.energyCost || 2;
+        if (robot.currentEnergy < supCost) {
+          getAudio().playAccessDenied();
+          addLog(`[ENERGIA] ${robot.name} não possui energia suficiente para suporte (${robot.currentEnergy}/${supCost} EN)!`, 'miss');
+          robot.action = 'rest';
+          renderCommandCards();
+          return;
+        }
         // Abre tela escura com freeze e destaque nos aliados
         openTargetSelection(robot, 'support');
       }
@@ -1349,6 +1368,24 @@ async function executeSimultaneousClash() {
     await board.animateRobotMove(attacker, stepCol, attacker.homeRow, 350);
     await delay(250);
 
+    // Verifica se possui energia suficiente para o ataque escolhido
+    const atkMove = attacker._chosenAttack || attacker.attacks[0];
+    const energyCost = atkMove?.energyCost || 1;
+    if (attacker.currentEnergy < energyCost) {
+      addLog(`[ATAQUE] ${attacker.name} não possui energia suficiente (${attacker.currentEnergy}/${energyCost} EN)! Passa a vez sem atacar.`, 'miss');
+      const center = board._cellCenter(attacker.homeCol, attacker.homeRow);
+      board.emitFloatingText('SEM ENERGIA', center.x, center.y - 30, '#ff4455', 14);
+      if (isPlayer) getAudio().playAccessDenied();
+      await delay(600);
+      await board.animateRobotMove(attacker, attacker.homeCol, attacker.homeRow, 350);
+      attacker.row = attacker.homeRow;
+      attacker.col = attacker.homeCol;
+      updateStatusPanel();
+      updateArenaHUD();
+      await delay(300);
+      continue;
+    }
+
     if (!target || !target.isAlive) {
       // Sem alvo
       const colorHex = attacker.color ? parseInt(attacker.color.replace('#', '0x'), 16) : 0xff3344;
@@ -1385,7 +1422,7 @@ async function executeSimultaneousClash() {
           addLog(`[DESTRUIÇÃO] ${target.name} TOMBOU em combate!`, 'kill');
           getAudio().playPowerUp();
         } else if (ev.type === 'kill_reward') {
-          addLog(`[MEDALHA] ${attacker.name} conquistou +1 MEDALHA (+15 HP, +3 Energia)!`, 'kill');
+          addLog(`[MEDALHA] ${attacker.name} conquistou +1 MEDALHA (+2 HP, +1 Energia)!`, 'kill');
         }
       }
 
@@ -1454,7 +1491,7 @@ async function executeSimultaneousClash() {
     for (const ev of events) {
       if (ev.type === 'revive') {
         await board.animateRevive(target);
-        addLog(`[RESSURREIÇÃO] ${target.name} foi REVIVIDO com 100 HP pelo Suporte!`, 'kill');
+        addLog(`[RESSURREIÇÃO] ${target.name} foi REVIVIDO com 10 HP pelo Suporte!`, 'kill');
         getAudio().playPowerUp();
       } else if (ev.type === 'support_heal') {
         await board.animateSupportSequence(supporter, target, ev.amount, 0);
@@ -1502,17 +1539,17 @@ async function executeSimultaneousClash() {
   engine.endPlayerTurn();
   const buffedRobots = engine.endEnemyTurn();
 
-  // Loga os robôs que receberam sobrecarga de ataque (+5) por não terem sido alvejados
+  // Loga os robôs que receberam sobrecarga de ataque (+1 por round até 10)
   if (buffedRobots && buffedRobots.length > 0) {
     buffedRobots.forEach(b => {
       const sideName = b.bot.side === 'PLAYER' ? 'ALIADO' : 'INIMIGO';
-      addLog(`[SOBRECARGA // ${sideName}] ${b.bot.name} não foi atacado neste round: Ataque aumentou +${b.diff} (${b.oldAtk} -> ${b.newAtk}/50)!`, 'info');
+      addLog(`[SOBRECARGA // ${sideName}] ${b.bot.name}: Ataque aumentou +${b.diff} (${b.oldAtk} -> ${b.newAtk}/10)!`, 'info');
     });
   }
 
-  // Verifica sobrecarga máxima de 50 para ativar o Alerta de Emergência
+  // Verifica sobrecarga máxima de 10 para ativar o Alerta de Emergência
   if (engine.isAttackOverloaded) {
-    addLog(`[ALERTA DE EMERGÊNCIA] Sistemas de ataque em SOBRECARGA MÁXIMA (50)!`, 'miss');
+    addLog(`[ALERTA DE EMERGÊNCIA] Sistemas de ataque em SOBRECARGA MÁXIMA (10)!`, 'miss');
     getAudio().playHeavyImpact();
   }
 
@@ -1567,7 +1604,7 @@ function updateArenaHUD() {
     initBadge.textContent = `[ INICIATIVA: ${initText} ]`;
   }
 
-  // Alerta de Emergência: Ativado quando qualquer robô atinge 50 de ataque
+  // Alerta de Emergência: Ativado quando qualquer robô atinge 10 de ataque
   const emergencyAlert = $('versusEmergencyAlert');
   if (emergencyAlert) {
     if (engine.isAttackOverloaded) {
@@ -1595,8 +1632,8 @@ function updateStatusPanel() {
 
   engine.playerTeam.forEach(bot => {
     const pct = Math.max(0, Math.min(100, Math.floor((bot.currentHp / bot.maxHp) * 100)));
-    const shieldInfo = bot.shield ? ` [ESCUDO: ${bot.shield.roundsLeft || 3}R]` : '';
-    const atkColor = bot.attackPower >= 50 ? '#ff1133' : '#ffd700';
+    const shieldInfo = bot.shield ? ` [ESCUDO: ${bot.shield.roundsLeft || 2}R]` : '';
+    const atkColor = bot.attackPower >= 10 ? '#ff1133' : '#ffd700';
     const atkInfo = bot.isAlive ? ` <span style="color:${atkColor};font-weight:700;">[ATK:${bot.attackPower}]</span>` : '';
     const row = document.createElement('div');
     row.className = 'compact-bot-status';
@@ -1651,9 +1688,9 @@ async function endMatch(winner) {
           winnerNick: playerWon ? currentNick : (engine.enemyName || 'OPONENTE'),
           loserNick: playerWon ? (engine.enemyName || 'OPONENTE') : currentNick,
           winnerSurvivors: playerWon ? alivePlayerBots : 0,
-          winnerMaxHp: 300,
+          winnerMaxHp: 30,
           loserSurvivors: playerWon ? 0 : alivePlayerBots,
-          loserMaxHp: 300,
+          loserMaxHp: 30,
           totalRounds: engine.round
         });
 
