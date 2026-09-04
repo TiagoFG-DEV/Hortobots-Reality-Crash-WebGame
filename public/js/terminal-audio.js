@@ -106,21 +106,27 @@ export class TerminalAudioManager {
         }).catch(() => {});
       }
     };
-    window.addEventListener('click', unlock, { once: true });
-    window.addEventListener('keydown', unlock, { once: true });
-    window.addEventListener('touchstart', unlock, { once: true });
+    window.addEventListener('click', unlock, { once: true, passive: true });
+    window.addEventListener('keydown', unlock, { once: true, passive: true });
+    window.addEventListener('touchstart', unlock, { once: true, passive: true });
   }
 
   initCtx() {
-    if (!this.audioCtx) {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      this.audioCtx = new AudioContext();
-    }
-    if (this.audioCtx.state === 'suspended') {
-      this.audioCtx.resume();
-    }
-    if (this.beatPulseManager && !this.beatPulseManager.isInitialized) {
-      this.beatPulseManager.initAudioGraph(this.audioCtx, this.bgmAudio);
+    try {
+      if (!this.audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          this.audioCtx = new AudioContext();
+        }
+      }
+      if (this.audioCtx && this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume().catch(() => {});
+      }
+      if (this.audioCtx && this.beatPulseManager && !this.beatPulseManager.isInitialized) {
+        this.beatPulseManager.initAudioGraph(this.audioCtx, this.bgmAudio);
+      }
+    } catch (e) {
+      // Ignora silenciosamente antes do primeiro gesto de interação do usuário
     }
   }
 
@@ -270,17 +276,11 @@ export class TerminalAudioManager {
     return this.isMuted;
   }
 
-  // REPRODUTOR DE SFX RETRO COM FALLBACK SINTETIZADO
+  // REPRODUTOR DE SFX RETRO COM SÍNTESE PROCEDURAL LOCAL (ZERO DEPENDÊNCIAS DE REDE)
   playRetroSample(key, fallbackFn) {
     if (this.isMuted) return;
-    const url = this.sfxBank[key];
-    if (url) {
-      const audio = new Audio(url);
-      audio.volume = 0.8;
-      audio.play().catch(() => {
-        if (fallbackFn) fallbackFn();
-      });
-    } else if (fallbackFn) {
+    // Executa síntese procedural retro via Web Audio com latência zero e 100% offline
+    if (fallbackFn) {
       fallbackFn();
     }
   }

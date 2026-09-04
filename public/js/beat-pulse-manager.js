@@ -41,67 +41,23 @@ export class BeatPulseManager {
         this.sourceNode = audioCtx.createMediaElementSource(bgmAudio);
       }
 
-      // 2. Analisador nativo para medição de energia e espectro
+      // 2. Analisador nativo Web Audio API de Alta Performance (sem Meyda ou ScriptProcessorNode depreciado)
       this.nativeAnalyser = audioCtx.createAnalyser();
       this.nativeAnalyser.fftSize = 512;
-      this.nativeAnalyser.smoothingTimeConstant = 0.75;
+      this.nativeAnalyser.smoothingTimeConstant = 0.72;
 
-      // 3. Conecta o fluxo: source -> nativeAnalyser -> destination
+      // 3. Conecta o fluxo de áudio: source -> nativeAnalyser -> destination
       this.sourceNode.connect(this.nativeAnalyser);
       this.nativeAnalyser.connect(audioCtx.destination);
-
-      // 4. Integração com Meyda se disponível no escopo global (window.Meyda)
-      if (typeof window !== 'undefined' && window.Meyda) {
-        try {
-          this.meydaAnalyzer = window.Meyda.createMeydaAnalyzer({
-            audioContext: audioCtx,
-            source: this.sourceNode,
-            bufferSize: 512,
-            featureExtractors: ['spectralFlux', 'energy', 'rms'],
-            callback: (features) => {
-              if (features) this._onMeydaFeatures(features);
-            }
-          });
-          this.meydaAnalyzer.start();
-          console.log('[BeatPulseManager] Analisador Meyda inicializado com sucesso.');
-        } catch (mErr) {
-          console.warn('[BeatPulseManager] Falha ao iniciar Meyda, utilizando fallback nativo:', mErr);
-        }
-      }
 
       this.isInitialized = true;
       this._updateAccessibilityBadge();
     } catch (err) {
-      console.warn('[BeatPulseManager] Erro ao conectar grafo de áudio:', err);
+      console.warn('[BeatPulseManager] Inicialização do grafo nativo de áudio:', err);
     }
   }
 
-  // Detecção via Meyda Analyzer (Fluxo Espectral & Transientes)
-  _onMeydaFeatures(features) {
-    if (!this._isBattleActive()) return;
-
-    const mult = this.intensityMultipliers[this.intensitySetting] || 0;
-    if (mult <= 0) return;
-
-    const flux = features.spectralFlux || 0;
-    const energy = features.energy || features.rms || 0;
-    const now = performance.now();
-
-    // Mantém média móvel do fluxo recente
-    this.energyHistory.push(flux);
-    if (this.energyHistory.length > this.historySize) this.energyHistory.shift();
-
-    const avgFlux = this.energyHistory.reduce((a, b) => a + b, 0) / (this.energyHistory.length || 1);
-
-    // Onset detectado se o fluxo instantâneo superar a média adaptativa
-    if (flux > avgFlux * 1.42 && energy > 0.04 && (now - this.lastBeatTime) > this.minBeatIntervalMs) {
-      this.lastBeatTime = now;
-      const strength = Math.min(1.0, (flux / (avgFlux * 1.5 || 1)) * 0.85);
-      this._triggerPulse(strength * mult);
-    }
-  }
-
-  // Fallback seguro via FFT nativa (medição de sub-grave e bumbo 40Hz a 140Hz)
+  // Medição nativa de FFT Web Audio API (Sub-grave, Bumbo e Transientes de 40Hz a 250Hz)
   _processNativeFFT() {
     if (!this.nativeAnalyser || !this._isBattleActive()) return;
 
@@ -111,7 +67,7 @@ export class BeatPulseManager {
     const buffer = new Uint8Array(this.nativeAnalyser.frequencyBinCount);
     this.nativeAnalyser.getByteFrequencyData(buffer);
 
-    // Sub-bass & Bass estão nos primeiros 8 bins (para fftSize 512 a 44.1kHz, cada bin = ~86Hz)
+    // Medição focada em sub-grave e bumbo (bins 1 a 6 = ~40Hz a 180Hz)
     let bassEnergy = 0;
     const bassBins = 6;
     for (let i = 1; i <= bassBins; i++) {
@@ -119,15 +75,25 @@ export class BeatPulseManager {
     }
     bassEnergy = bassEnergy / (bassBins * 255);
 
-    this.energyHistory.push(bassEnergy);
+    // Medição de fluxo espectral de médios (transientes de percussão / sintetizadores)
+    let midEnergy = 0;
+    for (let i = 7; i <= 24; i++) {
+      midEnergy += buffer[i] || 0;
+    }
+    midEnergy = midEnergy / (18 * 255);
+
+    const combinedEnergy = (bassEnergy * 0.75) + (midEnergy * 0.25);
+
+    this.energyHistory.push(combinedEnergy);
     if (this.energyHistory.length > this.historySize) this.energyHistory.shift();
 
-    const avgBass = this.energyHistory.reduce((a, b) => a + b, 0) / (this.energyHistory.length || 1);
+    const avgEnergy = this.energyHistory.reduce((a, b) => a + b, 0) / (this.energyHistory.length || 1);
     const now = performance.now();
 
-    if (bassEnergy > 0.42 && bassEnergy > avgBass * 1.35 && (now - this.lastBeatTime) > this.minBeatIntervalMs) {
+    // Detecção adaptativa de batida
+    if (combinedEnergy > 0.38 && combinedEnergy > avgEnergy * 1.32 && (now - this.lastBeatTime) > this.minBeatIntervalMs) {
       this.lastBeatTime = now;
-      const strength = Math.min(1.0, bassEnergy);
+      const strength = Math.min(1.0, (combinedEnergy / (avgEnergy * 1.45 || 1)));
       this._triggerPulse(strength * mult);
     }
   }
@@ -208,10 +174,8 @@ export class BeatPulseManager {
         return;
       }
 
-      // Se Meyda não estiver ativo, processa a análise via FFT nativa
-      if (!this.meydaAnalyzer) {
-        this._processNativeFFT();
-      }
+      // Processa a análise rítmica via FFT nativa de alta performance
+      this._processNativeFFT();
 
       // Amortecimento físico suave (decay exponencial)
       if (this.currentPulse > 0.002) {
