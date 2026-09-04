@@ -4992,16 +4992,18 @@ html, body {
 }
 
 .cmd-hp-text {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #fff;
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 6px rgba(0, 255, 136, 0.4);
 }
 
 .cmd-hp-bar {
-  width: 75px;
-  height: 7px;
-  background: rgba(0, 0, 0, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 85px;
+  height: 9px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -5150,7 +5152,7 @@ html, body {
 .cmd-tier-chips {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
   flex: 1;
 }
 
@@ -5160,45 +5162,79 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  padding: 4px 2px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  gap: 3px;
+  padding: 6px 4px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 6px;
   cursor: pointer;
   color: #fff;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
   font-family: inherit;
+  min-height: 52px;
+}
+
+.cmd-tier-symbol-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  transition: transform 0.2s ease;
 }
 
 .cmd-tier-chip:hover:not(.disabled) {
-  border-color: #ff4455;
-  background: rgba(255, 68, 85, 0.15);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  filter: brightness(1.2);
 }
 
 .cmd-tier-chip.active {
-  border-color: #ff3344;
-  background: rgba(255, 51, 68, 0.28);
-  box-shadow: 0 0 10px rgba(255, 51, 68, 0.45);
-  color: #ff5566;
+  box-shadow: 0 0 14px currentColor;
 }
 
 .cmd-tier-chip.disabled {
-  opacity: 0.25;
-  cursor: not-allowed;
+  opacity: 0.35 !important;
+  filter: grayscale(1) !important;
+  cursor: not-allowed !important;
+  transform: scale(0.92);
+  border-color: #445544 !important;
+  background: rgba(10, 15, 10, 0.4) !important;
 }
 
-.cmd-tier-num {
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 1px;
+.cmd-tier-chip.disabled .cmd-tier-symbol-box {
+  transform: scale(0.82);
 }
 
 .cmd-tier-cost {
-  font-size: 0.62rem;
-  color: #ffd700;
-  font-weight: 700;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 1px 4px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.compact-bot-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.compact-bot-hp-bar {
+  width: 58px;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.compact-bot-hp-fill {
+  height: 100%;
+  transition: width 0.3s ease;
 }
 
 .cmd-target-badge-btn {

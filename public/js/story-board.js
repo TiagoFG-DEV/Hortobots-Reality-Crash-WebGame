@@ -736,10 +736,13 @@ export class StoryBoard {
       ctx.strokeRect(-barW / 2, 48, barW, barH);
 
       // Texto de HP numérico
-      ctx.font = '700 9px "Share Tech Mono", monospace';
-      ctx.fillStyle = hpColor;
+      ctx.font = '900 13px "Share Tech Mono", monospace';
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 3;
       const showVal = Math.round(bot.displayHp !== undefined ? bot.displayHp : bot.currentHp);
-      ctx.fillText(`${showVal}/${maxHp}`, 0, 58);
+      ctx.strokeText(`${showVal}/${maxHp} HP`, 0, 62);
+      ctx.fillStyle = hpColor;
+      ctx.fillText(`${showVal}/${maxHp} HP`, 0, 62);
 
       ctx.restore();
     });
@@ -854,10 +857,13 @@ export class StoryBoard {
       ctx.lineWidth = 1;
       ctx.strokeRect(-eBarW / 2, 50, eBarW, eBarH);
 
-      ctx.font = '700 9px "Share Tech Mono", monospace';
-      ctx.fillStyle = '#ff8899';
+      ctx.font = '900 13px "Share Tech Mono", monospace';
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 3;
       const showEnemyVal = Math.round(enemy.displayHp !== undefined ? enemy.displayHp : enemy.currentHp);
-      ctx.fillText(`${showEnemyVal}/${enemyMaxHp}`, 0, 60);
+      ctx.strokeText(`${showEnemyVal}/${enemyMaxHp} HP`, 0, 64);
+      ctx.fillStyle = enemyHpColor;
+      ctx.fillText(`${showEnemyVal}/${enemyMaxHp} HP`, 0, 64);
 
       ctx.restore();
     });

@@ -912,9 +912,12 @@ export class VersusBoard {
           ctx.stroke();
         }
 
-        ctx.font = 'bold 9px monospace';
+        ctx.font = 'bold 12px "Share Tech Mono", monospace';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2.5;
+        ctx.strokeText(`${robot.name} (${robot.currentHp} HP)`, x, y + r + 22);
         ctx.fillStyle = '#ffffff';
-        ctx.fillText(`${robot.name} (${robot.currentHp} HP)`, x, y + r + 20);
+        ctx.fillText(`${robot.name} (${robot.currentHp} HP)`, x, y + r + 22);
         ctx.restore();
       }
     }
@@ -1099,10 +1102,10 @@ export class VersusBoard {
   // ── Robot Mini HUD (HP & Energy) ──────────────────────────────────
   _drawRobotMiniHUD(robot, x, y, r) {
     const ctx = this.ctx;
-    const barW = 44;
-    const barH = 4.5;
+    const barW = 52;
+    const barH = 6;
     const barX = x - barW / 2;
-    const barY = y + r + 7;
+    const barY = y + r + 8;
     const hpPct = Math.max(0, robot.currentHp / robot.maxHp);
 
     // HP background track with rounded pills
@@ -1120,6 +1123,15 @@ export class VersusBoard {
     ctx.beginPath();
     ctx.roundRect(barX, barY, barW * hpPct, barH, 3);
     ctx.fill();
+
+    // Numeric HP Text
+    ctx.font = '900 11px "Share Tech Mono", monospace';
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2.5;
+    ctx.textAlign = 'center';
+    ctx.strokeText(`${robot.currentHp}/${robot.maxHp} HP`, x, barY - 2);
+    ctx.fillStyle = hpColor;
+    ctx.fillText(`${robot.currentHp}/${robot.maxHp} HP`, x, barY - 2);
     ctx.restore();
 
     // Energy pips

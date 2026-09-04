@@ -3,6 +3,7 @@ import { TerminalAudioManager } from './terminal-audio.js';
 import { TerminalMinigames } from './terminal-minigames.js';
 import { Terminal3DEngine } from './terminal-3d.js';
 import { StoryBoard } from './story-board.js';
+import { getRobotAttackSymbolSVG, getAttackTacticalConcept } from './robot-attack-symbols.js';
 
 // ===================================================
 // CONSTANTES & TABELA DE TIPOS ELEMENTAIS
@@ -1533,8 +1534,8 @@ export class TerminalGameApp {
 
         <div style="display: flex; flex-direction: column; gap: 8px; margin: 8px 0;">
           <div>
-            <div style="display: flex; justify-content: space-between; font-size: 0.78rem;">
-              <span>HP: ${bot.currentHp}/${bot.maxHp}</span>
+            <div style="display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: 800;">
+              <span style="color: #ffffff; text-shadow: 0 0 4px rgba(255,255,255,0.4);">HP: <strong>${bot.currentHp}</strong>/${bot.maxHp}</span>
               <span style="color: #00ff66;">${Math.floor(hpPct)}%</span>
             </div>
             <div class="pokemon-bar-track"><div class="pokemon-bar-fill-hp" style="width: ${hpPct}%;"></div></div>
@@ -1690,8 +1691,8 @@ export class TerminalGameApp {
 
         <div style="display: flex; flex-direction: column; gap: 6px; margin: 8px 0;">
           <div>
-            <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
-              <span>HP: ${bot.currentHp}/${bot.maxHp}</span>
+            <div style="display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: 800;">
+              <span style="color: #ffffff; text-shadow: 0 0 4px rgba(255,255,255,0.4);">HP: <strong>${bot.currentHp}</strong>/${bot.maxHp}</span>
               <span style="color: #00ff66;">${Math.floor(hpPct)}%</span>
             </div>
             <div class="pokemon-bar-track"><div class="pokemon-bar-fill-hp" style="width: ${hpPct}%;"></div></div>
@@ -2223,9 +2224,9 @@ export class TerminalGameApp {
             <span style="color: var(--term-accent);">EN: ${bot.currentEnergy}/${bot.maxEnergy}</span>
           </div>
           <div class="battler-bar-track"><div class="battler-bar-fill-hp ${hpColorClass}" style="width: ${hpPct}%;"></div></div>
-          <div style="display: flex; justify-content: space-between; font-size: 0.82rem; margin-top: 2px;">
-            <span>HP: ${bot.currentHp}/${bot.maxHp}</span>
-            <span style="color: ${hpPct <= 25 ? '#ff3344' : hpPct <= 50 ? '#ffd700' : '#00ff66'}; font-weight: 700;">${Math.floor(hpPct)}%</span>
+          <div style="display: flex; justify-content: space-between; font-size: 0.98rem; font-weight: 800; margin-top: 3px;">
+            <span style="color: #ffffff; text-shadow: 0 0 5px rgba(255,255,255,0.45);">HP: <strong>${bot.currentHp}</strong>/${bot.maxHp}</span>
+            <span style="color: ${hpPct <= 25 ? '#ff3344' : hpPct <= 50 ? '#ffd700' : '#00ff66'}; font-weight: 800;">${Math.floor(hpPct)}%</span>
           </div>
         `;
         partySide.appendChild(card);
@@ -2248,9 +2249,9 @@ export class TerminalGameApp {
             <span style="color: var(--term-alert);">EN: ${enemy.currentEnergy}</span>
           </div>
           <div class="battler-bar-track"><div class="battler-bar-fill-hp ${hpColorClass}" style="width: ${hpPct}%;"></div></div>
-          <div style="display: flex; justify-content: space-between; font-size: 0.82rem; margin-top: 2px;">
-            <span>HP: ${enemy.currentHp}/${enemy.maxHp}</span>
-            <span style="color: ${hpPct <= 25 ? '#ff3344' : hpPct <= 50 ? '#ffd700' : '#ff4444'}; font-weight: 700;">${Math.floor(hpPct)}%</span>
+          <div style="display: flex; justify-content: space-between; font-size: 0.98rem; font-weight: 800; margin-top: 3px;">
+            <span style="color: #ffffff; text-shadow: 0 0 5px rgba(255,255,255,0.45);">HP: <strong>${enemy.currentHp}</strong>/${enemy.maxHp}</span>
+            <span style="color: ${hpPct <= 25 ? '#ff3344' : hpPct <= 50 ? '#ffd700' : '#ff4444'}; font-weight: 800;">${Math.floor(hpPct)}%</span>
           </div>
         `;
         enemySide.appendChild(card);
@@ -2354,21 +2355,47 @@ export class TerminalGameApp {
 
     const list = document.getElementById('attackMovesList');
 
+    const botThemeColor = {
+      dinobyte: '#00ff66',
+      cowputer: '#e6c875',
+      penlinux: '#00d4ff',
+      tigervex: '#ffcc00',
+      pavabyte: '#00e5ff',
+      quezas_avatar: '#ff3344',
+      quezadilhas: '#ff3344'
+    }[currentBot.id] || '#00ff66';
+
     // Lista os ataques normais baseados no nível do robô
     currentBot.moves.forEach((move, idx) => {
       const requiredLevel = move.unlockLevel || 1;
       const isUnlocked = currentBot.level >= requiredLevel;
+      const tier = idx + 1;
+      const concept = getAttackTacticalConcept(tier);
 
       const btn = document.createElement('button');
       btn.style.justifyContent = 'space-between';
+      btn.style.padding = '8px 12px';
 
       if (isUnlocked) {
         const canAfford = currentBot.currentEnergy >= move.cost;
         btn.className = `term-btn ${canAfford ? 'gold' : ''}`;
         btn.disabled = !canAfford;
+        const symbolSVG = getRobotAttackSymbolSVG(currentBot.id, tier, botThemeColor, canAfford, 28);
         btn.innerHTML = `
-          <span><strong>[ ${move.name} ]</strong></span>
-          <span style="font-size: 0.85rem; color: var(--term-accent);">CUSTO: ${move.cost} EN | PODER: ${move.basePower}</span>
+          <div style="display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;">
+            <div style="min-width: 30px; display: flex; align-items: center; justify-content: center; ${canAfford ? '' : 'filter: grayscale(1); opacity: 0.35; transform: scale(0.88);'}">
+              ${symbolSVG}
+            </div>
+            <div style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <strong style="color: ${canAfford ? botThemeColor : 'var(--term-dim)'}; font-size: 0.95rem;">[ ${move.name} ]</strong>
+                <span style="font-size: 0.85rem; font-weight: 700; color: ${canAfford ? '#ffd700' : '#888'}; border: 1px solid ${canAfford ? '#ffd70055' : '#444'}; padding: 1px 6px; border-radius: 4px;">${move.cost} EN</span>
+              </div>
+              <div style="font-size: 0.76rem; color: ${canAfford ? 'var(--term-accent)' : 'var(--term-dim)'}; margin-top: 2px;">
+                ${concept.shortDesc} // PODER: ${move.basePower}
+              </div>
+            </div>
+          </div>
         `;
         btn.onclick = () => this.startStoryTargetSelection(currentBot, move);
       } else {
@@ -2389,15 +2416,29 @@ export class TerminalGameApp {
       const hasFinisherUnlocked = currentBot.level >= (currentBot.finisher.unlockLevel || 2);
       const fBtn = document.createElement('button');
       fBtn.style.justifyContent = 'space-between';
+      fBtn.style.padding = '8px 12px';
 
       if (hasFinisherUnlocked) {
         const canFinisher = currentBot.currentEnergy >= 10;
         fBtn.className = `term-btn ${canFinisher ? 'gold' : ''}`;
         fBtn.style.borderColor = '#ffd700';
         fBtn.disabled = !canFinisher;
+        const finisherSymbolSVG = getRobotAttackSymbolSVG(currentBot.id, 3, '#ffd700', canFinisher, 32);
         fBtn.innerHTML = `
-          <span style="color: #ffd700;">[FINALIZADOR] <strong>[ ${currentBot.finisher.name} ]</strong></span>
-          <span style="color: #ffd700; font-weight: 700;">10 EN</span>
+          <div style="display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;">
+            <div style="min-width: 32px; display: flex; align-items: center; justify-content: center; ${canFinisher ? '' : 'filter: grayscale(1); opacity: 0.35; transform: scale(0.88);'}">
+              ${finisherSymbolSVG}
+            </div>
+            <div style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <strong style="color: #ffd700; font-size: 0.95rem;">[FINALIZADOR] [ ${currentBot.finisher.name} ]</strong>
+                <span style="font-size: 0.85rem; font-weight: 700; color: #ffd700; border: 1px solid #ffd70088; padding: 1px 6px; border-radius: 4px;">10 EN</span>
+              </div>
+              <div style="font-size: 0.76rem; color: #ffd700cc; margin-top: 2px;">
+                ANIQUILAÇÃO TOTAL // ATIVA TODOS OS MINIGAMES EM CADEIA
+              </div>
+            </div>
+          </div>
         `;
         fBtn.onclick = () => this.startStoryTargetSelection(currentBot, currentBot.finisher);
       } else {
@@ -2649,7 +2690,7 @@ export class TerminalGameApp {
       btn.style.padding = '10px 12px';
       btn.innerHTML = `
         <span><strong>${targetBot.avatar} ${targetBot.name}</strong></span>
-        <span style="font-size: 0.82rem; color: var(--term-accent);">HP: ${targetBot.currentHp}/${targetBot.maxHp} | EN: ${targetBot.currentEnergy}</span>
+        <span style="font-size: 0.95rem; font-weight: 800; color: #ffffff; text-shadow: 0 0 4px rgba(255,255,255,0.4);">HP: <strong>${targetBot.currentHp}</strong>/${targetBot.maxHp} | <span style="color: var(--term-accent);">EN: ${targetBot.currentEnergy}</span></span>
       `;
 
       btn.onclick = async () => {

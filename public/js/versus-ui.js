@@ -13,6 +13,7 @@ import { VersusMinigames } from './versus-minigames.js';
 import { VersusNetwork, AccountAPI } from './versus-network.js';
 import { TerminalAudioManager, getAudio } from './terminal-audio.js';
 import { versus3DEngine } from './versus-3d.js';
+import { getRobotAttackSymbolSVG, getAttackTacticalConcept } from './robot-attack-symbols.js';
 
 // ── Singletons ───────────────────────────────────────────────────────
 const engine    = new VersusEngine();
@@ -1025,12 +1026,16 @@ function resetNarratorToStatus() {
     if (selBot.action === 'attack') {
       const atk = selBot._chosenAttack || (selBot.attacks && selBot.attacks[0]);
       const target = selBot._chosenTarget || engine.enemyTeam.find(r => r.isAlive);
+      const tier = atk?.level || (selBot.attacks ? selBot.attacks.indexOf(atk) + 1 : 1) || 1;
+      const concept = getAttackTacticalConcept(tier);
+      const isReady = selBot.currentEnergy >= (atk?.energyCost || 0);
+      const symbolSVG = getRobotAttackSymbolSVG(selBot.id, tier, selBot.color, isReady, 32);
       setNarratorInfo(
-        `${selBot.name} // ATAQUE PREPARADO: ${atk ? atk.name : 'OFENSIVA'}`,
-        `Alvo: ${target ? target.name : 'Nenhum'}. Consome ${atk ? atk.energyCost || 1 : 1} EN. Passe o cursor nos símbolos para inspecionar.`,
-        ATK_ICON_SVG,
-        '#ff4455',
-        '[ FASE DE COMANDO ]'
+        `${selBot.name} // ${concept.role}`,
+        `Alvo: ${target ? target.name : 'Nenhum'}. ${concept.desc} Custo: ${atk ? atk.energyCost || 1 : 1} EN.`,
+        symbolSVG,
+        selBot.color,
+        `[ FASE DE COMANDO // TIER ${tier} ]`
       );
       return;
     } else if (selBot.action === 'defense') {
@@ -1171,15 +1176,21 @@ function renderCommandCards() {
     if (bot.isAlive) {
       if (action === 'attack') {
         const skillsHTML = (bot.attacks || []).map((atk, ai) => {
+          const tier = ai + 1;
           const isChosen = (bot._chosenAttack?.name === atk.name) || (!bot._chosenAttack && ai === 0);
           const canAfford = bot.currentEnergy >= (atk.energyCost || 0);
-          const roman = ai === 0 ? 'I' : ai === 1 ? 'II' : 'III';
+          const symbolSVG = getRobotAttackSymbolSVG(bot.id, tier, bot.color, canAfford, 28);
+          const concept = getAttackTacticalConcept(tier);
+          const activeBorder = isChosen ? `border-color:${bot.color};box-shadow:0 0 12px ${bot.color}66;background:${bot.color}1e;` : '';
+          const disabledStyle = !canAfford ? 'filter:grayscale(1);opacity:0.35;cursor:not-allowed;' : '';
           return `
             <div class="cmd-tier-chip ${isChosen ? 'active' : ''} ${!canAfford ? 'disabled' : ''}"
+                 style="${activeBorder}${disabledStyle}"
                  data-robot="${bot.id}" data-type="skill" data-index="${ai}"
-                 data-name="${atk.name}" data-cost="${atk.energyCost || 0} EN" data-desc="${atk.desc || ''}">
-              <span class="cmd-tier-num">[ ${roman} ]</span>
-              <span class="cmd-tier-cost">${atk.energyCost > 0 ? `${atk.energyCost} EN` : '0 EN'}</span>
+                 data-name="${atk.name}" data-cost="${atk.energyCost || 0} EN" data-desc="${concept.desc}"
+                 title="Tier ${tier}: ${concept.role} (${atk.energyCost || 0} EN)">
+              <div class="cmd-tier-symbol-box">${symbolSVG}</div>
+              <span class="cmd-tier-cost" style="color:${canAfford ? '#ffd700' : '#888'};">${atk.energyCost > 0 ? `${atk.energyCost} EN` : '0 EN'}</span>
             </div>
           `;
         }).join('');
@@ -1489,14 +1500,17 @@ function attachCommandCardListeners() {
     const atk = robot?.attacks?.[atkIdx];
 
     btn.onmouseenter = () => {
-      if (!atk) return;
-      const percentLabel = atk.level === 1 ? '25%' : atk.level === 2 ? '50%' : '110%';
+      if (!atk || !robot) return;
+      const tier = atkIdx + 1;
+      const concept = getAttackTacticalConcept(tier);
+      const isReady = robot.currentEnergy >= (atk.energyCost || 0);
+      const symbolSVG = getRobotAttackSymbolSVG(robotId, tier, robot.color, isReady, 32);
       setNarratorInfo(
-        `GOLPE NÍVEL ${btn.dataset.index === '0' ? 'I' : btn.dataset.index === '1' ? 'II' : 'III'}: ${atk.name} (${atk.energyCost || 0} EN)`,
-        `${atk.desc || 'Ataque balístico.'} Potência de impacto: ${percentLabel} do dano.`,
-        ATK_ICON_SVG,
-        '#ff4455',
-        `[ GOLPE NÍVEL ${btn.dataset.index === '0' ? 'I' : btn.dataset.index === '1' ? 'II' : 'III'} ]`
+        `${robot.name} // ${concept.role} (${atk.energyCost || 0} EN)`,
+        `${concept.desc} ${!isReady ? '[SEM ENERGIA SUFICIENTE] ' : ''}Nome do Golpe: ${atk.name}.`,
+        symbolSVG,
+        robot.color,
+        `[ TÁTICA // TIER ${tier} ]`
       );
     };
 
@@ -1992,18 +2006,18 @@ function updateStatusPanel() {
     pPanel.innerHTML = '';
     engine.playerTeam.forEach(bot => {
       const pct = Math.max(0, Math.min(100, Math.floor((bot.currentHp / bot.maxHp) * 100)));
-      const shieldInfo = bot.shield ? ` [ESCUDO: ${bot.shield.roundsLeft || 2}R]` : '';
+      const shieldInfo = bot.shield ? ` <span style="color:#00e5ff;font-weight:800;">[ESC:${bot.shield.hp}HP]</span>` : '';
       const atkColor = bot.attackPower >= 20 ? '#ff1133' : '#ffd700';
-      const atkInfo = bot.isAlive ? ` <span style="color:${atkColor};font-weight:700;">[ATK:${bot.attackPower}]</span>` : '';
+      const atkInfo = bot.isAlive ? ` <span style="color:${atkColor};font-weight:800;">[ATK:${bot.attackPower}]</span>` : '';
       const row = document.createElement('div');
       row.className = 'compact-bot-status';
       row.innerHTML = `
-        <strong style="color:${bot.color};min-width:32px;">${bot.id}</strong>
+        <strong style="color:${bot.color};min-width:34px;font-size:0.95rem;">${bot.id}</strong>
         <div class="compact-bot-hp-bar">
           <div class="compact-bot-hp-fill" style="width:${pct}%;background:${pct > 30 ? '#00ff88' : '#ff4455'}"></div>
         </div>
-        <span style="font-size:0.7rem;color:var(--term-dim);min-width:105px;">
-          ${bot.isAlive ? `${bot.currentHp}HP${shieldInfo}${atkInfo}` : 'DOWN'}
+        <span style="font-size:0.92rem;font-weight:800;color:#ffffff;text-shadow:0 0 4px rgba(255,255,255,0.4);min-width:125px;">
+          ${bot.isAlive ? `<strong>${bot.currentHp}</strong>/${bot.maxHp} HP${shieldInfo}${atkInfo}` : '<span style="color:#ff3344;">DOWN</span>'}
         </span>
       `;
       pPanel.appendChild(row);
@@ -2015,18 +2029,18 @@ function updateStatusPanel() {
     ePanel.innerHTML = '';
     engine.enemyTeam.forEach(bot => {
       const pct = Math.max(0, Math.min(100, Math.floor((bot.currentHp / bot.maxHp) * 100)));
-      const shieldInfo = bot.shield ? ` [ESCUDO: ${bot.shield.roundsLeft || 2}R]` : '';
+      const shieldInfo = bot.shield ? ` <span style="color:#00e5ff;font-weight:800;">[ESC:${bot.shield.hp}HP]</span>` : '';
       const atkColor = bot.attackPower >= 20 ? '#ff1133' : '#ffd700';
-      const atkInfo = bot.isAlive ? ` <span style="color:${atkColor};font-weight:700;">[ATK:${bot.attackPower}]</span>` : '';
+      const atkInfo = bot.isAlive ? ` <span style="color:${atkColor};font-weight:800;">[ATK:${bot.attackPower}]</span>` : '';
       const row = document.createElement('div');
       row.className = 'compact-bot-status';
       row.innerHTML = `
-        <strong style="color:${bot.color};min-width:32px;">${bot.id}</strong>
+        <strong style="color:${bot.color};min-width:34px;font-size:0.95rem;">${bot.id}</strong>
         <div class="compact-bot-hp-bar">
           <div class="compact-bot-hp-fill" style="width:${pct}%;background:${pct > 30 ? '#00ff88' : '#ff4455'}"></div>
         </div>
-        <span style="font-size:0.7rem;color:var(--term-dim);min-width:105px;">
-          ${bot.isAlive ? `${bot.currentHp}HP${shieldInfo}${atkInfo}` : 'DOWN'}
+        <span style="font-size:0.92rem;font-weight:800;color:#ffffff;text-shadow:0 0 4px rgba(255,255,255,0.4);min-width:125px;">
+          ${bot.isAlive ? `<strong>${bot.currentHp}</strong>/${bot.maxHp} HP${shieldInfo}${atkInfo}` : '<span style="color:#ff3344;">DOWN</span>'}
         </span>
       `;
       ePanel.appendChild(row);
