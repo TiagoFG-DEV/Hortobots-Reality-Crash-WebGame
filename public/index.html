@@ -961,13 +961,31 @@
             </div>
           </div>
 
-          <!-- Terminal Narrativo de Log Tático em Tempo Real -->
-          <div class="versus-narrative-terminal">
+          <!-- Terminal Narrativo de Log Tático em Tempo Real & Painel Narrador -->
+          <div class="versus-narrative-terminal" id="versusNarrativeTerminal">
             <div class="terminal-narrative-header">
-              <span class="term-dot"></span>
-              <span>// LOG TÁTICO // TELEMETRIA EM TEMPO REAL</span>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span class="term-dot"></span>
+                <span class="term-title-text">// TELEMETRIA & NARRADOR TÁTICO</span>
+              </div>
+              <span class="terminal-narrator-mode-tag" id="versusNarratorTag">[ FASE DE COMANDO ]</span>
             </div>
-            <div class="terminal-narrative-body" id="versusLog"></div>
+
+            <!-- Container Lado a Lado: Sessão Narradora e Log do Terminal -->
+            <div class="terminal-narrative-columns">
+              <!-- Sessão Narrativa Visual de Acontecimentos e Descrições de Habilidades -->
+              <div class="terminal-narrator-panel" id="terminalNarratorPanel">
+                <div class="narrator-icon-frame" id="narratorIconFrame">
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#00ff88" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                </div>
+                <div class="narrator-text-frame">
+                  <div class="narrator-primary-title" id="narratorPrimaryTitle">> SISTEMA TÁTICO ONLINE</div>
+                  <div class="narrator-detail-desc" id="narratorDetailDesc">Selecione ou passe o cursor sobre os símbolos nos combatentes para ver a descrição detalhada aqui.</div>
+                </div>
+              </div>
+
+              <div class="terminal-narrative-body" id="versusLog"></div>
+            </div>
           </div>
         </div>
       </div>

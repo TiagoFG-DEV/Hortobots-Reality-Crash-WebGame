@@ -895,6 +895,7 @@ $('versusConfirmTeamBtn')?.addEventListener('click', async () => {
   updateStatusPanel();
   updateGuide('ROUND 1 // FASE DE COMANDO', 'Defina funções para seus combatentes ou poupe energia.');
   renderCommandCards();
+  resetNarratorToStatus();
 });
 
 // ════════════════════════════════════════════════════════════════════
@@ -979,6 +980,101 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
+// SVGs de Símbolos Táticos Cibernéticos (Sem Emojis, Vetores Limpos)
+const ATK_ICON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19L19 5M19 5h-5M19 5v5"/><path d="M19 19L5 5M5 5h5M5 5v5"/></svg>`;
+const DEF_ICON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V7l-9-5z" fill="currentColor" fill-opacity="0.18"/><path d="M12 6v12M8 10l4-2 4 2"/></svg>`;
+const SUP_ICON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/><circle cx="12" cy="12" r="9" stroke-width="1.6" stroke-dasharray="3 2"/></svg>`;
+const REST_ICON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor" fill-opacity="0.25"/></svg>`;
+const TARGET_ICON_SVG = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><line x1="12" y1="1" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="1" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="23" y2="12"/></svg>`;
+const INFO_ICON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+
+function setNarratorInfo(title, desc, iconSvg = null, color = '#00ff88', modeTag = null) {
+  const panel = $('terminalNarratorPanel');
+  const iconFrame = $('narratorIconFrame');
+  const titleEl = $('narratorPrimaryTitle');
+  const descEl = $('narratorDetailDesc');
+  const tagEl = $('versusNarratorTag');
+
+  if (titleEl) {
+    titleEl.textContent = title.startsWith('>') ? title : `> ${title}`;
+    titleEl.style.color = color;
+  }
+  if (descEl) {
+    descEl.textContent = desc;
+  }
+  if (iconFrame && iconSvg) {
+    iconFrame.innerHTML = iconSvg;
+    iconFrame.style.borderColor = color;
+    iconFrame.style.color = color;
+    iconFrame.style.boxShadow = `0 0 10px ${color}55`;
+  }
+  if (tagEl && modeTag) {
+    tagEl.textContent = modeTag;
+  }
+
+  if (panel) {
+    panel.classList.remove('pulse-highlight');
+    void panel.offsetWidth;
+    panel.classList.add('pulse-highlight');
+  }
+}
+
+function resetNarratorToStatus() {
+  const selBot = engine?.playerTeam?.find(r => r.id === selectedDeckRobotId);
+  if (selBot && selBot.action && selBot.action !== 'rest') {
+    if (selBot.action === 'attack') {
+      const atk = selBot._chosenAttack || (selBot.attacks && selBot.attacks[0]);
+      const target = selBot._chosenTarget || engine.enemyTeam.find(r => r.isAlive);
+      setNarratorInfo(
+        `${selBot.name} // ATAQUE PREPARADO: ${atk ? atk.name : 'OFENSIVA'}`,
+        `Alvo: ${target ? target.name : 'Nenhum'}. Consome ${atk ? atk.energyCost || 1 : 1} EN. Passe o cursor nos símbolos para inspecionar.`,
+        ATK_ICON_SVG,
+        '#ff4455',
+        '[ FASE DE COMANDO ]'
+      );
+      return;
+    } else if (selBot.action === 'defense') {
+      if (selBot.id === 'DB') {
+        setNarratorInfo(
+          `${selBot.name} // MURALHA COLETIVA (5 HP)`,
+          'Dino-Byte concederá barreira de 5 HP sobre os 3 robôs aliados por 2 rounds (Requer sucesso na moeda).',
+          DEF_ICON_SVG,
+          '#00e5ff',
+          '[ FASE DE COMANDO ]'
+        );
+      } else {
+        const target = selBot._chosenDefenseTarget || selBot;
+        setNarratorInfo(
+          `${selBot.name} // ESCUDO INDIVIDUAL (10 HP)`,
+          `Destinado a: ${target.name}. Efeito: ${selBot.defense?.desc || 'Barreira protetora.'}`,
+          DEF_ICON_SVG,
+          '#00e5ff',
+          '[ FASE DE COMANDO ]'
+        );
+      }
+      return;
+    } else if (selBot.action === 'support') {
+      const target = selBot._chosenAllyTarget || selBot;
+      setNarratorInfo(
+        `${selBot.name} // SUPORTE NANOMÉDICO`,
+        `Destinado a: ${target.name}. Cura até 4 HP ou revive aliado caído com 10 HP cheio.`,
+        SUP_ICON_SVG,
+        '#00ff88',
+        '[ FASE DE COMANDO ]'
+      );
+      return;
+    }
+  }
+
+  setNarratorInfo(
+    'SISTEMA TÁTICO ONLINE',
+    'Passe o cursor sobre os símbolos dos robôs para telemetria completa. O combate é narrado em tempo real aqui.',
+    INFO_ICON_SVG,
+    '#00ff88',
+    '[ FASE DE COMANDO ]'
+  );
+}
+
 function renderCommandCards() {
   const stack = $('versusRobotsCommandStack');
   if (!stack) return;
@@ -1006,136 +1102,135 @@ function renderCommandCards() {
     const isDefTaken = otherBots.some(r => r.action === 'defense');
     const isSupTaken = otherBots.some(r => r.action === 'support');
 
-    // Badge de status do robô quando recolhido
+    // Badge visual minimalista de status do robô quando recolhido
     let badgeText = '[ DISPONÍVEL ]';
     let badgeStyle = 'background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.1);';
     if (bot.action === 'attack') {
-      badgeText = '[ PAPEL: ATAQUE ]';
+      badgeText = '[ ATK ]';
       badgeStyle = 'background: rgba(255,51,68,0.18); color: #ff4455; border: 1px solid #ff3344;';
     } else if (bot.action === 'defense') {
-      badgeText = '[ PAPEL: DEFESA ]';
+      badgeText = '[ DEF ]';
       badgeStyle = 'background: rgba(0,229,255,0.18); color: #00e5ff; border: 1px solid #00e5ff;';
     } else if (bot.action === 'support') {
-      badgeText = '[ PAPEL: SUPORTE ]';
+      badgeText = '[ SUP ]';
       badgeStyle = 'background: rgba(0,255,136,0.18); color: #00ff88; border: 1px solid #00ff88;';
     } else if (bot.action === 'rest') {
-      badgeText = '[ PAPEL: POUPAR ]';
+      badgeText = '[ REST ]';
       badgeStyle = 'background: rgba(255,215,0,0.18); color: #ffd700; border: 1px solid #ffd700;';
     }
 
-    // Geração dinâmica dos botões de ação:
-    // Se uma ação estiver escolhida, ela maximiza tomando 100% da largura, sumindo com as outras duas
+    // Botões de Ação 100% em Símbolos Vetoriais (Sem emojis, ícones grandes com custos)
     let buttonsHTML = '';
     if (!bot.isAlive) {
       buttonsHTML = `<div class="robot-cmd-fallen-msg">[ COMBATENTE CAÍDO — USE SUPORTE PARA REVIVER ]</div>`;
-    } else if (!bot.action || bot.action === 'rest') {
-      // Nenhum papel escolhido: exibe os 4 botões (com bloqueio cinza para papéis já ocupados ou sem energia)
+    } else {
       const canAtk = bot.currentEnergy >= 1;
-      const canSup = bot.currentEnergy >= (bot.support?.energyCost || 2);
+      const supCost = bot.support?.energyCost || 2;
+      const canSup = bot.currentEnergy >= supCost;
+
+      const isAtkActive = bot.action === 'attack';
+      const isDefActive = bot.action === 'defense';
+      const isSupActive = bot.action === 'support';
+      const isRestActive = bot.action === 'rest' || !bot.action;
+
       buttonsHTML = `
         <div class="robot-cmd-action-buttons">
-          <button class="cmd-action-btn atk ${isAtkTaken || !canAtk ? 'locked-role' : ''}" data-robot="${bot.id}" data-action="attack" ${isAtkTaken || !canAtk ? 'disabled' : ''} title="${!canAtk ? 'Sem energia suficiente (mín 1 EN)' : ''}">
-            [ ATK ] ATAQUE ${!canAtk ? '(0 EN)' : ''}
+          <button class="cmd-action-icon-btn atk ${isAtkActive ? 'selected' : ''} ${isAtkTaken || !canAtk ? 'locked-role' : ''}"
+                  data-robot="${bot.id}" data-action="attack"
+                  ${isAtkTaken || !canAtk ? 'disabled' : ''}
+                  aria-label="Ataque">
+            ${ATK_ICON_SVG}
+            <span class="cmd-action-cost-pill">1 EN</span>
           </button>
-          <button class="cmd-action-btn def ${isDefTaken ? 'locked-role' : ''}" data-robot="${bot.id}" data-action="defense" ${isDefTaken ? 'disabled' : ''}>
-            [ DEF ] DEFESA (0 EN)
+          <button class="cmd-action-icon-btn def ${isDefActive ? 'selected' : ''} ${isDefTaken ? 'locked-role' : ''}"
+                  data-robot="${bot.id}" data-action="defense"
+                  ${isDefTaken ? 'disabled' : ''}
+                  aria-label="Defesa">
+            ${DEF_ICON_SVG}
+            <span class="cmd-action-cost-pill">0 EN</span>
           </button>
-          <button class="cmd-action-btn sup ${isSupTaken || !canSup ? 'locked-role' : ''}" data-robot="${bot.id}" data-action="support" ${isSupTaken || !canSup ? 'disabled' : ''} title="${!canSup ? 'Sem energia suficiente (mín 2 EN)' : ''}">
-            [ SUP ] SUPORTE ${!canSup ? '(-2 EN)' : ''}
+          <button class="cmd-action-icon-btn sup ${isSupActive ? 'selected' : ''} ${isSupTaken || !canSup ? 'locked-role' : ''}"
+                  data-robot="${bot.id}" data-action="support"
+                  ${isSupTaken || !canSup ? 'disabled' : ''}
+                  aria-label="Suporte">
+            ${SUP_ICON_SVG}
+            <span class="cmd-action-cost-pill">${supCost} EN</span>
           </button>
-          <button class="cmd-action-btn rst ${bot.action === 'rest' ? 'selected' : ''}" data-robot="${bot.id}" data-action="rest">
-            [ REST ] POUPAR (+1 EN)
-          </button>
-        </div>
-      `;
-    } else if (bot.action === 'attack') {
-      buttonsHTML = `
-        <div class="robot-cmd-action-buttons">
-          <button class="cmd-action-btn selected-maximized atk" data-robot="${bot.id}" data-action="attack" title="Clique para cancelar esta ação">
-            <span>[ ATK ] ATAQUE</span>
-            <span class="action-status-tag">[ PAPEL ATIVO: ATAQUE ] ✕ CANCELAR</span>
-          </button>
-          <button class="cmd-action-btn rst" data-robot="${bot.id}" data-action="rest" style="flex:1 1 100%;margin-top:4px;">
-            [ REST ] POUPAR ENERGIA
-          </button>
-        </div>
-      `;
-    } else if (bot.action === 'defense') {
-      buttonsHTML = `
-        <div class="robot-cmd-action-buttons">
-          <button class="cmd-action-btn selected-maximized def" data-robot="${bot.id}" data-action="defense" title="Clique para cancelar esta ação">
-            <span>[ DEF ] DEFESA</span>
-            <span class="action-status-tag">[ PAPEL ATIVO: DEFESA ] ✕ CANCELAR</span>
-          </button>
-          <button class="cmd-action-btn rst" data-robot="${bot.id}" data-action="rest" style="flex:1 1 100%;margin-top:4px;">
-            [ REST ] POUPAR ENERGIA
-          </button>
-        </div>
-      `;
-    } else if (bot.action === 'support') {
-      buttonsHTML = `
-        <div class="robot-cmd-action-buttons">
-          <button class="cmd-action-btn selected-maximized sup" data-robot="${bot.id}" data-action="support" title="Clique para cancelar esta ação">
-            <span>[ SUP ] SUPORTE</span>
-            <span class="action-status-tag">[ PAPEL ATIVO: SUPORTE ] ✕ CANCELAR</span>
-          </button>
-          <button class="cmd-action-btn rst" data-robot="${bot.id}" data-action="rest" style="flex:1 1 100%;margin-top:4px;">
-            [ REST ] POUPAR ENERGIA
+          <button class="cmd-action-icon-btn rst ${isRestActive ? 'selected' : ''}"
+                  data-robot="${bot.id}" data-action="rest"
+                  aria-label="Poupar Energia">
+            ${REST_ICON_SVG}
+            <span class="cmd-action-cost-pill">+1 EN</span>
           </button>
         </div>
       `;
     }
 
-    // Subpainéis de configuração (Golpe/Informações)
+    // Subpainéis de Configuração Limpos e Visuais (Sem textos longos no card)
     let subpanelHTML = '';
-    if (!bot.isAlive) {
-      subpanelHTML = '';
-    } else if (action === 'attack') {
-      const skillsHTML = (bot.attacks || []).map((atk, ai) => {
-        const isChosen = (bot._chosenAttack?.name === atk.name) || (!bot._chosenAttack && ai === 0);
-        const canAfford = bot.currentEnergy >= (atk.energyCost || 0);
-        const percentLabel = atk.level === 1 ? '25%' : atk.level === 2 ? '50%' : '110%';
-        return `
-          <button class="cmd-chip-btn ${isChosen ? 'active' : ''} ${!canAfford ? 'disabled' : ''}" data-robot="${bot.id}" data-type="skill" data-index="${ai}" title="${atk.desc || ''}">
-            <strong>${atk.name}</strong>
-            <span class="chip-cost">${atk.energyCost > 0 ? `${atk.energyCost} EN (${percentLabel})` : 'GRÁTIS'}</span>
-          </button>
-        `;
-      }).join('');
+    if (bot.isAlive) {
+      if (action === 'attack') {
+        const skillsHTML = (bot.attacks || []).map((atk, ai) => {
+          const isChosen = (bot._chosenAttack?.name === atk.name) || (!bot._chosenAttack && ai === 0);
+          const canAfford = bot.currentEnergy >= (atk.energyCost || 0);
+          const roman = ai === 0 ? 'I' : ai === 1 ? 'II' : 'III';
+          return `
+            <div class="cmd-tier-chip ${isChosen ? 'active' : ''} ${!canAfford ? 'disabled' : ''}"
+                 data-robot="${bot.id}" data-type="skill" data-index="${ai}"
+                 data-name="${atk.name}" data-cost="${atk.energyCost || 0} EN" data-desc="${atk.desc || ''}">
+              <span class="cmd-tier-num">[ ${roman} ]</span>
+              <span class="cmd-tier-cost">${atk.energyCost > 0 ? `${atk.energyCost} EN` : '0 EN'}</span>
+            </div>
+          `;
+        }).join('');
 
-      subpanelHTML = `
-        <div class="robot-cmd-subpanel">
-          <div class="cmd-sub-row"><span class="cmd-sub-label">GOLPE:</span> <div class="cmd-chips-wrap">${skillsHTML}</div></div>
-        </div>
-      `;
-    } else if (action === 'defense') {
-      if (bot.id === 'DB') {
+        const targetBot = bot._chosenTarget || engine.enemyTeam.find(r => r.isAlive) || engine.enemyTeam[0];
         subpanelHTML = `
-          <div class="robot-cmd-subpanel defense-panel">
-            <span class="cmd-panel-badge" style="color:#ff3344;border-color:#ff3344">[ESCUDO COLETIVO]</span>
-            Muralha Tripla de <strong>5 HP</strong> para TODOS OS 3 ROBÔS (Dura 2 rounds).
+          <div class="robot-cmd-subpanel">
+            <div class="cmd-sub-row" style="justify-content:space-between;">
+              <div class="cmd-tier-chips">${skillsHTML}</div>
+              <button class="cmd-target-badge-btn" data-robot="${bot.id}" data-type="change-atk-target" title="Alterar alvo do ataque no tabuleiro">
+                ${TARGET_ICON_SVG} <span>${targetBot ? targetBot.name : 'ALVO'}</span>
+              </button>
+            </div>
           </div>
         `;
-      } else {
-        const targetBot = bot._chosenDefenseTarget || bot;
+      } else if (action === 'defense') {
+        if (bot.id === 'DB') {
+          subpanelHTML = `
+            <div class="robot-cmd-subpanel defense-panel" style="flex-direction:row;align-items:center;justify-content:space-between;">
+              <span class="cmd-panel-badge" style="color:#00e5ff;display:flex;align-items:center;gap:4px;">
+                ${DEF_ICON_SVG} MURALHA 5 HP [TODOS]
+              </span>
+              <span style="font-size:0.65rem;color:rgba(255,255,255,0.7);">(2 ROUNDS)</span>
+            </div>
+          `;
+        } else {
+          const targetBot = bot._chosenDefenseTarget || bot;
+          subpanelHTML = `
+            <div class="robot-cmd-subpanel defense-panel" style="flex-direction:row;align-items:center;justify-content:space-between;">
+              <span class="cmd-panel-badge" style="color:#00e5ff;display:flex;align-items:center;gap:4px;">
+                ${DEF_ICON_SVG} ESCUDO 10 HP
+              </span>
+              <button class="cmd-target-badge-btn" data-robot="${bot.id}" data-type="change-def-target" title="Escolher aliado para receber o escudo">
+                ${TARGET_ICON_SVG} <span>${targetBot ? targetBot.name : 'ALIADO'}</span>
+              </button>
+            </div>
+          `;
+        }
+      } else if (action === 'support') {
+        const allyTarget = bot._chosenAllyTarget || bot;
         subpanelHTML = `
-          <div class="robot-cmd-subpanel defense-panel">
-            <span class="cmd-panel-badge" style="color:#00e5ff;border-color:#00e5ff">[ESCUDO 10 HP]</span>
-            Alvo: <strong>${targetBot.name}</strong> (${bot.defense?.name || ''}).<br>
-            <span style="color:#00e5ff;font-size:0.75rem;display:block;margin-top:2px;">${bot.defense?.desc || ''}</span>
-            <button class="cmd-chip-btn active" data-robot="${bot.id}" data-type="change-def-target" style="margin-top:6px;width:100%;text-align:center;">
-              [ ESCOLHER ALVO DO ESCUDO NO TABULEIRO ]
+          <div class="robot-cmd-subpanel" style="flex-direction:row;align-items:center;justify-content:space-between;border-color:rgba(0,255,136,0.3);color:#00ff88;">
+            <span class="cmd-panel-badge" style="display:flex;align-items:center;gap:4px;">
+              ${SUP_ICON_SVG} NANITES (${bot.support?.energyCost || 2} EN)
+            </span>
+            <button class="cmd-target-badge-btn" data-robot="${bot.id}" data-type="change-sup-target" style="border-color:rgba(0,255,136,0.35);color:#00ff88;" title="Escolher aliado para curar ou reviver">
+              ${TARGET_ICON_SVG} <span>${allyTarget ? allyTarget.name : 'ALIADO'}</span>
             </button>
           </div>
         `;
       }
-    } else if (action === 'support') {
-      const cost = (bot.support && bot.support.energyCost) ? bot.support.energyCost : 2;
-      subpanelHTML = `
-        <div class="robot-cmd-subpanel">
-          <span class="cmd-panel-badge" style="color:#00ff88;border-color:#00ff88">[SUPORTE]</span> Custo: ${cost} Energia. Cura até 4 HP ou Revive com 10 HP cheio.
-        </div>
-      `;
     }
 
     card.innerHTML = `
@@ -1164,11 +1259,12 @@ function renderCommandCards() {
 
     // Ao clicar no card, ele se torna o card selecionado (recolhendo os outros)
     card.onclick = (e) => {
-      if (e.target.closest('.cmd-action-btn') || e.target.closest('.cmd-chip-btn')) return;
+      if (e.target.closest('.cmd-action-icon-btn') || e.target.closest('.cmd-tier-chip') || e.target.closest('.cmd-target-badge-btn')) return;
       if (selectedDeckRobotId !== bot.id) {
         selectedDeckRobotId = bot.id;
         getAudio().playKeyClack();
         renderCommandCards();
+        resetNarratorToStatus();
       }
     };
 
@@ -1182,17 +1278,73 @@ function attachCommandCardListeners() {
   const stack = $('versusRobotsCommandStack');
   if (!stack) return;
 
-  // Botões de Função Principal (ATK, DEF, SUP, REST)
-  stack.querySelectorAll('.cmd-action-btn').forEach(btn => {
+  // Botões de Função Principal em Símbolos (ATK, DEF, SUP, REST)
+  stack.querySelectorAll('.cmd-action-icon-btn').forEach(btn => {
+    const robotId = btn.dataset.robot;
+    const action = btn.dataset.action;
+    const robot = engine.playerTeam.find(r => r.id === robotId);
+
+    // Efeito Hover para narrar detalhadamente na sessão ao lado do terminal
+    btn.onmouseenter = () => {
+      if (!robot) return;
+      if (action === 'attack') {
+        const canAtk = robot.currentEnergy >= 1;
+        setNarratorInfo(
+          `ATAQUE DE COMBATE (1 EN)`,
+          `Dispara golpe de energia direto. ${!canAtk ? '[SEM ENERGIA SUFICIENTE] ' : ''}Requer sucesso na moeda e causa dano ampliado pelo ATK (${robot.attackPower} atual).`,
+          ATK_ICON_SVG,
+          '#ff4455',
+          '[ TÁTICA // OFENSIVA ]'
+        );
+      } else if (action === 'defense') {
+        if (robot.id === 'DB') {
+          setNarratorInfo(
+            `DEFESA: MURALHA DINO (5 HP COLETIVO)`,
+            `Dino-Byte é o ÚNICO que protege os 3 robôs ao mesmo tempo. Concede 5 HP de escudo para todos por 2 rounds (Requer sucesso na moeda).`,
+            DEF_ICON_SVG,
+            '#00e5ff',
+            '[ TÁTICA // DEFESA ]'
+          );
+        } else {
+          setNarratorInfo(
+            `DEFESA INDIVIDUAL (10 HP)`,
+            `Concede 10 HP de escudo ao aliado selecionado. Efeito único: ${robot.defense?.desc || 'Barreira protetora.'}`,
+            DEF_ICON_SVG,
+            '#00e5ff',
+            '[ TÁTICA // DEFESA ]'
+          );
+        }
+      } else if (action === 'support') {
+        const cost = robot.support?.energyCost || 2;
+        const canSup = robot.currentEnergy >= cost;
+        setNarratorInfo(
+          `SUPORTE & NANITES (${cost} EN)`,
+          `Distribui nanorrobôs médicos. ${!canSup ? '[SEM ENERGIA SUFICIENTE] ' : ''}Cura 4 HP de combatente ativo ou REVIVE combatente caído com 10 HP cheio.`,
+          SUP_ICON_SVG,
+          '#00ff88',
+          '[ TÁTICA // SUPORTE ]'
+        );
+      } else if (action === 'rest') {
+        setNarratorInfo(
+          `POUPAR ENERGIA (+1 EN)`,
+          `Combatente descansa durante este round para recarregar baterias (+1 ponto de Energia para turnos posteriores).`,
+          REST_ICON_SVG,
+          '#ffd700',
+          '[ TÁTICA // RECARGA ]'
+        );
+      }
+    };
+
+    btn.onmouseleave = () => {
+      resetNarratorToStatus();
+    };
+
     btn.onclick = (e) => {
       e.stopPropagation();
       if (isClashRunning) return;
-      const robotId = btn.dataset.robot;
-      const action = btn.dataset.action;
-      const robot = engine.playerTeam.find(r => r.id === robotId);
       if (!robot || !robot.isAlive) return;
 
-      // Se clicar no botão que já está ativo, DESMARCA a ação (limpa)
+      // Se clicar no botão que já está ativo, DESMARCA a ação (limpa para poupar)
       if (robot.action === action) {
         robot.action = 'rest';
         robot._chosenTarget = null;
@@ -1201,6 +1353,7 @@ function attachCommandCardListeners() {
         getAudio().playKeyClack();
         addLog(`[AÇÃO CANCELADA] ${robot.name} desmarcou sua ação.`, 'info');
         renderCommandCards();
+        resetNarratorToStatus();
         return;
       }
 
@@ -1212,6 +1365,7 @@ function attachCommandCardListeners() {
         robot._chosenDefenseTarget = null;
         getAudio().playKeyClack();
         renderCommandCards();
+        resetNarratorToStatus();
         return;
       }
 
@@ -1235,10 +1389,10 @@ function attachCommandCardListeners() {
           addLog(`[ENERGIA] ${robot.name} não possui energia suficiente para atacar (${robot.currentEnergy}/${minCost} EN)!`, 'miss');
           robot.action = 'rest';
           renderCommandCards();
+          resetNarratorToStatus();
           return;
         }
         if (!robot._chosenAttack) robot._chosenAttack = robot.attacks[0];
-        // Abre tela escura com freeze e destaque nos alvos adversários
         openTargetSelection(robot, 'attack');
       } else if (action === 'support') {
         const supCost = robot.support?.energyCost || 2;
@@ -1247,13 +1401,11 @@ function attachCommandCardListeners() {
           addLog(`[ENERGIA] ${robot.name} não possui energia suficiente para suporte (${robot.currentEnergy}/${supCost} EN)!`, 'miss');
           robot.action = 'rest';
           renderCommandCards();
+          resetNarratorToStatus();
           return;
         }
-        // Abre tela escura com freeze e destaque nos aliados
         openTargetSelection(robot, 'support');
       } else if (action === 'defense') {
-        // REGRA DO USUÁRIO: O ÚNICO que dá escudo pros 3 é o DB (5 HP).
-        // O resto tem que escolher 1 aliado para dar escudo (10 HP com efeito único).
         if (robot.id !== 'DB') {
           openTargetSelection(robot, 'defense');
         } else {
@@ -1262,33 +1414,103 @@ function attachCommandCardListeners() {
       }
 
       renderCommandCards();
+      resetNarratorToStatus();
     };
   });
 
   // Botões de Trocar Alvo de Escudo
-  stack.querySelectorAll('.cmd-chip-btn[data-type="change-def-target"]').forEach(btn => {
+  stack.querySelectorAll('.cmd-target-badge-btn[data-type="change-def-target"]').forEach(btn => {
+    const robotId = btn.dataset.robot;
+    const robot = engine.playerTeam.find(r => r.id === robotId);
+    btn.onmouseenter = () => {
+      setNarratorInfo(
+        `SELEÇÃO DE ALVO DO ESCUDO`,
+        `Clique para abrir a seleção direta no tabuleiro e escolher o robô aliado que receberá a blindagem.`,
+        DEF_ICON_SVG,
+        '#00e5ff',
+        '[ MIRA // ALIADO ]'
+      );
+    };
+    btn.onmouseleave = () => resetNarratorToStatus();
     btn.onclick = (e) => {
       e.stopPropagation();
       if (isClashRunning) return;
-      const robotId = btn.dataset.robot;
-      const robot = engine.playerTeam.find(r => r.id === robotId);
       if (robot) openTargetSelection(robot, 'defense');
     };
   });
 
-  // Botões de Skill
-  stack.querySelectorAll('.cmd-chip-btn[data-type="skill"]').forEach(btn => {
+  // Botões de Trocar Alvo de Suporte
+  stack.querySelectorAll('.cmd-target-badge-btn[data-type="change-sup-target"]').forEach(btn => {
+    const robotId = btn.dataset.robot;
+    const robot = engine.playerTeam.find(r => r.id === robotId);
+    btn.onmouseenter = () => {
+      setNarratorInfo(
+        `SELEÇÃO DE ALVO DO SUPORTE`,
+        `Clique para abrir a seleção direta no tabuleiro e escolher o aliado a curar (ou ressuscitar se estiver caído).`,
+        SUP_ICON_SVG,
+        '#00ff88',
+        '[ MIRA // ALIADO ]'
+      );
+    };
+    btn.onmouseleave = () => resetNarratorToStatus();
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      if (isClashRunning) return;
+      if (robot) openTargetSelection(robot, 'support');
+    };
+  });
+
+  // Botões de Trocar Alvo de Ataque
+  stack.querySelectorAll('.cmd-target-badge-btn[data-type="change-atk-target"]').forEach(btn => {
+    const robotId = btn.dataset.robot;
+    const robot = engine.playerTeam.find(r => r.id === robotId);
+    btn.onmouseenter = () => {
+      setNarratorInfo(
+        `SELEÇÃO DE ALVO DO ATAQUE`,
+        `Clique para travar a mira diretamente em um robô adversário no tabuleiro tático.`,
+        ATK_ICON_SVG,
+        '#ff4455',
+        '[ MIRA // INIMIGO ]'
+      );
+    };
+    btn.onmouseleave = () => resetNarratorToStatus();
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      if (isClashRunning) return;
+      if (robot) openTargetSelection(robot, 'attack');
+    };
+  });
+
+  // Botões de Skill (Tier Chips)
+  stack.querySelectorAll('.cmd-tier-chip[data-type="skill"]').forEach(btn => {
+    const robotId = btn.dataset.robot;
+    const atkIdx = parseInt(btn.dataset.index, 10);
+    const robot = engine.playerTeam.find(r => r.id === robotId);
+    const atk = robot?.attacks?.[atkIdx];
+
+    btn.onmouseenter = () => {
+      if (!atk) return;
+      const percentLabel = atk.level === 1 ? '25%' : atk.level === 2 ? '50%' : '110%';
+      setNarratorInfo(
+        `GOLPE NÍVEL ${btn.dataset.index === '0' ? 'I' : btn.dataset.index === '1' ? 'II' : 'III'}: ${atk.name} (${atk.energyCost || 0} EN)`,
+        `${atk.desc || 'Ataque balístico.'} Potência de impacto: ${percentLabel} do dano.`,
+        ATK_ICON_SVG,
+        '#ff4455',
+        `[ GOLPE NÍVEL ${btn.dataset.index === '0' ? 'I' : btn.dataset.index === '1' ? 'II' : 'III'} ]`
+      );
+    };
+
+    btn.onmouseleave = () => resetNarratorToStatus();
+
     btn.onclick = (e) => {
       e.stopPropagation();
       if (isClashRunning || btn.classList.contains('disabled')) return;
-      const robotId = btn.dataset.robot;
-      const atkIdx = parseInt(btn.dataset.index, 10);
-      const robot = engine.playerTeam.find(r => r.id === robotId);
       if (!robot || !robot.attacks[atkIdx]) return;
 
       robot._chosenAttack = robot.attacks[atkIdx];
       getAudio().playKeyClack();
       renderCommandCards();
+      resetNarratorToStatus();
     };
   });
 }
@@ -1356,6 +1578,7 @@ async function executeSimultaneousClash() {
   // 1ª ETAPA — DEFESA: dá um passo à frente, faz minigame e volta se a moeda permitir
   // ──────────────────────────────────────────────────────────────────
   updateGuide('EMBATE // 1ª ETAPA: DEFESA', 'Passo à frente: protocolo de escudo holográfico.');
+  setNarratorInfo('1ª ETAPA: DEFESA', 'Acionamento de barreiras e escudos de contenção holográficos.', DEF_ICON_SVG, '#00e5ff', '[ COMBATE // DEFESA ]');
 
   const defRobots = [
     ...(engine.initiative === 'PLAYER'
@@ -1369,6 +1592,7 @@ async function executeSimultaneousClash() {
     const stepCol = isPlayer ? 1 : 3;
 
     addLog(`[DEFESA] ${defBot.name} dá um passo à frente para acionar o escudo!`, 'defense');
+    setNarratorInfo(`DEFESA // ${defBot.name}`, `${defBot.name} avança para acionar protocolo de escudo holográfico.`, DEF_ICON_SVG, '#00e5ff', '[ DEFESA ]');
     await board.animateRobotMove(defBot, stepCol, defBot.homeRow, 350);
     await delay(250);
 
@@ -1391,20 +1615,27 @@ async function executeSimultaneousClash() {
       for (const ev of events) {
         if (ev.type === 'defense_all') {
           addLog(`[ESCUDO COLETIVO] ${defBot.name} ergueu Muralha de 5 HP sobre toda a equipe (Dura 2 rounds)!`, 'defense');
+          setNarratorInfo(`MURALHA COLETIVA: ${defBot.name}`, `Barreira de 5 HP erguida sobre os 3 robôs aliados por 2 rounds!`, DEF_ICON_SVG, '#00e5ff', '[ ESCUDO COLETIVO ]');
         } else if (ev.type === 'defense_single') {
           addLog(`[ESCUDO INDIVIDUAL] ${defBot.name} concedeu Escudo de ${ev.shieldHp} HP para ${ev.targetName}!`, 'defense');
+          setNarratorInfo(`ESCUDO: ${ev.targetName}`, `${defBot.name} concedeu ${ev.shieldHp} HP de escudo para ${ev.targetName}!`, DEF_ICON_SVG, '#00e5ff', '[ ESCUDO INDIVIDUAL ]');
         } else if (ev.type === 'shield_energy_buff') {
           addLog(`[EFEITO ESCUDO] ${ev.targetName} recebeu +${ev.amount} Energia instantânea do Condensador Glacial!`, 'support');
+          setNarratorInfo(`ENERGIA GLACIAL: ${ev.targetName}`, `+${ev.amount} Energia instantânea concedida pelo escudo!`, SUP_ICON_SVG, '#00ff88', '[ EFEITO ]');
         } else if (ev.type === 'shield_atk_buff') {
           addLog(`[EFEITO ESCUDO] ${ev.targetName} recebeu +${ev.amount} ATK de sobrecarga da Blindagem Dourada!`, 'attack');
+          setNarratorInfo(`SOBRECARGA DOURADA: ${ev.targetName}`, `+${ev.amount} ATK amplificado pela Blindagem Dourada!`, ATK_ICON_SVG, '#ffd700', '[ EFEITO ]');
         } else if (ev.type === 'shield_regen_buff') {
           addLog(`[EFEITO ESCUDO] ${ev.targetName} ativou Nanites Regenerativos (+${ev.amount} HP por round durado)!`, 'support');
+          setNarratorInfo(`NANITES REGENERATIVOS: ${ev.targetName}`, `+${ev.amount} HP regenerado a cada round de escudo!`, SUP_ICON_SVG, '#00ff88', '[ EFEITO ]');
         } else if (ev.type === 'shield_reflect_buff') {
           addLog(`[EFEITO ESCUDO] ${ev.targetName} ativou Espinhos Elétricos (reflete ${ev.amount} dano ao atacante)!`, 'miss');
+          setNarratorInfo(`ESPINHOS ELÉTRICOS: ${ev.targetName}`, `Reflete ${ev.amount} de dano contra qualquer atacante!`, REST_ICON_SVG, '#ffd700', '[ EFEITO ]');
         }
       }
     } else {
       addLog(`[DEFESA] ${defBot.name} errou a moeda (sem escudo).`, 'miss');
+      setNarratorInfo(`DEFESA FALHOU: ${defBot.name}`, `A moeda caiu incorreta. O escudo holográfico falhou em armar.`, DEF_ICON_SVG, '#ff4455', '[ DEFESA // FALHA ]');
       if (isPlayer) getAudio().playAccessDenied();
     }
 
@@ -1419,6 +1650,7 @@ async function executeSimultaneousClash() {
   // 2ª ETAPA — ATAQUE: dá um passo à frente, se posiciona de frente com o alvo, faz o minigame, ataca e volta
   // ──────────────────────────────────────────────────────────────────
   updateGuide('EMBATE // 2ª ETAPA: ATAQUES', 'Avanço frontal, alinhamento com o alvo e disparo.');
+  setNarratorInfo('2ª ETAPA: ATAQUES', 'Avanço frontal, alinhamento de mira e disparos balísticos.', ATK_ICON_SVG, '#ff4455', '[ COMBATE // ATAQUE ]');
 
   const playerAtk = engine.playerTeam.find(r => r.action === 'attack' && r.isAlive);
   const enemyAtk  = engine.enemyTeam.find(r => r.action === 'attack' && r.isAlive);
@@ -1441,6 +1673,7 @@ async function executeSimultaneousClash() {
       : myEnemySide.find(r => r.row === attacker.homeRow && r.isAlive) || myEnemySide.find(r => r.isAlive);
 
     addLog(`[ATAQUE] ${attacker.name} avança para a linha de frente e mira em ${target ? target.name : 'vazio'}!`, 'attack');
+    setNarratorInfo(`ATAQUE // ${attacker.name}`, `Avançando para desferir ataque em ${target ? target.name : 'alvo'}!`, ATK_ICON_SVG, '#ff4455', '[ COMBATE // ATAQUE ]');
     await board.animateRobotMove(attacker, stepCol, attacker.homeRow, 350);
     await delay(250);
 
@@ -1449,6 +1682,7 @@ async function executeSimultaneousClash() {
     const energyCost = atkMove?.energyCost || 1;
     if (attacker.currentEnergy < energyCost) {
       addLog(`[ATAQUE] ${attacker.name} não possui energia suficiente (${attacker.currentEnergy}/${energyCost} EN)! Passa a vez sem atacar.`, 'miss');
+      setNarratorInfo(`SEM ENERGIA: ${attacker.name}`, `Energia insuficiente para o disparo (${attacker.currentEnergy}/${energyCost} EN).`, ATK_ICON_SVG, '#ff4455', '[ SEM ENERGIA ]');
       const center = board._cellCenter(attacker.homeCol, attacker.homeRow);
       board.emitFloatingText('SEM ENERGIA', center.x, center.y - 30, '#ff4455', 14);
       if (isPlayer) getAudio().playAccessDenied();
@@ -1468,6 +1702,7 @@ async function executeSimultaneousClash() {
       versus3DEngine.trigger3DAttackLaser(attacker.side, attacker.homeRow, attacker.homeRow, colorHex);
       await board.animateMissSequence(attacker, attacker.homeRow);
       addLog(`[ATAQUE] ${attacker.name} disparou na Linha ${attacker.homeRow}, mas NÃO HÁ ALVO! (0 de dano).`, 'miss');
+      setNarratorInfo(`SEM ALVO VÁLIDO`, `${attacker.name} disparou contra setor vazio (0 de dano).`, ATK_ICON_SVG, '#ffd700', '[ ERRO DE MIRA ]');
       getAudio().playLaserSound();
     } else {
       // Minigame proposto (desempenho proporcional de 0 a 100%)
@@ -1493,21 +1728,27 @@ async function executeSimultaneousClash() {
           if (ev.type === 'shield_hit') {
             board.emitFloatingText(`ESCUDO: -${ev.absorbed}`, tCenter.x, tCenter.y - 30, '#00e5ff', 15);
             addLog(`[ESCUDO] Escudo de ${target.name} absorveu ${ev.absorbed} de dano! (${ev.remaining} restantes)`, 'defense');
+            setNarratorInfo(`ESCUDO ABSORVEU (-${ev.absorbed})`, `Escudo de ${target.name} absorveu o impacto! (${ev.remaining} HP restantes)`, DEF_ICON_SVG, '#00e5ff', '[ ESCUDO ]');
           } else if (ev.type === 'shield_break') {
             await board.animateShieldBreak(target);
             addLog(`[ESCUDO QUEBRADO] Escudo de ${target.name} QUEBROU!`, 'miss');
+            setNarratorInfo(`ESCUDO QUEBRADO!`, `A barreira defensiva de ${target.name} estilhaçou!`, DEF_ICON_SVG, '#ff4455', '[ QUEBRA DE ESCUDO ]');
           } else if (ev.type === 'damage') {
             board.emitFloatingText(`-${ev.damage} HP`, tCenter.x, tCenter.y - 45, '#ff3344', 20);
             addLog(`[ATAQUE] ${attacker.name} atingiu ${target.name}! -${ev.damage} HP (Restante: ${ev.hp})`, 'attack');
+            setNarratorInfo(`IMPACTO DIRETO (-${ev.damage} HP)`, `${attacker.name} atingiu ${target.name}! (HP restante: ${ev.hp})`, ATK_ICON_SVG, '#ff4455', '[ IMPACTO ]');
           } else if (ev.type === 'shield_reflect') {
             board.emitFloatingText(`REFLEXÃO: -${ev.damage} HP`, aCenter.x, aCenter.y - 30, '#ff8c00', 16);
             board.emitParticles(aCenter.x, aCenter.y, '#ff8c00', 25, { speed: 5 });
             addLog(`[CONTRA-ATAQUE ELÉTRICO] Escudo de ${target.name} refletiu ${ev.damage} de dano em ${attacker.name}!`, 'miss');
+            setNarratorInfo(`CONTRA-ATAQUE ELÉTRICO`, `Escudo refletiu ${ev.damage} de dano de volta em ${attacker.name}!`, REST_ICON_SVG, '#ffd700', '[ REFLEXÃO ]');
           } else if (ev.type === 'robot_down') {
             addLog(`[DESTRUIÇÃO] ${ev.targetName || target.name} TOMBOU em combate!`, 'kill');
             getAudio().playPowerUp();
+            setNarratorInfo(`COMBATENTE TOMBOU!`, `${ev.targetName || target.name} foi destruído em combate!`, INFO_ICON_SVG, '#ffd700', '[ ABATE ]');
           } else if (ev.type === 'kill_reward') {
             addLog(`[MEDALHA] ${attacker.name} conquistou +1 MEDALHA (+2 HP, +1 Energia)!`, 'kill');
+            setNarratorInfo(`MEDALHA DE HONRA`, `${attacker.name} recebeu medalha militar (+2 HP, +1 EN)!`, INFO_ICON_SVG, '#ffd700', '[ RECOMPENSA ]');
           }
         }
 
@@ -1538,6 +1779,7 @@ async function executeSimultaneousClash() {
   // 3ª ETAPA — SUPORTE: vai para frente e usa habilidade que custa energia. Se não houver energia, não faz nada só passa a vez
   // ──────────────────────────────────────────────────────────────────
   updateGuide('EMBATE // 3ª ETAPA: SUPORTE', 'Protocolos médicos e nanites de suporte.');
+  setNarratorInfo('3ª ETAPA: SUPORTE', 'Protocolos médicos e nanites de reparo celular.', SUP_ICON_SVG, '#00ff88', '[ COMBATE // SUPORTE ]');
 
   const playerSup = engine.playerTeam.find(r => r.action === 'support' && r.isAlive);
   const enemySup  = engine.enemyTeam.find(r => r.action === 'support' && r.isAlive);
@@ -1557,6 +1799,7 @@ async function executeSimultaneousClash() {
     // Se não houver energia, ele não faz nada só passa a vez!
     if (supporter.currentEnergy < energyCost) {
       addLog(`[SUPORTE] ${supporter.name} não possui energia suficiente (${supporter.currentEnergy}/${energyCost} EN)! Passa a vez sem agir.`, 'miss');
+      setNarratorInfo(`SEM ENERGIA: ${supporter.name}`, `Energia insuficiente para suporte (${supporter.currentEnergy}/${energyCost} EN).`, SUP_ICON_SVG, '#ff4455', '[ SEM ENERGIA ]');
       const center = board._cellCenter(supporter.homeCol, supporter.homeRow);
       board.emitFloatingText('SEM ENERGIA', center.x, center.y - 30, '#ff4455', 14);
       if (isPlayer) getAudio().playAccessDenied();
@@ -1567,6 +1810,7 @@ async function executeSimultaneousClash() {
     // Vai para a frente
     const supStepCol = isPlayer ? 1 : 3;
     addLog(`[SUPORTE] ${supporter.name} avança e canaliza suporte (${energyCost} EN)!`, 'support');
+    setNarratorInfo(`SUPORTE // ${supporter.name}`, `Avançando para canalizar nanites de suporte (${energyCost} EN)!`, SUP_ICON_SVG, '#00ff88', '[ SUPORTE ]');
     await board.animateRobotMove(supporter, supStepCol, supporter.homeRow, 350);
     await delay(250);
 
@@ -1582,21 +1826,26 @@ async function executeSimultaneousClash() {
       if (ev.type === 'revive') {
         await board.animateRevive(target);
         addLog(`[RESSURREIÇÃO] ${target.name} foi REVIVIDO com 10 HP pelo Suporte!`, 'kill');
+        setNarratorInfo(`RESSURREIÇÃO: ${target.name}`, `${target.name} reativado em combate com 10 HP pleno!`, SUP_ICON_SVG, '#00ff88', '[ RESSURREIÇÃO ]');
         getAudio().playPowerUp();
       } else if (ev.type === 'support_heal') {
         await board.animateSupportSequence(supporter, target, ev.amount, 0);
         addLog(`[SUPORTE] ${target.name} curou +${ev.amount} HP (HP: ${ev.hp})`, 'support');
+        setNarratorInfo(`REPARO: ${target.name}`, `+${ev.amount} HP restaurado pelo suporte de ${supporter.name}!`, SUP_ICON_SVG, '#00ff88', '[ CURA ]');
         getAudio().playHealSound();
       } else if (ev.type === 'support_hot') {
         await board.animateSupportSequence(supporter, target, ev.amount, 0);
         addLog(`[SUPORTE] ${target.name} recebeu Regeneração contínua!`, 'support');
+        setNarratorInfo(`REGENERAÇÃO NANITE`, `Regeneração contínua aplicada em ${target.name}!`, SUP_ICON_SVG, '#00ff88', '[ REGENERAÇÃO ]');
       } else if (ev.type === 'support_heal_all') {
         await board.animateSupportSequence(supporter, target, ev.amount, 0);
         addLog(`[SUPORTE] Pulso de reparo ativado (+${ev.amount} HP para todos)!`, 'support');
+        setNarratorInfo(`PULSO DE CURA GLOBAL`, `+${ev.amount} HP distribuído para todos os robôs da equipe!`, SUP_ICON_SVG, '#00ff88', '[ CURA GLOBAL ]');
         getAudio().playHealSound();
       } else if (ev.type === 'support_heal_energy') {
         await board.animateSupportSequence(supporter, target, ev.heal, ev.energy);
         addLog(`[SUPORTE] ${target.name} restaurou +${ev.heal} HP e +${ev.energy} Energia!`, 'support');
+        setNarratorInfo(`RECARGA & REPARO`, `${target.name} restaurou +${ev.heal} HP e +${ev.energy} Energia!`, SUP_ICON_SVG, '#00ff88', '[ SUPORTE ]');
       }
     }
 
@@ -1655,6 +1904,7 @@ async function executeSimultaneousClash() {
   // O menu volta no próximo round em todos os rounds!
   $('versusLeftDeck')?.classList.remove('minimized');
   renderCommandCards();
+  resetNarratorToStatus();
 
   updateGuide(`ROUND ${engine.round} // FASE DE COMANDO`, 'Defina ataques, defesas, suportes ou poupe energia.');
   showPhaseBanner(`ROUND ${engine.round}`, 'FASE DE COMANDO // DEFINA SUAS AÇÕES', 'normal', 1400);
