@@ -921,6 +921,12 @@ function openTargetSelection(robot, type) {
       subEl.textContent = '[ CLIQUE DIRETAMENTE NO ROBÔ ALIADO EM EVIDÊNCIA ]';
       subEl.classList.add('ally-mode');
     }
+  } else if (type === 'defense') {
+    if (titleEl) titleEl.textContent = 'ESCOLHA O ALIADO PARA O ESCUDO';
+    if (subEl) {
+      subEl.textContent = `[ CLIQUE NO ALIADO QUE RECEBERÁ O ESCUDO DE ${robot.name} ]`;
+      subEl.classList.add('ally-mode');
+    }
   }
 
   // 1. Menu lateral desliza para fora imediatamente
@@ -936,10 +942,14 @@ function openTargetSelection(robot, type) {
         robot._chosenTarget = chosenEntity;
         getAudio().playKeyClack();
         addLog(`[ALVO TRAVADO] ${robot.name} mira em ${chosenEntity.name} (Linha ${chosenEntity.row}).`, 'attack');
-      } else {
+      } else if (type === 'support') {
         robot._chosenAllyTarget = chosenEntity;
         getAudio().playKeyClack();
         addLog(`[SUPORTE TRAVADO] ${robot.name} direcionará suporte para ${chosenEntity.name}.`, 'support');
+      } else if (type === 'defense') {
+        robot._chosenDefenseTarget = chosenEntity;
+        getAudio().playKeyClack();
+        addLog(`[ESCUDO DIRECIONADO] ${robot.name} concederá escudo para ${chosenEntity.name}.`, 'defense');
       }
 
       // Fecha o overlay orientador e traz o menu lateral de volta!
@@ -1099,12 +1109,26 @@ function renderCommandCards() {
         </div>
       `;
     } else if (action === 'defense') {
-      const shieldInfo = bot.shield ? `Escudo Ativo (${bot.shield.roundsLeft || 2} Rodadas restantes)` : `Erguer Barreira Holográfica (3 HP · Dura 2 Rodadas)`;
-      subpanelHTML = `
-        <div class="robot-cmd-subpanel defense-panel">
-          <span class="cmd-panel-badge">[DEFESA]</span> ${shieldInfo}
-        </div>
-      `;
+      if (bot.id === 'DB') {
+        subpanelHTML = `
+          <div class="robot-cmd-subpanel defense-panel">
+            <span class="cmd-panel-badge" style="color:#ff3344;border-color:#ff3344">[ESCUDO COLETIVO]</span>
+            Muralha Tripla de <strong>5 HP</strong> para TODOS OS 3 ROBÔS (Dura 2 rounds).
+          </div>
+        `;
+      } else {
+        const targetBot = bot._chosenDefenseTarget || bot;
+        subpanelHTML = `
+          <div class="robot-cmd-subpanel defense-panel">
+            <span class="cmd-panel-badge" style="color:#00e5ff;border-color:#00e5ff">[ESCUDO 10 HP]</span>
+            Alvo: <strong>${targetBot.name}</strong> (${bot.defense?.name || ''}).<br>
+            <span style="color:#00e5ff;font-size:0.75rem;display:block;margin-top:2px;">${bot.defense?.desc || ''}</span>
+            <button class="cmd-chip-btn active" data-robot="${bot.id}" data-type="change-def-target" style="margin-top:6px;width:100%;text-align:center;">
+              [ ESCOLHER ALVO DO ESCUDO NO TABULEIRO ]
+            </button>
+          </div>
+        `;
+      }
     } else if (action === 'support') {
       const cost = (bot.support && bot.support.energyCost) ? bot.support.energyCost : 2;
       subpanelHTML = `
@@ -1173,6 +1197,7 @@ function attachCommandCardListeners() {
         robot.action = 'rest';
         robot._chosenTarget = null;
         robot._chosenAllyTarget = null;
+        robot._chosenDefenseTarget = null;
         getAudio().playKeyClack();
         addLog(`[AÇÃO CANCELADA] ${robot.name} desmarcou sua ação.`, 'info');
         renderCommandCards();
@@ -1184,6 +1209,7 @@ function attachCommandCardListeners() {
         robot.action = 'rest';
         robot._chosenTarget = null;
         robot._chosenAllyTarget = null;
+        robot._chosenDefenseTarget = null;
         getAudio().playKeyClack();
         renderCommandCards();
         return;
@@ -1195,6 +1221,7 @@ function attachCommandCardListeners() {
           r.action = 'rest';
           r._chosenTarget = null;
           r._chosenAllyTarget = null;
+          r._chosenDefenseTarget = null;
         }
       });
 
@@ -1224,9 +1251,28 @@ function attachCommandCardListeners() {
         }
         // Abre tela escura com freeze e destaque nos aliados
         openTargetSelection(robot, 'support');
+      } else if (action === 'defense') {
+        // REGRA DO USUÁRIO: O ÚNICO que dá escudo pros 3 é o DB (5 HP).
+        // O resto tem que escolher 1 aliado para dar escudo (10 HP com efeito único).
+        if (robot.id !== 'DB') {
+          openTargetSelection(robot, 'defense');
+        } else {
+          addLog(`[ESCUDO COLETIVO] Dino-Byte concederá Muralha de 5 HP sobre toda a equipe.`, 'defense');
+        }
       }
 
       renderCommandCards();
+    };
+  });
+
+  // Botões de Trocar Alvo de Escudo
+  stack.querySelectorAll('.cmd-chip-btn[data-type="change-def-target"]').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      if (isClashRunning) return;
+      const robotId = btn.dataset.robot;
+      const robot = engine.playerTeam.find(r => r.id === robotId);
+      if (robot) openTargetSelection(robot, 'defense');
     };
   });
 
@@ -1253,6 +1299,7 @@ function resetRoleAssignmentUI() {
     bot._chosenAttack = null;
     bot._chosenTarget = null;
     bot._chosenAllyTarget = null;
+    bot._chosenDefenseTarget = null;
   });
   renderCommandCards();
 }
@@ -1332,14 +1379,30 @@ async function executeSimultaneousClash() {
       defSuccess = Math.random() < 0.5;
     }
 
-    engine.resolveDefense(defBot, defSuccess);
+    const defTarget = (defBot.id === 'DB') ? null : (defBot._chosenDefenseTarget || defBot);
+    const events = engine.resolveDefense(defBot, defSuccess, defTarget);
 
     if (defSuccess) {
       const hexColor = parseInt((defBot.color || '#00ff88').replace('#', '0x'), 16);
       versus3DEngine.trigger3DDefenseDome(defBot.side, defBot.homeRow, hexColor);
-      await board.animateDefenseSequence(defBot);
-      addLog(`[DEFESA] ${defBot.name} ergueu Escudo Holográfico [3 ROUNDS]!`, 'defense');
+      await board.animateDefenseSequence(defBot, defBot.defense?.name, defBot.defense?.shieldColor);
       if (isPlayer) getAudio().playCoinSound();
+
+      for (const ev of events) {
+        if (ev.type === 'defense_all') {
+          addLog(`[ESCUDO COLETIVO] ${defBot.name} ergueu Muralha de 5 HP sobre toda a equipe (Dura 2 rounds)!`, 'defense');
+        } else if (ev.type === 'defense_single') {
+          addLog(`[ESCUDO INDIVIDUAL] ${defBot.name} concedeu Escudo de ${ev.shieldHp} HP para ${ev.targetName}!`, 'defense');
+        } else if (ev.type === 'shield_energy_buff') {
+          addLog(`[EFEITO ESCUDO] ${ev.targetName} recebeu +${ev.amount} Energia instantânea do Condensador Glacial!`, 'support');
+        } else if (ev.type === 'shield_atk_buff') {
+          addLog(`[EFEITO ESCUDO] ${ev.targetName} recebeu +${ev.amount} ATK de sobrecarga da Blindagem Dourada!`, 'attack');
+        } else if (ev.type === 'shield_regen_buff') {
+          addLog(`[EFEITO ESCUDO] ${ev.targetName} ativou Nanites Regenerativos (+${ev.amount} HP por round durado)!`, 'support');
+        } else if (ev.type === 'shield_reflect_buff') {
+          addLog(`[EFEITO ESCUDO] ${ev.targetName} ativou Espinhos Elétricos (reflete ${ev.amount} dano ao atacante)!`, 'miss');
+        }
+      }
     } else {
       addLog(`[DEFESA] ${defBot.name} errou a moeda (sem escudo).`, 'miss');
       if (isPlayer) getAudio().playAccessDenied();
@@ -1417,30 +1480,44 @@ async function executeSimultaneousClash() {
         minigameResult = Math.random() < 0.75 ? (0.70 + Math.random() * 0.30) : 0.0;
       }
 
-      // Depois ataca com animação 2D pura (traçado, avanço, projétil e impacto)
-      const events = engine.resolveAttack(attacker, attacker._chosenAttack, minigameResult);
-      await board.animateAttackSequence(attacker, target);
-      getAudio().playHeavyImpact();
+      // REGRA DO USUÁRIO: Esperar o ataque ter contato para DAÍ mover a barra ou mostrar o que aconteceu!
+      await board.animateAttackSequence(attacker, target, attacker._chosenAttack, async () => {
+        // EXATO MOMENTO DO IMPACTO NO ALVO:
+        const events = engine.resolveAttack(attacker, attacker._chosenAttack, minigameResult);
+        getAudio().playHeavyImpact();
 
-      for (const ev of events) {
-        if (ev.type === 'damage') {
-          addLog(`[ATAQUE] ${attacker.name} atingiu ${target.name}! -${ev.damage} HP (Restante: ${ev.hp})`, 'attack');
-        } else if (ev.type === 'shield_hit') {
-          addLog(`[ESCUDO] Escudo de ${target.name} absorveu ${ev.absorbed} de dano! (${ev.remaining} restantes)`, 'defense');
-        } else if (ev.type === 'shield_break') {
-          await board.animateShieldBreak(target);
-          getAudio().playHeavyImpact();
-          addLog(`[ESCUDO] Escudo de ${target.name} QUEBROU!`, 'miss');
-        } else if (ev.type === 'robot_down') {
-          addLog(`[DESTRUIÇÃO] ${target.name} TOMBOU em combate!`, 'kill');
-          getAudio().playPowerUp();
-        } else if (ev.type === 'kill_reward') {
-          addLog(`[MEDALHA] ${attacker.name} conquistou +1 MEDALHA (+2 HP, +1 Energia)!`, 'kill');
+        const tCenter = board._cellCenter(target.col, target.row);
+        const aCenter = board._cellCenter(attacker.col, attacker.row);
+
+        for (const ev of events) {
+          if (ev.type === 'shield_hit') {
+            board.emitFloatingText(`ESCUDO: -${ev.absorbed}`, tCenter.x, tCenter.y - 30, '#00e5ff', 15);
+            addLog(`[ESCUDO] Escudo de ${target.name} absorveu ${ev.absorbed} de dano! (${ev.remaining} restantes)`, 'defense');
+          } else if (ev.type === 'shield_break') {
+            await board.animateShieldBreak(target);
+            addLog(`[ESCUDO QUEBRADO] Escudo de ${target.name} QUEBROU!`, 'miss');
+          } else if (ev.type === 'damage') {
+            board.emitFloatingText(`-${ev.damage} HP`, tCenter.x, tCenter.y - 45, '#ff3344', 20);
+            addLog(`[ATAQUE] ${attacker.name} atingiu ${target.name}! -${ev.damage} HP (Restante: ${ev.hp})`, 'attack');
+          } else if (ev.type === 'shield_reflect') {
+            board.emitFloatingText(`REFLEXÃO: -${ev.damage} HP`, aCenter.x, aCenter.y - 30, '#ff8c00', 16);
+            board.emitParticles(aCenter.x, aCenter.y, '#ff8c00', 25, { speed: 5 });
+            addLog(`[CONTRA-ATAQUE ELÉTRICO] Escudo de ${target.name} refletiu ${ev.damage} de dano em ${attacker.name}!`, 'miss');
+          } else if (ev.type === 'robot_down') {
+            addLog(`[DESTRUIÇÃO] ${ev.targetName || target.name} TOMBOU em combate!`, 'kill');
+            getAudio().playPowerUp();
+          } else if (ev.type === 'kill_reward') {
+            addLog(`[MEDALHA] ${attacker.name} conquistou +1 MEDALHA (+2 HP, +1 Energia)!`, 'kill');
+          }
         }
-      }
 
-      // Delay deliberado pós-ataque para exibição clara do resultado (dano, escudo e status)
-      await delay(1200);
+        // A barra de HP e os painéis de status se movem agora no exato contato:
+        updateStatusPanel();
+        updateArenaHUD();
+      });
+
+      // Delay deliberado pós-ataque para exibição clara do resultado
+      await delay(900);
     }
 
     await delay(300);
@@ -1585,16 +1662,32 @@ async function executeSimultaneousClash() {
 }
 
 function checkMatchEnded() {
-  const playerMedals = engine.medals.PLAYER;
-  const enemyMedals  = engine.medals.ENEMY;
-  const playerAlive  = engine.getAliveTeam('PLAYER').length > 0;
-  const enemyAlive   = engine.getAliveTeam('ENEMY').length > 0;
+  const playerAlive = engine.playerTeam.some(r => r.isAlive && r.currentHp > 0);
+  const enemyAlive  = engine.enemyTeam.some(r => r.isAlive && r.currentHp > 0);
 
-  if (playerMedals >= engine.winCondition || !enemyAlive) {
+  // REGRA DO USUÁRIO: Se todos os robôs morrerem de uma vez, as medalhas desempatam!
+  if (!playerAlive && !enemyAlive) {
+    const winner = engine.medals.PLAYER >= engine.medals.ENEMY ? 'PLAYER' : 'ENEMY';
+    endMatch(winner);
+    return true;
+  }
+
+  // REGRA DO USUÁRIO: Vitória na hora pra quem matou os 3 robôs adversários!
+  if (!enemyAlive) {
     endMatch('PLAYER');
     return true;
   }
-  if (enemyMedals >= engine.winCondition || !playerAlive) {
+  if (!playerAlive) {
+    endMatch('ENEMY');
+    return true;
+  }
+
+  // Desempate ou vitória por limite de medalhas
+  if (engine.medals.PLAYER >= engine.winCondition && engine.medals.PLAYER > engine.medals.ENEMY) {
+    endMatch('PLAYER');
+    return true;
+  }
+  if (engine.medals.ENEMY >= engine.winCondition && engine.medals.ENEMY > engine.medals.PLAYER) {
     endMatch('ENEMY');
     return true;
   }

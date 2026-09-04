@@ -23,6 +23,7 @@ export class VersusBoard {
     this.projectiles = [];
     this.beams = [];
     this.domes = [];
+    this.expandingShieldBreaks = [];
     this.shakeTimer = 0;
     this.shakeIntensity = 0;
 
@@ -72,7 +73,7 @@ export class VersusBoard {
 
       const candidates = this.targetSelectionMode.type === 'attack'
         ? (this.engine?.enemyTeam || []).filter(r => r && r.isAlive)
-        : (this.engine?.playerTeam || []);
+        : (this.engine?.playerTeam || []).filter(r => r && r.isAlive);
 
       let found = null;
       for (const cand of candidates) {
@@ -103,7 +104,7 @@ export class VersusBoard {
       if (this.targetSelectionMode) {
         const candidates = this.targetSelectionMode.type === 'attack'
           ? (this.engine?.enemyTeam || []).filter(r => r && r.isAlive)
-          : (this.engine?.playerTeam || []);
+          : (this.engine?.playerTeam || []).filter(r => r && r.isAlive);
 
         for (const cand of candidates) {
           const base = this._cellCenter(cand.col, cand.row);
@@ -235,6 +236,16 @@ export class VersusBoard {
       p.vx *= 0.97;
       p.vy *= 0.97;
       if (p.life <= 0) this.particles.splice(i, 1);
+    }
+
+    // Expanding & fading broken shields (com dispersão holográfica)
+    for (let i = this.expandingShieldBreaks.length - 1; i >= 0; i--) {
+      const sb = this.expandingShieldBreaks[i];
+      sb.r += sb.expandSpeed;
+      sb.alpha -= sb.fadeSpeed;
+      if (sb.alpha <= 0 || sb.r >= sb.maxR) {
+        this.expandingShieldBreaks.splice(i, 1);
+      }
     }
 
     // Shockwaves
@@ -399,6 +410,7 @@ export class VersusBoard {
 
     this._drawProjectiles();
     this._drawDomes();
+    this._drawBreakingShields();
     this._drawShockwaves();
     this._drawParticles();
     this._drawFloatingTexts();
@@ -875,13 +887,17 @@ export class VersusBoard {
         ctx.lineTo(x + bDist, y + bDist - bArm);
         ctx.stroke();
 
-        // Tag Flutuante com Ação e HP
+        // Tag Flutuante com Ação e HP (sem emojis)
         ctx.font = isHovered ? '900 11px monospace' : '900 10px monospace';
         ctx.fillStyle = isHovered ? '#ffffff' : candColor;
         ctx.textAlign = 'center';
         const actionTxt = isHovered
-          ? (this.targetSelectionMode.type === 'attack' ? '[ 🎯 CLIQUE PARA ATACAR ]' : '[ ⚡ CLIQUE PARA ESCOLHER ]')
-          : (this.targetSelectionMode.type === 'attack' ? '[ 🎯 MIRAR ]' : '[ ⚡ SELECIONAR ]');
+          ? (this.targetSelectionMode.type === 'attack' ? '[ CLIQUE PARA ATACAR ]'
+             : this.targetSelectionMode.type === 'defense' ? '[ CLIQUE PARA PROTEGER ]'
+             : '[ CLIQUE PARA ESCOLHER ]')
+          : (this.targetSelectionMode.type === 'attack' ? '[ MIRAR ]'
+             : this.targetSelectionMode.type === 'defense' ? '[ PROTEGER ]'
+             : '[ SELECIONAR ]');
         ctx.fillText(actionTxt, x, y - r - 16);
 
         // Retículo tático de foco diretamente no centro do robô 2D ao passar o cursor
@@ -1147,8 +1163,8 @@ export class VersusBoard {
   _drawShield(robot, x, y, robotR) {
     const ctx = this.ctx;
     const shieldR = robotR + 13;
-    const shieldMax = 3;
-    const shieldPct = Math.min(1, Math.max(0.1, (robot.shield.hp || 3) / shieldMax));
+    const shieldMax = robot.shield.maxHp || (robot.id === 'DB' ? 5 : 10);
+    const shieldPct = Math.min(1, Math.max(0.08, (robot.shield.hp || 1) / shieldMax));
     const roundsLeft = robot.shield.roundsLeft !== undefined ? robot.shield.roundsLeft : 2;
 
     ctx.save();
@@ -1172,16 +1188,40 @@ export class VersusBoard {
     ctx.arc(x, y, shieldR, startAngle, endAngle);
     ctx.stroke();
 
-    // Duração do escudo em rodadas estilizada [3R], [2R], [1R]
+    // Duração e HP do escudo estilizados
     ctx.globalAlpha = 1.0;
     ctx.font = 'bold 8px monospace';
-    ctx.fillStyle = roundsLeft === 1 ? '#ff4455' : '#00e5ff';
-    ctx.shadowColor = roundsLeft === 1 ? '#ff4455' : '#00e5ff';
+    ctx.fillStyle = roundsLeft === 1 ? '#ff4455' : (robot.shield.color || '#00e5ff');
+    ctx.shadowColor = roundsLeft === 1 ? '#ff4455' : (robot.shield.color || '#00e5ff');
     ctx.shadowBlur = 8;
     ctx.textAlign = 'center';
-    ctx.fillText(`[ESCUDO ${roundsLeft}R]`, x, y + robotR + 23);
+    ctx.fillText(`[ESCUDO ${robot.shield.hp}HP · ${roundsLeft}R]`, x, y + robotR + 23);
 
     ctx.restore();
+  }
+
+  _drawBreakingShields() {
+    const ctx = this.ctx;
+    this.expandingShieldBreaks.forEach(sb => {
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, Math.min(1, sb.alpha));
+      ctx.shadowColor = sb.color || '#00e5ff';
+      ctx.shadowBlur = 16;
+      ctx.strokeStyle = sb.color || '#00e5ff';
+      ctx.lineWidth = 3.5;
+
+      ctx.beginPath();
+      ctx.arc(sb.x, sb.y, sb.r, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.arc(sb.x, sb.y, sb.r * 0.93, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.restore();
+    });
   }
 
   _drawHoTEffect(x, y, r) {
@@ -1408,7 +1448,7 @@ export class VersusBoard {
   }
 
   // ── Full Attack Sequence (~2.2s total) ────────────────────────────
-  async animateAttackSequence(attacker, target, attackMove) {
+  async animateAttackSequence(attacker, target, attackMove, onImpactCallback = null) {
     const from = this._cellCenter(attacker.col, attacker.row);
     const to = this._cellCenter(target.col, target.row);
 
@@ -1439,7 +1479,13 @@ export class VersusBoard {
       });
     });
 
-    // 3. Impact Explosion on Target!
+    // 3. REGRA DO USUÁRIO: MOMENTO DE CONTATO DO ATAQUE NO ALVO!
+    // Esperar o ataque ter contato para DAÍ mover a barra ou mostrar o que aconteceu!
+    if (typeof onImpactCallback === 'function') {
+      await onImpactCallback();
+    }
+
+    // 4. Impact Explosion on Target!
     this.shake(14);
     this.shockwaves.push({
       x: to.x, y: to.y, r: 10, maxR: 65, speed: 4.5, life: 1, color: attacker.color
@@ -1657,20 +1703,39 @@ export class VersusBoard {
   }
 
   async animateShieldBreak(targetOrX, optY) {
-    let x, y;
+    let x, y, color = '#00e5ff';
     if (typeof targetOrX === 'object' && targetOrX !== null) {
       const pos = this._cellCenter(targetOrX.col, targetOrX.row);
       x = pos.x;
       y = pos.y;
+      if (targetOrX.shield && targetOrX.shield.color) color = targetOrX.shield.color;
     } else {
       x = targetOrX;
       y = optY;
     }
-    this.emitParticles(x, y, '#00e5ff', 35, { speed: 7, gravity: 0.12 });
-    this.emitParticles(x, y, '#ffffff', 25, { speed: 8.5 });
-    this.shockwaves.push({ x, y, r: 10, maxR: 75, speed: 5, life: 1, color: '#00e5ff' });
+
+    // REGRA DO USUÁRIO: Baixo som de vidro quebrando!
+    const audio = (window.gameInstance && window.gameInstance.audio) || window._versusAudio;
+    if (audio && typeof audio.playGlassBreak === 'function') {
+      audio.playGlassBreak();
+    }
+
+    // REGRA DO USUÁRIO: O escudo expande e dá um fade out quando quebrar
+    this.expandingShieldBreaks.push({
+      x, y,
+      r: 28,
+      maxR: 75,
+      alpha: 1.0,
+      expandSpeed: 3.4,
+      fadeSpeed: 0.038,
+      color,
+    });
+
+    this.emitParticles(x, y, color, 35, { speed: 6.5, gravity: 0.12 });
+    this.emitParticles(x, y, '#ffffff', 25, { speed: 7.5 });
+    this.shockwaves.push({ x, y, r: 10, maxR: 70, speed: 4.5, life: 1, color });
     this.emitFloatingText('[ ESCUDO QUEBRADO! ]', x, y - 42, '#ff3344', 18);
-    this.shake(16);
+    this.shake(14);
     await this._wait(650);
   }
 

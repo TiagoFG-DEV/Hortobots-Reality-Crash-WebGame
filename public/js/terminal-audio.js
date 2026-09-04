@@ -339,6 +339,53 @@ export class TerminalAudioManager {
     });
   }
 
+  playGlassBreak() {
+    if (this.isMuted) return;
+    this.initCtx();
+    try {
+      const ctx = this.audioCtx;
+      const now = ctx.currentTime;
+      // Resonância cristalina de agudos (vidro partindo)
+      const freqs = [1900, 2600, 3400, 4200];
+      freqs.forEach((f, i) => {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(f + (Math.random() - 0.5) * 120, now + i * 0.012);
+        g.gain.setValueAtTime(0.04, now + i * 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + 0.22 + i * 0.03);
+        osc.connect(g);
+        g.connect(ctx.destination);
+        osc.start(now + i * 0.012);
+        osc.stop(now + 0.32);
+      });
+
+      // Ruído filtrado de estilhaço sutil (baixo som de vidro quebrando)
+      const bufferSize = Math.floor(ctx.sampleRate * 0.15);
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.35));
+      }
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'highpass';
+      filter.frequency.setValueAtTime(2200, now);
+
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.045, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+
+      noise.connect(filter);
+      filter.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+
+      noise.start(now);
+      noise.stop(now + 0.16);
+    } catch (e) {}
+  }
+
   playBeep(freq = 440, type = 'sine', duration = 0.08) {
     if (this.isMuted) return;
     this.initCtx();

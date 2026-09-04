@@ -13,9 +13,10 @@ export const VERSUS_ROBOTS = {
       { id: 'db_l3', name: 'Firewall Infernal',   level: 3, energyCost: 5, minigame: 'gravity_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
-      name: 'Escudo de Grupo Verde',
-      desc: 'Escudo de 3 HP nos aliados (dura 2 rounds). Custo: 0 EN.',
-      shieldHp: 3, rounds: 2, targets: 'all', shieldColor: '#00ff88', energyCost: 0,
+      name: 'Muralha Tripla de Fogo',
+      desc: 'O ÚNICO com escudo para os 3 robôs (5 HP cada, dura 2 rounds). Custo: 0 EN.',
+      shieldHp: 5, rounds: 2, targets: 'all', shieldColor: '#ff3344', energyCost: 0,
+      effectType: 'group_shield',
     },
     support: {
       name: 'Reparo de Grupo',
@@ -33,9 +34,10 @@ export const VERSUS_ROBOTS = {
       { id: 'pl_l3', name: 'Blizzard Plataforma', level: 3, energyCost: 5, minigame: 'platform_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
-      name: 'Escudo do Atacante',
-      desc: 'Escudo azul de 3 HP no atacante (dura 2 rounds). Custo: 0 EN.',
-      shieldHp: 3, rounds: 2, targets: 'attacker', shieldColor: '#00e5ff', energyCost: 0,
+      name: 'Condensador Glacial',
+      desc: 'Escudo individual de 10 HP no aliado escolhido + concede +2 Energia imediata. Dura 2 rounds. Custo: 0 EN.',
+      shieldHp: 10, rounds: 2, targets: 'single', shieldColor: '#00e5ff', energyCost: 0,
+      energyBonus: 2, effectType: 'energy_boost',
     },
     support: {
       name: 'Cura Progressiva',
@@ -53,9 +55,10 @@ export const VERSUS_ROBOTS = {
       { id: 'cp_l3', name: 'Pólvora Digital',  level: 3, energyCost: 5, minigame: 'shooter_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
-      name: 'Escudo Energético Amarelo',
-      desc: 'Escudo de 3 HP em si mesmo (dura 2 rounds). Custo: 0 EN.',
-      shieldHp: 3, rounds: 2, targets: 'self', shieldColor: '#ffd700', energyCost: 0,
+      name: 'Blindagem de Balística Dourada',
+      desc: 'Escudo individual de 10 HP no aliado escolhido + sobrecarga de +2 ATK. Dura 2 rounds. Custo: 0 EN.',
+      shieldHp: 10, rounds: 2, targets: 'single', shieldColor: '#ffd700', energyCost: 0,
+      atkBonus: 2, effectType: 'attack_boost',
     },
     support: {
       name: 'Kit de Campo',
@@ -73,9 +76,10 @@ export const VERSUS_ROBOTS = {
       { id: 'pb_l3', name: 'Órbita Caótica',     level: 3, energyCost: 5, minigame: 'orbit_dodge',     desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
-      name: 'Escudo Duplo Azul',
-      desc: 'Escudo azul de 3 HP nos outros aliados (dura 2 rounds). Custo: 0 EN.',
-      shieldHp: 3, rounds: 2, targets: 'others', shieldColor: '#00e5ff', energyCost: 0,
+      name: 'Matriz Bio-Prismática',
+      desc: 'Escudo individual de 10 HP no aliado escolhido + regenera +2 HP por round durado. Dura 2 rounds. Custo: 0 EN.',
+      shieldHp: 10, rounds: 2, targets: 'single', shieldColor: '#ff69b4', energyCost: 0,
+      hpPerRound: 2, effectType: 'regen_hp',
     },
     support: {
       name: 'Sobrecarga de Cura',
@@ -93,9 +97,10 @@ export const VERSUS_ROBOTS = {
       { id: 'tv_l3', name: 'Coração de Ferro', level: 3, energyCost: 5, minigame: 'green_heart_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
-      name: 'Escudo Elétrico Fraco',
-      desc: 'Escudo de 3 HP nos 3 aliados (dura 2 rounds). Custo: 0 EN.',
-      shieldHp: 3, rounds: 2, targets: 'all', shieldColor: '#88aaff', energyCost: 0,
+      name: 'Barreira Tesla de Espinhos',
+      desc: 'Escudo individual de 10 HP no aliado escolhido + contra-ataque elétrico (reflete 3 de dano ao atacante). Dura 2 rounds. Custo: 0 EN.',
+      shieldHp: 10, rounds: 2, targets: 'single', shieldColor: '#ff8c00', energyCost: 0,
+      reflectDamage: 3, effectType: 'reflect',
     },
     support: {
       name: 'Pulso de Reparo',
@@ -328,22 +333,41 @@ export class VersusEngine {
 
     const rawDamage = Math.max(1, Math.round(baseDmg * ratio));
 
-    const killed = this._applyDamage(targetRobot, myEnemySide, rawDamage, events);
+    const killed = this._applyDamage(targetRobot, myEnemySide, rawDamage, events, attackerRobot);
     if (killed) {
       this._onKill(attackerRobot, events);
     }
     return events;
   }
 
-  _applyDamage(target, targetTeam, rawDamage, events) {
+  _applyDamage(target, targetTeam, rawDamage, events, attacker = null) {
     let damage = rawDamage;
 
     // REGRA DO USUÁRIO:
     // Se o ataque for mais forte que o escudo, o escudo desconta o próprio HP do ataque
     // e o robô alvo recebe o resultado da subtração (Dano - HP do escudo).
-    // Ou seja, o escudo não bloqueia mais o ataque completo!
     if (target.shield && target.shield.hp > 0) {
       const shieldHp = target.shield.hp;
+
+      // Efeito do escudo do TV: Contra-ataque de espinhos elétricos (reflete dano ao atacante)
+      if (target.shield.reflectDamage && attacker && attacker.isAlive) {
+        const refDmg = target.shield.reflectDamage;
+        attacker.currentHp = Math.max(0, attacker.currentHp - refDmg);
+        events.push({
+          type: 'shield_reflect',
+          target: target.id,
+          targetName: target.name,
+          attacker: attacker.id,
+          attackerName: attacker.name,
+          damage: refDmg,
+          attackerHp: attacker.currentHp
+        });
+        if (attacker.currentHp <= 0 && attacker.isAlive) {
+          attacker.isAlive = false;
+          events.push({ type: 'robot_down', target: attacker.id, targetName: attacker.name });
+        }
+      }
+
       if (damage >= shieldHp) {
         damage -= shieldHp;
         target.shield.hp = 0;
@@ -363,7 +387,7 @@ export class VersusEngine {
 
     if (target.currentHp <= 0 && target.isAlive) {
       target.isAlive = false;
-      events.push({ type: 'robot_down', target: target.id });
+      events.push({ type: 'robot_down', target: target.id, targetName: target.name });
       return true;
     }
     return false;
@@ -384,43 +408,82 @@ export class VersusEngine {
   }
 
   // ─── Defense Resolution ────────────────────────────────────────────
-  resolveDefense(defenderRobot, coinSuccess) {
+  resolveDefense(defenderRobot, coinSuccess, chosenTarget = null) {
     const events = [];
     if (!coinSuccess) {
-      events.push({ type: 'defense_fail', defender: defenderRobot.id });
+      events.push({ type: 'defense_fail', defender: defenderRobot.id, defenderName: defenderRobot.name });
       return events;
     }
 
     const myTeam = defenderRobot.side === 'PLAYER' ? this.playerTeam : this.enemyTeam;
     const def = defenderRobot.defense;
 
-    // REGRA DO USUÁRIO: Os escudos têm no máximo 3 de HP totais e duram só 2 rounds!
-    const makeShield = (targets) => ({
-      hp: 3,
+    const makeShield = (targetBot) => ({
+      hp: Math.min(10, def.shieldHp || 10),
+      maxHp: Math.min(10, def.shieldHp || 10),
       color: def.shieldColor,
-      targets,
+      targets: def.targets,
       roundsLeft: 2,
-      energyPerRound: def.energyPerRound || 0
+      hpPerRound: def.hpPerRound || 0,
+      reflectDamage: def.reflectDamage || 0,
+      energyPerRound: def.energyPerRound || 0,
+      sourceRobotId: defenderRobot.id,
     });
 
     if (def.targets === 'all') {
+      // REGRA DO USUÁRIO: O ÚNICO que pode dar escudo pros 3 é o DB, o único, e o escudo dele é de apenas 5 HP.
       myTeam.forEach(r => {
-        if (r.isAlive) r.shield = makeShield('all');
-      });
-    } else if (def.targets === 'self') {
-      defenderRobot.shield = makeShield('self');
-    } else if (def.targets === 'attacker') {
-      const attackerInTeam = myTeam.find(r => r.action === 'attack' && r.isAlive) || myTeam.find(r => r.isAlive);
-      if (attackerInTeam) attackerInTeam.shield = makeShield('attacker');
-    } else if (def.targets === 'others') {
-      myTeam.forEach(r => {
-        if (r.isAlive && r.id !== defenderRobot.id) {
-          r.shield = makeShield('others');
+        if (r.isAlive) {
+          r.shield = makeShield(r);
         }
+      });
+      events.push({
+        type: 'defense_all',
+        defender: defenderRobot.id,
+        defenderName: defenderRobot.name,
+        shieldHp: 5,
+        shieldColor: def.shieldColor,
+        roundsLeft: 2
+      });
+    } else {
+      // REGRA DO USUÁRIO: O resto tem que escolher um para dar escudo (até 10 HP) com efeito único!
+      const target = (chosenTarget && chosenTarget.isAlive)
+        ? chosenTarget
+        : (defenderRobot._chosenDefenseTarget && defenderRobot._chosenDefenseTarget.isAlive)
+          ? defenderRobot._chosenDefenseTarget
+          : defenderRobot;
+
+      target.shield = makeShield(target);
+
+      // Efeitos específicos únicos de cada robô:
+      if (def.energyBonus) {
+        target.currentEnergy = Math.min(10, target.currentEnergy + def.energyBonus);
+        events.push({ type: 'shield_energy_buff', target: target.id, targetName: target.name, amount: def.energyBonus });
+      }
+      if (def.atkBonus) {
+        target.attackPower = Math.min(20, target.attackPower + def.atkBonus);
+        events.push({ type: 'shield_atk_buff', target: target.id, targetName: target.name, amount: def.atkBonus });
+      }
+      if (def.hpPerRound) {
+        events.push({ type: 'shield_regen_buff', target: target.id, targetName: target.name, amount: def.hpPerRound });
+      }
+      if (def.reflectDamage) {
+        events.push({ type: 'shield_reflect_buff', target: target.id, targetName: target.name, amount: def.reflectDamage });
+      }
+
+      events.push({
+        type: 'defense_single',
+        defender: defenderRobot.id,
+        defenderName: defenderRobot.name,
+        target: target.id,
+        targetName: target.name,
+        shieldHp: target.shield.hp,
+        shieldColor: def.shieldColor,
+        roundsLeft: 2,
+        effectDesc: def.desc
       });
     }
 
-    events.push({ type: 'defense_success', defender: defenderRobot.id, shieldType: def.targets, shieldColor: def.shieldColor, roundsLeft: 2 });
     return events;
   }
 
@@ -530,7 +593,12 @@ export class VersusEngine {
   _processShieldDurations() {
     const allRobots = [...this.playerTeam, ...this.enemyTeam];
     allRobots.forEach(r => {
-      if (r.shield) {
+      if (r.shield && r.isAlive) {
+        // Efeito do escudo do PB: regenera 2 de HP por round durado
+        if (r.shield.hpPerRound && r.shield.hpPerRound > 0) {
+          r.currentHp = Math.min(r.maxHp, r.currentHp + r.shield.hpPerRound);
+        }
+
         r.shield.roundsLeft = (r.shield.roundsLeft !== undefined ? r.shield.roundsLeft : 2) - 1;
         if (r.shield.roundsLeft <= 0) {
           r.shield = null;
@@ -581,10 +649,23 @@ export class VersusEngine {
 
   // ─── Win Check ────────────────────────────────────────────────────
   checkWinner() {
-    if (this.medals.PLAYER >= this.winCondition) return 'PLAYER';
-    if (this.medals.ENEMY >= this.winCondition) return 'ENEMY';
-    if (this.enemyTeam.every(r => !r.isAlive)) return 'PLAYER';
-    if (this.playerTeam.every(r => !r.isAlive)) return 'ENEMY';
+    const playerAlive = this.playerTeam.some(r => r.isAlive && r.currentHp > 0);
+    const enemyAlive = this.enemyTeam.some(r => r.isAlive && r.currentHp > 0);
+
+    // REGRA DO USUÁRIO: Se todos os robôs morrerem de uma vez, as medalhas desempatam!
+    if (!playerAlive && !enemyAlive) {
+      if (this.medals.PLAYER > this.medals.ENEMY) return 'PLAYER';
+      if (this.medals.ENEMY > this.medals.PLAYER) return 'ENEMY';
+      return this.initiative === 'PLAYER' ? 'PLAYER' : 'ENEMY';
+    }
+
+    // REGRA DO USUÁRIO: Vitória na hora pra quem matou os 3 robôs adversários!
+    if (!enemyAlive) return 'PLAYER';
+    if (!playerAlive) return 'ENEMY';
+
+    // Desempate ou vitória por limite de medalhas
+    if (this.medals.PLAYER >= this.winCondition && this.medals.PLAYER > this.medals.ENEMY) return 'PLAYER';
+    if (this.medals.ENEMY >= this.winCondition && this.medals.ENEMY > this.medals.PLAYER) return 'ENEMY';
     return null;
   }
 
@@ -609,6 +690,13 @@ export class VersusEngine {
     const defenderCandidates = aliveBot.filter(r => r !== attacker);
     const defender = defenderCandidates.find(r => !r.shield) || defenderCandidates[0] || (attacker ? null : aliveBot[0]);
 
+    // Alvo do escudo do bot: se não for DB (que dá escudo pros 3), escolhe 1 aliado para proteger
+    let defenderTarget = null;
+    if (defender && defender.defense?.targets !== 'all') {
+      const candidates = [...aliveBot].sort((a, b) => a.currentHp - b.currentHp);
+      defenderTarget = candidates[0] || defender;
+    }
+
     // Suporte custa 2 de energia
     const supporterCandidates = aliveBot.filter(r => r !== attacker && r !== defender && r.currentEnergy >= 2);
     const supporter = supporterCandidates[0] || null;
@@ -618,8 +706,7 @@ export class VersusEngine {
     const supportTarget = deadAlly || this.enemyTeam.filter(r => r.isAlive).sort((a, b) => a.currentHp - b.currentHp)[0];
 
     return {
-      attacker, defender, supporter, chosenAttack, supportTarget,
-      defenderTarget: this.playerTeam.filter(r => r.isAlive)[0] || null,
+      attacker, defender, supporter, chosenAttack, supportTarget, defenderTarget,
     };
   }
 
@@ -633,6 +720,7 @@ export class VersusEngine {
       r._chosenAttack = null;
       r._chosenTarget = null;
       r._chosenAllyTarget = null;
+      r._chosenDefenseTarget = null;
     });
 
     const actions = this.generateBotActions();
@@ -653,6 +741,7 @@ export class VersusEngine {
 
     if (actions.defender && actions.defender !== actions.attacker) {
       actions.defender.action = 'defense';
+      actions.defender._chosenDefenseTarget = actions.defenderTarget || actions.defender;
     }
 
     if (actions.supporter && actions.supporter !== actions.attacker && actions.supporter !== actions.defender) {
