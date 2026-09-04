@@ -12,42 +12,58 @@ export class TerminalAudioManager {
 
     // MÚSICAS ORIGINAIS DO JOGO (PRESERVADAS RIGOROSAMENTE)
     this.tracks = {
-      // Som Padrão dos Menus (Lobby Theme ou Violet Tyrant on Tape)
-      title: '/audio/Lobby Theme.mp3',
-      lobby: '/audio/Lobby Theme.mp3',
-      elevator: '/audio/Lobby Theme.mp3',
-      menuAlt: '/audio/Violet Tyrant on Tape.mp3',
-      violetTape: '/audio/Violet Tyrant on Tape.mp3',
+      // Som Padrão dos Menus e Hubs
+      title: '/audio/Relax and Choose Your Champion.mp3',
+      lobby: '/audio/Lizardilhas POP Theme.mp3',
+      elevator: '/audio/Lizardilhas POP Theme.mp3',
+      popTheme: '/audio/Lizardilhas POP Theme.mp3',
+      champion: '/audio/Relax and Choose Your Champion.mp3',
+      menuAlt: '/audio/Lizardilhas POP Theme.mp3',
+      violetTape: '/audio/Relax and Choose Your Champion.mp3',
+
+      // Músicas para o modo VERSUS:
+      versusLobby: '/audio/Relax and Choose Your Champion.mp3',
+      versusDraft: '/audio/Relax and Choose Your Champion.mp3',
+      versusBattle: '/audio/Energetic Battle Tendence.mp3',
+      versusVictory: '/audio/The Final Credits.mp3',
 
       // Batalhas Oficiais do Jogo
       forestBattle: "/audio/Lizard's Roar.mp3",
       desertBattle: '/audio/Cowputer-Fight.mp3',
       iceBattle: '/audio/Dance With The Penguim!.mp3',
-      duelGrand: '/audio/Duel of Grand Inteligence.mp3',
+      duelGrand: '/audio/TechnoTitans In Action.mp3',
+      titansAction: '/audio/TechnoTitans In Action.mp3',
+      titanBattle: '/audio/TechnoTitans In Action.mp3',
       bossBattle: '/audio/Crown of the Violet Tyrant.mp3',
+
+      // Trilha de Duelos PVP entre Jogadores (Roleta Aleatória)
+      energeticBattle: '/audio/Energetic Battle Tendence.mp3',
+      lizardsPulse: "/audio/Lizard's Pulse.mp3",
+      lizardsOmega: "/audio/Lizard's Omega Powered.mp3",
 
       // Faixas Narrativas / Especiais
       credits: '/audio/The Final Credits.mp3',
+      relaxCredits: '/audio/Relax, Lizardilhas.mp3',
       chapolin: '/audio/CHAPOLIN COLORADO.mp3',
       giEntrance: '/audio/G.I Entrance.mp3',
       lastGoodbye: '/audio/Last Goodbye.mp3',
-      relaxLizard: '/audio/Relax, Lizardilhas.mp3',
-      popTheme: '/audio/Lizardilhas POP Theme.mp3',
-      champion: '/audio/Relax and Choose Your Champion.mp3',
-
-      // Músicas para o modo VERSUS:
-      versusLobby: '/audio/Lobby Theme.mp3',
-      versusDraft: '/audio/Violet Tyrant on Tape.mp3',
-      versusBattle: '/audio/Crown of the Violet Tyrant.mp3',
-      versusVictory: '/audio/The Final Credits.mp3'
+      relaxLizard: '/audio/Relax, Lizardilhas.mp3'
     };
 
-    // Coleção Oficial das 5 Músicas de Batalha
+    // Coleção de Trilhas de Duelo PVP entre Jogadores
+    this.versusDuelTracks = [
+      'energeticBattle',
+      'lizardsPulse',
+      'lizardsOmega'
+    ];
+
+    // Coleção Oficial das Músicas de Batalha da Campanha
     this.battleTracksList = [
       { key: 'forestBattle', name: "Lizard's Roar", url: "/audio/Lizard's Roar.mp3" },
       { key: 'desertBattle', name: 'Cowputer-Fight', url: '/audio/Cowputer-Fight.mp3' },
       { key: 'iceBattle', name: 'Dance With The Penguim!', url: '/audio/Dance With The Penguim!.mp3' },
-      { key: 'duelGrand', name: 'Duel of Grand Inteligence', url: '/audio/Duel of Grand Inteligence.mp3' },
+      { key: 'titansAction', name: 'TechnoTitans In Action', url: '/audio/TechnoTitans In Action.mp3' },
+      { key: 'duelGrand', name: 'TechnoTitans In Action', url: '/audio/TechnoTitans In Action.mp3' },
       { key: 'bossBattle', name: 'Crown of the Violet Tyrant', url: '/audio/Crown of the Violet Tyrant.mp3' }
     ];
 
@@ -200,6 +216,19 @@ export class TerminalAudioManager {
   playBattleBGM(specificKey = null, fadeDurationMs = 600) {
     const key = specificKey || this.getRandomBattleTrackKey();
     this.playBGM(key, fadeDurationMs);
+  }
+
+  getRandomVersusDuelKey() {
+    if (!this.versusDuelTracks || !this.versusDuelTracks.length) return 'energeticBattle';
+    const idx = Math.floor(Math.random() * this.versusDuelTracks.length);
+    return this.versusDuelTracks[idx];
+  }
+
+  playVersusDuelBGM(fadeDurationMs = 600) {
+    const key = this.getRandomVersusDuelKey();
+    console.log(`[Audio] Trilha sorteada para o Duelo PVP: ${key}`);
+    this.playBGM(key, fadeDurationMs);
+    return key;
   }
 
   playMenuBGM(preferAlt = false, fadeDurationMs = 600) {

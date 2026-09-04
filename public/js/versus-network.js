@@ -9,8 +9,66 @@ const API_BASE = '/api';
 export const AccountAPI = {
   async fetch(name) {
     const res = await fetch(`${API_BASE}/accounts/${encodeURIComponent(name.toUpperCase())}`);
-    if (!res.ok) throw new Error('Conta não encontrada');
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Conta não encontrada');
+    }
     return res.json();
+  },
+
+  async login(nickname, password) {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nickname, password }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Falha ao autenticar piloto');
+    return data;
+  },
+
+  async register(nickname, password, googleEmail = null, googleLinked = false) {
+    const res = await fetch(`${API_BASE}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nickname, password, googleEmail, googleLinked }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Falha ao cadastrar piloto');
+    return data;
+  },
+
+  async googleAuth(googleEmail, nickname = null) {
+    const res = await fetch(`${API_BASE}/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ googleEmail, nickname }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Falha na autenticação Google');
+    return data;
+  },
+
+  async updateProfile(nickname, profileData) {
+    const res = await fetch(`${API_BASE}/auth/profile`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nickname, ...profileData }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Falha ao atualizar perfil');
+    return data;
+  },
+
+  async saveMatchResult(resultData) {
+    const res = await fetch(`${API_BASE}/accounts/match-result`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(resultData),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Falha ao registrar resultado de combate');
+    return data;
   },
 
   async saveResult(name, won, medals) {
@@ -20,7 +78,7 @@ export const AccountAPI = {
       body: JSON.stringify({ won, medals }),
     });
     if (!res.ok) throw new Error('Falha ao salvar resultado');
-    return res.json();
+    return data;
   },
 
   async leaderboard() {
@@ -101,9 +159,9 @@ export class VersusNetwork extends EventTarget {
   }
 
   // ── Queue ────────────────────────────────────────────────────────
-  joinQueue(team) {
+  joinQueue(rankingPoints = 100) {
     if (this.status !== 'idle') return;
-    this._send({ type: 'join_queue', name: this.name, team });
+    this._send({ type: 'join_queue', name: this.name, rankingPoints: Number(rankingPoints) || 100 });
     this.status = 'queued';
     this._emit('status', { status: 'queued' });
   }
@@ -112,6 +170,24 @@ export class VersusNetwork extends EventTarget {
     this._send({ type: 'leave_queue' });
     this.status = 'idle';
     this._emit('status', { status: 'idle' });
+    this._emit('queue_left', {});
+  }
+
+  // ── Salas Fechadas por Código ────────────────────────────────────
+  createRoom() {
+    this._send({ type: 'create_room' });
+  }
+
+  joinRoom(roomCode, autoReady = true) {
+    this._send({ type: 'join_room', roomCode, autoReady });
+  }
+
+  setRoomReady() {
+    this._send({ type: 'room_ready' });
+  }
+
+  leaveRoom() {
+    this._send({ type: 'leave_room' });
   }
 
   // ── Draft ────────────────────────────────────────────────────────
@@ -143,11 +219,49 @@ export class VersusNetwork extends EventTarget {
         break;
 
       case 'queued':
-        this._emit('queued', { position: msg.position });
+        this._emit('queued', { position: msg.position, rankingPoints: msg.rankingPoints });
         break;
 
       case 'queue_left':
         this.status = 'idle';
+        this._emit('queue_left', {});
+        break;
+
+      case 'room_created':
+        this._emit('room_created', { roomCode: msg.roomCode, isHost: true });
+        break;
+
+      case 'room_joined':
+        this._emit('room_joined', {
+          roomCode: msg.roomCode,
+          isHost: msg.isHost,
+          opponentName: msg.opponentName,
+          opponentPoints: msg.opponentPoints,
+          hostReady: msg.hostReady,
+          guestReady: msg.guestReady,
+          status: msg.status,
+          msg: msg.msg
+        });
+        break;
+
+      case 'opponent_room_ready':
+        this._emit('opponent_room_ready', { role: msg.role });
+        break;
+
+      case 'self_room_ready':
+        this._emit('self_room_ready', { role: msg.role });
+        break;
+
+      case 'opponent_left_room':
+        this._emit('opponent_left_room', { msg: msg.msg });
+        break;
+
+      case 'room_left':
+        this._emit('room_left', {});
+        break;
+
+      case 'room_error':
+        this._emit('room_error', { msg: msg.msg });
         break;
 
       case 'match_found':

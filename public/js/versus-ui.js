@@ -23,7 +23,7 @@ let account     = null;
 
 // ── DOM Helpers ──────────────────────────────────────────────────────
 const $ = (id) => document.getElementById(id);
-const screens = ['versusLoginScreen', 'versusModeSelectScreen', 'versusArenaScreen'];
+const screens = ['versusLoginScreen', 'versusModeSelectScreen', 'versusCompetitiveScreen', 'versusArenaScreen'];
 
 function showScreen(id) {
   screens.forEach(s => {
@@ -42,7 +42,7 @@ function showScreen(id) {
     // O botão Home só aparece fora de duelos (ou seja, escondido na arena de duelo)
     const homeBtn = $('termHomeBtn');
     if (homeBtn) {
-      if (id === 'versusArenaScreen') {
+      if (id === 'versusArenaScreen' || id === 'versusCompetitiveScreen') {
         homeBtn.classList.add('hidden');
       } else {
         homeBtn.classList.remove('hidden');
@@ -72,14 +72,56 @@ function showTitle() {
   }
 }
 
+// ── Atualização Visual do Header do Piloto ────────────────────────────
+function updateProfileHeader(acc) {
+  if (!acc) return;
+  const nick = acc.nickname || acc.name || 'PILOTO';
+  const rp = acc.rankingPoints !== undefined ? Math.max(0, acc.rankingPoints) : 100;
+  const wins = acc.wins || 0;
+  const matches = acc.totalMatches || 0;
+  const badge = acc.avatarBadge || '[QZ-01]';
+  const bio = acc.customBio || 'Piloto de Combate da Torre Central';
+  const winrate = matches > 0 ? Math.round((wins / matches) * 100) : 0;
+
+  const nickEl = $('versusProfileNickDisplay');
+  const badgeEl = $('versusProfileAvatarBadge');
+  const bioEl = $('versusProfileBioDisplay');
+  const rpEl = $('versusProfileRPDisplay');
+  const winsEl = $('versusProfileWinsDisplay');
+  const matchesEl = $('versusProfileMatchesDisplay');
+  const rateEl = $('versusProfileWinrateDisplay');
+
+  if (nickEl) nickEl.textContent = nick;
+  if (badgeEl) badgeEl.textContent = badge;
+  if (bioEl) bioEl.textContent = bio;
+  if (rpEl) rpEl.textContent = `${rp} RP`;
+  if (winsEl) winsEl.textContent = wins;
+  if (matchesEl) matchesEl.textContent = matches;
+  if (rateEl) rateEl.textContent = `${winrate}%`;
+
+  try {
+    localStorage.setItem('hortobots_pilot_account', JSON.stringify(acc));
+  } catch (e) {}
+}
+
 window.enterVersusMode = () => {
   $('titleScreen')?.classList.add('hidden');
-  showScreen('versusModeSelectScreen');
-  const welcomeBar = $('versusWelcomeBar');
-  if (welcomeBar) {
-    welcomeBar.textContent = account?.name ? `BEM-VINDO, PILOTO ${account.name}!` : 'SELECIONE SEU PROTOCOLO DE COMBATE';
-  }
   getAudio().playBGM('versusLobby', 600);
+
+  // Verifica se o piloto já possui sessão salva
+  if (!account) {
+    const cached = localStorage.getItem('hortobots_pilot_account');
+    if (cached) {
+      try { account = JSON.parse(cached); } catch (e) {}
+    }
+  }
+
+  if (account && (account.nickname || account.name)) {
+    updateProfileHeader(account);
+    showScreen('versusModeSelectScreen');
+  } else {
+    showScreen('versusLoginScreen');
+  }
 };
 
 // Inicialização: garante 100% que todas as telas de VERSUS e História estejam ocultas e APENAS a tela de título esteja aberta!
@@ -92,6 +134,9 @@ let currentMode = 'bot'; // 'bot' | 'ranked'
 let activeRoleMode = null; // 'attack' | 'defense' | 'support' | 'rest' | null
 let selectedAttacker = null;
 let isClashRunning = false;
+let currentRoomCode = null;
+let isRoomHost = false;
+let isSelfReadyInRoom = false;
 
 // ════════════════════════════════════════════════════════════════════
 // SECTION 1 — Title → Protocolo de Combate (Treino / Competitivo)
@@ -110,9 +155,9 @@ $('versusBotBtn')?.addEventListener('click', () => {
   currentMode = 'bot';
   engine.mode = 'bot';
   if (!account) {
-    account = { name: 'PILOTO', wins: 0, losses: 0, totalMatches: 0 };
+    account = { nickname: 'PILOTO', name: 'PILOTO', wins: 0, losses: 0, totalMatches: 0, rankingPoints: 100 };
   }
-  engine.playerName = account.name;
+  engine.playerName = account.nickname || account.name || 'PILOTO';
   enterUnifiedArena('bot');
 });
 
@@ -122,16 +167,16 @@ $('versusModeBotCard')?.addEventListener('click', (e) => {
   }
 });
 
+// Acesso ao Modo Competitivo em Tela Inteira
 $('versusRankedBtn')?.addEventListener('click', () => {
-  currentMode = 'ranked';
-  engine.mode = 'ranked';
-  if (account && account.name) {
-    network.connect(account.name);
-    enterUnifiedArena('ranked');
-  } else {
+  if (!account || (!account.nickname && !account.name)) {
     showScreen('versusLoginScreen');
-    renderLoginScreen();
+    return;
   }
+  const pilotNick = account.nickname || account.name;
+  network.connect(pilotNick);
+  showScreen('versusCompetitiveScreen');
+  resetCompetitiveRoomUI();
 });
 
 $('versusModeRankCard')?.addEventListener('click', (e) => {
@@ -140,61 +185,481 @@ $('versusModeRankCard')?.addEventListener('click', (e) => {
   }
 });
 
-// ── Login / Identificação para Partidas Ranqueadas ──
-function renderLoginScreen() {
-  const input = $('versusPlayerName');
-  if (input) input.value = '';
-  $('versusAccountInfo')?.classList.add('hidden');
+// ── Auth: Status Message Helper ──────────────────────────────────────
+function showAuthStatus(msg, isError = true) {
+  const box = $('versusAuthStatusMsg');
+  if (!box) return;
+  box.className = `versus-status-msg ${isError ? 'error' : 'success'}`;
+  box.textContent = msg;
+  box.classList.remove('hidden');
 }
 
-$('versusLoginBackBtn')?.addEventListener('click', () => {
+function clearAuthStatus() {
+  $('versusAuthStatusMsg')?.classList.add('hidden');
+}
+
+// ── Auth: Login Tradicional ──────────────────────────────────────────
+$('versusAuthLoginBtn')?.addEventListener('click', async () => {
+  clearAuthStatus();
+  const nick = ($('versusLoginNick')?.value || '').trim();
+  const pass = ($('versusLoginPass')?.value || '').trim();
+
+  if (!nick || !pass) {
+    showAuthStatus('[AVISO] Informe seu Nickname e Senha para efetuar o login.');
+    return;
+  }
+
+  const btn = $('versusAuthLoginBtn');
+  if (btn) btn.textContent = '[ AUTENTICANDO... ]';
+
+  try {
+    const res = await AccountAPI.login(nick, pass);
+    account = res.account || res;
+    if (account) account.nickname = account.nickname || account.name;
+    showAuthStatus(`[SUCESSO] Piloto ${account.nickname} autenticado com sucesso!`, false);
+    updateProfileHeader(account);
+    setTimeout(() => {
+      showScreen('versusModeSelectScreen');
+    }, 600);
+  } catch (err) {
+    showAuthStatus(`[FALHA] ${err.message || 'Erro ao autenticar piloto'}`);
+  } finally {
+    if (btn) btn.textContent = '[ ENTRAR NA CONTA ]';
+  }
+});
+
+// ── Auth: Checkbox Vínculo Google ────────────────────────────────────
+$('versusRegGoogleLinkCheck')?.addEventListener('change', (e) => {
+  const grp = $('versusRegGoogleEmailGroup');
+  if (grp) {
+    grp.classList.toggle('hidden', !e.target.checked);
+  }
+});
+
+// ── Auth: Cadastro de Nova Conta ─────────────────────────────────────
+$('versusAuthRegBtn')?.addEventListener('click', async () => {
+  clearAuthStatus();
+  const nick = ($('versusRegNick')?.value || '').trim();
+  const pass = ($('versusRegPass')?.value || '').trim();
+  const linkGoogle = $('versusRegGoogleLinkCheck')?.checked || false;
+  const googleEmail = linkGoogle ? ($('versusRegGoogleEmail')?.value || '').trim() : null;
+
+  if (!nick || !pass) {
+    showAuthStatus('[AVISO] Escolha um Nickname e Senha para criar seu perfil.');
+    return;
+  }
+
+  const btn = $('versusAuthRegBtn');
+  if (btn) btn.textContent = '[ CRIANDO CONTA... ]';
+
+  try {
+    const res = await AccountAPI.register(nick, pass, googleEmail, linkGoogle);
+    account = res.account || res;
+    if (account) account.nickname = account.nickname || account.name;
+    showAuthStatus(`[SUCESSO] Piloto ${account.nickname} registrado! Ranking inicial: 100 RP`, false);
+    updateProfileHeader(account);
+    setTimeout(() => {
+      showScreen('versusModeSelectScreen');
+    }, 700);
+  } catch (err) {
+    showAuthStatus(`[FALHA] ${err.message || 'Erro ao registrar nova conta'}`);
+  } finally {
+    if (btn) btn.textContent = '[ CRIAR CONTA ]';
+  }
+});
+
+// ── Auth: Fluxo de Login com Google ──────────────────────────────────
+$('versusAuthGoogleBtn')?.addEventListener('click', () => {
+  $('versusGoogleModal')?.classList.remove('hidden');
+});
+
+$('versusCancelGoogleBtn')?.addEventListener('click', () => {
+  $('versusGoogleModal')?.classList.add('hidden');
+});
+
+// Seleção de conta rápida na lista Google
+document.querySelectorAll('.google-account-option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('.google-account-option').forEach(o => o.classList.remove('active'));
+    opt.classList.add('active');
+    const customInp = $('versusGoogleCustomEmail');
+    if (customInp) customInp.value = opt.getAttribute('data-email') || '';
+  });
+});
+
+$('versusConfirmGoogleBtn')?.addEventListener('click', async () => {
+  const customInp = ($('versusGoogleCustomEmail')?.value || '').trim();
+  const selectedOpt = document.querySelector('.google-account-option.active');
+  const chosenEmail = customInp || (selectedOpt ? selectedOpt.getAttribute('data-email') : 'piloto.principal@gmail.com');
+
+  $('versusGoogleModal')?.classList.add('hidden');
+  clearAuthStatus();
+
+  const loginNickHint = ($('versusLoginNick')?.value || '').trim() || null;
+
+  try {
+    const res = await AccountAPI.googleAuth(chosenEmail, loginNickHint);
+    account = res.account || res;
+    if (account) account.nickname = account.nickname || account.name;
+    showAuthStatus(`[GOOGLE] Acesso concedido para: ${account.nickname} (${account.googleEmail || chosenEmail})`, false);
+    updateProfileHeader(account);
+    setTimeout(() => {
+      showScreen('versusModeSelectScreen');
+    }, 600);
+  } catch (err) {
+    showAuthStatus(`[GOOGLE] ${err.message || 'Falha ao autenticar com Google'}`);
+  }
+});
+
+// ── Auth: Voltar ao Menu Principal ───────────────────────────────────
+$('versusLoginBackBtn')?.addEventListener('click', showTitle);
+
+// ── Perfil: Logout / Trocar Conta ────────────────────────────────────
+$('versusProfileLogoutBtn')?.addEventListener('click', () => {
+  account = null;
+  localStorage.removeItem('hortobots_pilot_account');
+  clearAuthStatus();
+  if ($('versusLoginNick')) $('versusLoginNick').value = '';
+  if ($('versusLoginPass')) $('versusLoginPass').value = '';
+  network.disconnect();
+  showScreen('versusLoginScreen');
+});
+
+// ── Perfil: Modal de Edição ──────────────────────────────────────────
+let selectedProfileBadge = '[QZ-01]';
+
+$('versusProfileEditBtn')?.addEventListener('click', () => {
+  if (!account) return;
+  const modal = $('versusProfileModal');
+  if (!modal) return;
+
+  selectedProfileBadge = account.avatarBadge || '[QZ-01]';
+  const bioInp = $('versusEditBioInput');
+  const passInp = $('versusEditNewPassInput');
+  if (bioInp) bioInp.value = account.customBio || '';
+  if (passInp) passInp.value = '';
+
+  document.querySelectorAll('.avatar-pick-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-badge') === selectedProfileBadge);
+  });
+
+  modal.classList.remove('hidden');
+});
+
+document.querySelectorAll('.avatar-pick-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.avatar-pick-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedProfileBadge = btn.getAttribute('data-badge') || '[QZ-01]';
+  });
+});
+
+$('versusCancelProfileBtn')?.addEventListener('click', () => {
+  $('versusProfileModal')?.classList.add('hidden');
+});
+
+$('versusSaveProfileBtn')?.addEventListener('click', async () => {
+  if (!account) return;
+  const bio = ($('versusEditBioInput')?.value || '').trim();
+  const newPass = ($('versusEditNewPassInput')?.value || '').trim();
+
+  try {
+    const res = await AccountAPI.updateProfile(account.nickname || account.name, {
+      bio: bio || account.customBio,
+      avatarBadge: selectedProfileBadge,
+      newPassword: newPass || undefined
+    });
+    account = res.account || res;
+    if (account) account.nickname = account.nickname || account.name;
+    updateProfileHeader(account);
+    $('versusProfileModal')?.classList.add('hidden');
+  } catch (err) {
+    alert(`Erro ao salvar perfil: ${err.message}`);
+  }
+});
+
+// ════════════════════════════════════════════════════════════════════
+// SECTION 2 — Sistema de Salas Competitivas e Matchmaking ("BUSCAR DUELO!")
+// ════════════════════════════════════════════════════════════════════
+let queueTimerInterval = null;
+let queueSeconds = 0;
+let isSearchingQueue = false;
+
+function stopQueueTimer() {
+  if (queueTimerInterval) {
+    clearInterval(queueTimerInterval);
+    queueTimerInterval = null;
+  }
+  queueSeconds = 0;
+  isSearchingQueue = false;
+  const timerEl = $('versusQueueTimer');
+  if (timerEl) timerEl.textContent = '00:00';
+}
+
+function startQueueTimer() {
+  stopQueueTimer();
+  isSearchingQueue = true;
+  queueSeconds = 0;
+  const timerEl = $('versusQueueTimer');
+  if (timerEl) timerEl.textContent = '00:00';
+  queueTimerInterval = setInterval(() => {
+    queueSeconds++;
+    const m = String(Math.floor(queueSeconds / 60)).padStart(2, '0');
+    const s = String(queueSeconds % 60).padStart(2, '0');
+    if (timerEl) timerEl.textContent = `${m}:${s}`;
+  }, 1000);
+}
+
+function resetCompetitiveRoomUI() {
+  currentRoomCode = null;
+  isRoomHost = false;
+  isSelfReadyInRoom = false;
+
+  $('versusHostInitialBox')?.classList.remove('hidden');
+  $('versusHostActiveBox')?.classList.add('hidden');
+  $('versusGuestInitialBox')?.classList.remove('hidden');
+  $('versusGuestActiveBox')?.classList.add('hidden');
+
+  const readyHostBtn = $('versusHostReadyBtn');
+  if (readyHostBtn) {
+    readyHostBtn.disabled = false;
+    readyHostBtn.classList.remove('active');
+    readyHostBtn.textContent = '[ PRONTO PARA O COMBATE ]';
+  }
+
+  const readyGuestBtn = $('versusGuestReadyBtn');
+  if (readyGuestBtn) {
+    readyGuestBtn.disabled = true;
+    readyGuestBtn.classList.remove('active');
+    readyGuestBtn.textContent = '[ PRONTO PARA O COMBATE ]';
+  }
+
+  // Reseta painel da fila de matchmaking
+  stopQueueTimer();
+  $('versusQueueInitialBox')?.classList.remove('hidden');
+  $('versusQueueActiveBox')?.classList.add('hidden');
+  const rpEl = $('versusQueuePlayerRP');
+  if (rpEl) rpEl.textContent = `${account?.rankingPoints ?? 100} RP`;
+
+  const statusBox = $('versusCompetitiveStatusBox');
+  if (statusBox) statusBox.classList.add('hidden');
+}
+
+function showCompetitiveStatus(msg, isAlert = false) {
+  const box = $('versusCompetitiveStatusBox');
+  if (!box) return;
+  box.textContent = msg;
+  box.style.borderColor = isAlert ? '#ffd700' : '#00e5ff';
+  box.style.color = isAlert ? '#ffd700' : '#00e5ff';
+  box.classList.remove('hidden');
+}
+
+// Anfitrião: Gerar Sala
+$('versusCreateRoomActionBtn')?.addEventListener('click', () => {
+  network.createRoom();
+});
+
+// Desafiante: Conectar à Sala por Código e Clicar em DUELAR
+$('versusJoinRoomActionBtn')?.addEventListener('click', () => {
+  const code = ($('versusJoinCodeInput')?.value || '').trim().toUpperCase();
+  if (!code) {
+    showCompetitiveStatus('Codigo não encontrado', true);
+    return;
+  }
+  network.joinRoom(code, true);
+});
+
+// Fila de Matchmaking: Iniciar Busca de Duelo
+$('versusStartQueueBtn')?.addEventListener('click', () => {
+  if (!account || (!account.nickname && !account.name)) return;
+  const rp = Number(account.rankingPoints) || 100;
+  network.joinQueue(rp);
+  $('versusQueueInitialBox')?.classList.add('hidden');
+  $('versusQueueActiveBox')?.classList.remove('hidden');
+  startQueueTimer();
+  const statusMsg = $('versusQueueStatusMsg');
+  if (statusMsg) statusMsg.textContent = 'Varrendo circuito por duelistas de ranking similar...';
+  showCompetitiveStatus('Procurando duelista no ranking... Aguarde o pareamento.');
+});
+
+// Fila de Matchmaking: Cancelar Busca
+$('versusCancelQueueBtn')?.addEventListener('click', () => {
+  network.leaveQueue();
+  stopQueueTimer();
+  $('versusQueueActiveBox')?.classList.add('hidden');
+  $('versusQueueInitialBox')?.classList.remove('hidden');
+  showCompetitiveStatus('Busca de duelo cancelada.');
+});
+
+// Copiar código da sala
+$('versusCopyCodeBtn')?.addEventListener('click', () => {
+  if (!currentRoomCode) return;
+  navigator.clipboard.writeText(currentRoomCode).then(() => {
+    const btn = $('versusCopyCodeBtn');
+    if (btn) {
+      btn.textContent = '[ COPIADO! ]';
+      setTimeout(() => { btn.textContent = '[ COPIAR ]'; }, 2000);
+    }
+  }).catch(() => {});
+});
+
+// Anfitrião: Confirmar Pronto (Pode confirmar a qualquer momento!)
+$('versusHostReadyBtn')?.addEventListener('click', () => {
+  if (isSelfReadyInRoom) return;
+  network.setRoomReady();
+});
+
+// Desafiante: Confirmar Pronto
+$('versusGuestReadyBtn')?.addEventListener('click', () => {
+  if (isSelfReadyInRoom) return;
+  network.setRoomReady();
+});
+
+// Sair da Sala / Voltar ao Menu Versus
+$('versusLeaveRoomBtn')?.addEventListener('click', () => {
+  if (isSearchingQueue) {
+    network.leaveQueue();
+  }
+  network.leaveRoom();
+  resetCompetitiveRoomUI();
   showScreen('versusModeSelectScreen');
 });
 
-$('versusCreateBtn')?.addEventListener('click', async () => {
-  const rawName = ($('versusPlayerName')?.value || '').trim();
-  if (!rawName) {
-    highlight($('versusPlayerName'), 'error');
-    return;
+// ── Handlers de WebSocket para Salas Fechadas & Matchmaking ───────────
+network.addEventListener('room_created', (e) => {
+  currentRoomCode = e.detail.roomCode;
+  isRoomHost = true;
+  isSelfReadyInRoom = false;
+
+  $('versusHostInitialBox')?.classList.add('hidden');
+  $('versusHostActiveBox')?.classList.remove('hidden');
+
+  const badge = $('versusHostCodeBadge');
+  if (badge) badge.textContent = currentRoomCode;
+
+  const oppStatus = $('versusHostOpponentStatus');
+  if (oppStatus) oppStatus.textContent = 'Aguardando desafiante conectar... Você já pode confirmar PRONTO!';
+
+  const readyBtn = $('versusHostReadyBtn');
+  if (readyBtn) {
+    readyBtn.disabled = false;
+    readyBtn.classList.remove('active');
+    readyBtn.textContent = '[ PRONTO PARA O COMBATE ]';
   }
-  const name = rawName.toUpperCase().slice(0, 16);
-  showLoginLoading(true);
 
-  try {
-    account = await AccountAPI.fetch(name);
-    engine.playerName = account.name;
-    network.connect(account.name);
+  showCompetitiveStatus(`Sala ${currentRoomCode} gerada! Se clicar em PRONTO, a batalha iniciará assim que o oponente DUELAR.`);
+});
 
-    $('versusAccountInfo')?.classList.remove('hidden');
-    const infoEl = $('versusAccountInfo');
-    if (infoEl) {
-      infoEl.innerHTML = `
-        <div>[OK] Conta confirmada: <strong>${account.name}</strong></div>
-        <div style="font-size:0.72rem;color:rgba(0,229,255,0.7);margin-top:4px">
-          V: ${account.wins} · D: ${account.losses} · Partidas: ${account.totalMatches}
-        </div>
-      `;
+network.addEventListener('room_joined', (e) => {
+  currentRoomCode = e.detail.roomCode;
+  isRoomHost = e.detail.isHost;
+
+  if (isRoomHost) {
+    const oppStatus = $('versusHostOpponentStatus');
+    if (oppStatus) {
+      const readyTag = e.detail.guestReady ? ' <strong style="color: #00ff88;">[ PRONTO! ]</strong>' : '';
+      oppStatus.innerHTML = `Desafiante conectado: <strong>${e.detail.opponentName}</strong> (${e.detail.opponentPoints} RP)${readyTag}`;
     }
-    setTimeout(() => {
-      enterUnifiedArena('ranked');
-    }, 600);
-  } catch (err) {
-    showLoginLoading(false);
-    const infoEl = $('versusAccountInfo');
-    if (infoEl) {
-      infoEl.classList.remove('hidden');
-      infoEl.textContent = '[ERRO] Erro ao conectar ao servidor. Verifique se o jogo está rodando.';
-      infoEl.style.color = '#ff3344';
+    const readyBtn = $('versusHostReadyBtn');
+    if (readyBtn && !isSelfReadyInRoom) {
+      readyBtn.disabled = false;
+      readyBtn.textContent = '[ PRONTO PARA O COMBATE ]';
     }
-  } finally {
-    showLoginLoading(false);
+    showCompetitiveStatus(`Desafiante ${e.detail.opponentName} inseriu o código!`);
+  } else {
+    // Visão do Desafiante
+    $('versusGuestInitialBox')?.classList.add('hidden');
+    $('versusGuestActiveBox')?.classList.remove('hidden');
+
+    const badge = $('versusGuestCodeBadge');
+    if (badge) badge.textContent = currentRoomCode;
+
+    const hostStatus = $('versusGuestHostStatus');
+    if (hostStatus) {
+      if (e.detail.status === 'waiting_host' || !e.detail.hostReady) {
+        hostStatus.textContent = 'ESPERANDO POR DUELISTA';
+        hostStatus.className = 'room-peer-status highlight-status';
+      } else {
+        hostStatus.innerHTML = `Conectado à sala de: <strong>${e.detail.opponentName}</strong> (${e.detail.opponentPoints} RP)`;
+        hostStatus.className = 'room-peer-status';
+      }
+    }
+
+    const readyBtn = $('versusGuestReadyBtn');
+    if (readyBtn) {
+      readyBtn.disabled = true;
+      readyBtn.classList.add('active');
+      readyBtn.textContent = '[ VOCÊ ESTÁ PRONTO! ]';
+    }
+
+    showCompetitiveStatus('ESPERANDO POR DUELISTA', true);
   }
 });
 
-function showLoginLoading(loading) {
-  const btn = $('versusCreateBtn');
-  if (btn) btn.textContent = loading ? '[ CONECTANDO... ]' : '[ CRIAR / ENTRAR ]';
-}
+network.addEventListener('self_room_ready', () => {
+  isSelfReadyInRoom = true;
+  if (isRoomHost) {
+    const hostBtn = $('versusHostReadyBtn');
+    if (hostBtn) {
+      hostBtn.classList.add('active');
+      hostBtn.textContent = '[ PRONTO! AGUARDANDO ADVERSÁRIO... ]';
+    }
+    showCompetitiveStatus('Você está PRONTO! A batalha começará assim que o oponente clicar em DUELAR.', false);
+  } else {
+    const guestBtn = $('versusGuestReadyBtn');
+    if (guestBtn) {
+      guestBtn.classList.add('active');
+      guestBtn.textContent = '[ VOCÊ ESTÁ PRONTO! ]';
+    }
+  }
+});
+
+network.addEventListener('opponent_room_ready', () => {
+  showCompetitiveStatus('Oponente confirmou PRONTO! Inicializando confronto...', false);
+  if (isRoomHost) {
+    const oppStatus = $('versusHostOpponentStatus');
+    if (oppStatus) oppStatus.innerHTML += ' <strong style="color: #ffd700;">[ PRONTO! ]</strong>';
+  } else {
+    const hostStatus = $('versusGuestHostStatus');
+    if (hostStatus) hostStatus.innerHTML += ' <strong style="color: #ffd700;">[ PRONTO! ]</strong>';
+  }
+});
+
+network.addEventListener('opponent_left_room', (e) => {
+  showCompetitiveStatus(e.detail.msg || 'O oponente saiu da sala.', true);
+  resetCompetitiveRoomUI();
+});
+
+network.addEventListener('room_error', (e) => {
+  showCompetitiveStatus(e.detail.msg || 'Codigo não encontrado', true);
+});
+
+network.addEventListener('queued', (e) => {
+  const statusMsg = $('versusQueueStatusMsg');
+  if (statusMsg) {
+    statusMsg.textContent = `Procurando adversários... Fila: #${e.detail.position || 1} (Tolerância expandindo)`;
+  }
+});
+
+network.addEventListener('queue_left', () => {
+  stopQueueTimer();
+  $('versusQueueActiveBox')?.classList.add('hidden');
+  $('versusQueueInitialBox')?.classList.remove('hidden');
+});
+
+network.addEventListener('match_found', (e) => {
+  stopQueueTimer();
+  currentMode = 'ranked';
+  engine.mode = 'ranked';
+  engine.playerName = (account?.nickname || account?.name || 'PILOTO').toUpperCase();
+  engine.enemyName = (e.detail.enemyName || 'OPONENTE').toUpperCase();
+
+  showCompetitiveStatus(`Duelo pareado contra ${engine.enemyName}! Carregando arena...`, false);
+
+  setTimeout(() => {
+    enterUnifiedArena('ranked');
+  }, 800);
+});
 
 // ════════════════════════════════════════════════════════════════════
 // SECTION 3 — Entrada na Estação Unificada & Draft em Tempo Real
@@ -366,16 +831,17 @@ function updateDraftUI() {
 $('versusConfirmTeamBtn')?.addEventListener('click', async () => {
   if (selectedRobotIds.length !== 3) return;
 
-  const playerName = (account?.name || 'PILOTO').toUpperCase();
-  const enemyName = currentMode === 'bot' ? 'SIMULADOR IA DA TORRE' : 'OPONENTE RANKED';
+  const playerName = (account?.nickname || account?.name || 'PILOTO').toUpperCase();
+  const enemyName = currentMode === 'bot' ? 'SIMULADOR IA DA TORRE' : (engine.enemyName || 'OPONENTE RANKED').toUpperCase();
 
-  const battleBgmKey = getAudio().getRandomBattleTrackKey();
+  // Músicas de Duelo Versus: Sorteia aleatoriamente entre as 3 faixas oficiais do circuito
+  const battleBgmKey = getAudio().getRandomVersusDuelKey();
 
   // 1. Cinemática Grandiosa 3D Pré-Duelo do Modo História
   if (window.gameInstance && typeof window.gameInstance.runGrandDuelCinematic === 'function') {
     await window.gameInstance.runGrandDuelCinematic(
-      'ARENA VIRTUAL // NÍVEL TORRE',
-      currentMode === 'bot' ? 'SIMULADOR DE COMBATE IA' : 'DUELO COMPETITIVO RANKED',
+      'ARENA VIRTUAL // CIRCUITO RANKED',
+      currentMode === 'bot' ? 'SIMULADOR DE COMBATE IA' : 'DUELO COMPETITIVO PVP',
       `PILOTO [ ${playerName} ]`,
       `[ ${enemyName} ]`,
       battleBgmKey
@@ -1174,11 +1640,39 @@ function showPhaseBanner(title, subtitle, type = 'normal', duration = 1400) {
 // ════════════════════════════════════════════════════════════════════
 async function endMatch(winner) {
   const playerWon = winner === 'PLAYER';
+  let mmrInfo = null;
+
   try {
-    if (account?.name) {
-      await AccountAPI.saveResult(account.name, playerWon, engine.medals.PLAYER);
+    const currentNick = account?.nickname || account?.name;
+    if (currentNick) {
+      if (currentMode === 'ranked') {
+        const alivePlayerBots = (engine.playerTeam || []).filter(r => r.isAlive).length;
+        const res = await AccountAPI.saveMatchResult({
+          winnerNick: playerWon ? currentNick : (engine.enemyName || 'OPONENTE'),
+          loserNick: playerWon ? (engine.enemyName || 'OPONENTE') : currentNick,
+          winnerSurvivors: playerWon ? alivePlayerBots : 0,
+          winnerMaxHp: 300,
+          loserSurvivors: playerWon ? 0 : alivePlayerBots,
+          loserMaxHp: 300,
+          totalRounds: engine.round
+        });
+
+        if (playerWon && res.winner) {
+          account = { ...account, ...res.winner };
+          mmrInfo = { delta: `+${res.pointsGained || 20}`, rp: account.rankingPoints };
+        } else if (!playerWon && res.loser) {
+          account = { ...account, ...res.loser };
+          mmrInfo = { delta: `-${res.pointsLost || 15}`, rp: account.rankingPoints };
+        }
+        updateProfileHeader(account);
+      } else {
+        // Modo Treino (sem perda de RP)
+        await AccountAPI.saveResult(currentNick, playerWon, engine.medals.PLAYER);
+      }
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn('[Versus] Erro ao registrar resultado da partida:', e);
+  }
 
   const overlay = $('versusResultOverlay');
   const title   = $('versusResultTitle');
@@ -1228,7 +1722,13 @@ async function endMatch(winner) {
       <div>Suas Medalhas: <strong>${engine.medals.PLAYER}</strong>/10</div>
       <div>Medalhas Inimigas: <strong>${engine.medals.ENEMY}</strong>/10</div>
       <div>Rounds Jogados: ${engine.round}</div>
-      <div>Modo: ${currentMode === 'bot' ? 'TREINO' : 'COMPETITIVO RANKED'}</div>
+      <div>Modo: ${currentMode === 'bot' ? 'TREINAMENTO // IA' : 'COMPETITIVO // SALAS ONLINE'}</div>
+      ${mmrInfo ? `
+        <div style="margin-top: 8px; padding-top: 6px; border-top: 1px dashed rgba(255,255,255,0.2);">
+          Pontuação de Ranking: <strong style="color: ${playerWon ? '#00ff88' : '#ff3344'};">${mmrInfo.delta} RP</strong> 
+          (Saldo Atual: <strong style="color: #ffd700;">${mmrInfo.rp} RP</strong>)
+        </div>
+      ` : ''}
     `;
   }
 }
@@ -1241,7 +1741,9 @@ $('versusPlayAgainBtn')?.addEventListener('click', () => {
 $('versusResultMenuBtn')?.addEventListener('click', () => {
   $('versusResultOverlay')?.classList.add('hidden');
   network.disconnect();
-  showTitle();
+  showScreen('versusModeSelectScreen');
+  updateProfileHeader(account);
+  getAudio().playBGM('versusLobby', 600);
 });
 
 // ════════════════════════════════════════════════════════════════════

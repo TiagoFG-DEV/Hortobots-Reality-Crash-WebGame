@@ -528,7 +528,7 @@ export class TerminalGameApp {
     this.currentFloorIndex = 0;
     this.lastCheckpointFloorIndex = 0;
     this.clearedFloors = new Set();
-    this.unlockedLoreIds = new Set(['lore_01']);
+    this.unlockedLoreIds = new Set(); // Nenhum arquivo desbloqueado no boot (descobertos via andares)
     this.fledTitanKey = null; // Titã que não foi salvo no Andar 6
     this.currentDialogueCallback = null;
 
@@ -872,7 +872,17 @@ export class TerminalGameApp {
 
   showTitle() {
     this.showScreen('titleScreen');
-    this.audio.playBGM('title');
+
+    // Transição suave de Fade-out de tela preta por cima da tela de título
+    const blackOverlay = document.getElementById('titleBlackTransition');
+    if (blackOverlay) {
+      blackOverlay.classList.remove('fade-out', 'hidden');
+      setTimeout(() => {
+        blackOverlay.classList.add('fade-out');
+      }, 100);
+    }
+
+    this.audio.playBGM('title', 900);
     this.checkSavedCheckpoint();
 
     // Inicializa o fundo 3D com a Torre Realista girando suavemente
@@ -1176,7 +1186,7 @@ export class TerminalGameApp {
     this.currentFloorIndex = 0;
     this.lastCheckpointFloorIndex = 0;
     this.clearedFloors.clear();
-    this.unlockedLoreIds = new Set(['lore_01']);
+    this.unlockedLoreIds = new Set();
     this.fledTitanKey = null;
     this.inventory = {};
 
@@ -1704,57 +1714,85 @@ export class TerminalGameApp {
     container.innerHTML = '';
 
     const allEntries = (this.loreEntries && this.loreEntries.length > 0) ? this.loreEntries : LORE_ENTRIES;
-
-    // Garante que o arquivo do Andar 1 (lore_01) e andares alcançados/purificados estejam desbloqueados
     if (!this.unlockedLoreIds) this.unlockedLoreIds = new Set();
-    this.unlockedLoreIds.add('lore_01');
 
-    allEntries.forEach(entry => {
-      const reqFloor = entry.unlockFloor || entry.floorRequired || 1;
-      if (this.clearedFloors && (this.clearedFloors.has(reqFloor) || (this.currentFloorIndex + 1) >= reqFloor)) {
-        this.unlockedLoreIds.add(entry.id);
-      }
-    });
-
-    const unlockedCount = allEntries.filter(e => this.unlockedLoreIds.has(e.id)).length;
+    // Filtra APENAS os arquivos efetivamente descobertos (NENHUM no boot, sem placeholders)
+    const discoveredEntries = allEntries.filter(entry => this.unlockedLoreIds.has(entry.id));
+    const unlockedCount = discoveredEntries.length;
     const totalCount = allEntries.length;
     const pct = Math.floor((unlockedCount / totalCount) * 100);
 
     if (counterEl) counterEl.innerText = `ARQUIVOS DESCOBERTOS: ${unlockedCount}/${totalCount} [${pct}%]`;
     if (fillEl) fillEl.style.width = `${pct}%`;
 
-    // Renderiza TODOS os 8 documentos do JSON com layout imersivo (desbloqueados e bloqueados)
-    allEntries.forEach(entry => {
-      const isUnlocked = this.unlockedLoreIds.has(entry.id);
-      const reqFloor = entry.unlockFloor || entry.floorRequired || 1;
+    if (discoveredEntries.length === 0) {
+      container.innerHTML = `
+        <div class="lore-empty-state-box" style="border: 1px dashed rgba(0, 255, 136, 0.35); background: rgba(0, 10, 5, 0.7); padding: 36px 24px; text-align: center; border-radius: 6px;">
+          <div style="font-size: 0.8rem; color: #ffd700; letter-spacing: 2.5px; font-weight: 700;">[ // BANCO DE DADOS MNEMOSYNE // ]</div>
+          <h3 style="color: #00ff88; font-size: 1.25rem; margin: 10px 0 8px 0; letter-spacing: 1px;">NENHUM ARQUIVO DESCOBERTO NO SISTEMA</h3>
+          <p style="color: #aaa; font-size: 0.86rem; line-height: 1.6; max-width: 520px; margin: 0 auto;">
+            Os arquivos confidenciais do sistema estão ocultos na rede da Torre Central.
+            Explore os andares da campanha, purifique robôs chefes e investigue terminais clandestinos para recuperar os fragmentos de dados.
+          </p>
+        </div>
+      `;
+      return;
+    }
+
+    // Renderiza APENAS os arquivos descobertos. Arquivos não descobertos ficam 100% invisíveis (sem cards bloqueados)
+    discoveredEntries.forEach(entry => {
       const card = document.createElement('div');
-      card.className = `lore-entry-card ${isUnlocked ? 'unlocked' : 'locked'}`;
-
-      if (isUnlocked) {
-        card.innerHTML = `
-          <div class="lore-card-header">
-            <span class="lore-classification-tag">${entry.classification}</span>
-            <span class="lore-status-badge unlocked">[ STATUS: DESCRIPTOGRAFADO ]</span>
-          </div>
-          <div class="lore-card-title">[ ${entry.year} ] - ${entry.title}</div>
-          <div class="lore-author-tag">// FONTE / REGISTRO: ${entry.author}</div>
-          <div class="lore-card-body">${entry.text}</div>
-        `;
-      } else {
-        card.innerHTML = `
-          <div class="lore-card-header">
-            <span class="lore-classification-tag">${entry.classification}</span>
-            <span class="lore-status-badge locked">[ STATUS: CRIPTOGRAFADO // ACESSO NEGADO ]</span>
-          </div>
-          <div class="lore-card-title">[ CRONOLOGIA BLOQUEADA: ${entry.year} ] - ${entry.title}</div>
-          <div class="lore-author-tag">// REGISTRO PROTEGIDO: ${entry.author}</div>
-          <div class="lore-locked-requirement">> REQUISITO: Purifique o Setor do Andar ${reqFloor} da Torre Central para descriptografar.</div>
-          <div class="lore-encrypted-hash">// HASH CRIPTOGRÁFICO: 0x${entry.id.toUpperCase()} ··· PROTOCOLO MNEMOSYNE [DADOS CORROMPIDOS // CHAVE DE SEGURANÇA BLOQUEADA]</div>
-        `;
-      }
-
+      card.className = 'lore-entry-card unlocked';
+      card.innerHTML = `
+        <div class="lore-card-header">
+          <span class="lore-classification-tag">${entry.classification}</span>
+          <span class="lore-status-badge unlocked">[ STATUS: DESCRIPTOGRAFADO ]</span>
+        </div>
+        <div class="lore-card-title">[ ${entry.year} ] - ${entry.title}</div>
+        <div class="lore-author-tag">// FONTE / REGISTRO: ${entry.author}</div>
+        <div class="lore-card-body">${entry.text}</div>
+      `;
       container.appendChild(card);
     });
+  }
+
+  checkUnlockNewLore(floorId) {
+    if (!this.unlockedLoreIds) this.unlockedLoreIds = new Set();
+    const allEntries = (this.loreEntries && this.loreEntries.length > 0) ? this.loreEntries : LORE_ENTRIES;
+    const matching = allEntries.filter(entry => {
+      const req = entry.unlockFloor || entry.floorRequired || 1;
+      return req === floorId && !this.unlockedLoreIds.has(entry.id);
+    });
+
+    if (matching.length > 0) {
+      matching.forEach(entry => {
+        this.unlockedLoreIds.add(entry.id);
+        this.audio.playPowerUp();
+        this.showLoreDiscoveryToast(entry);
+      });
+      this.renderLoreReader();
+    }
+  }
+
+  showLoreDiscoveryToast(entry) {
+    let toast = document.getElementById('loreDiscoveryToast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'loreDiscoveryToast';
+      toast.className = 'lore-discovery-toast';
+      document.body.appendChild(toast);
+    }
+    toast.innerHTML = `
+      <div class="lore-toast-tag">[ NOVO ARQUIVO DESCOBERTO // ANDAR ${entry.unlockFloor || entry.floorRequired || 1} ]</div>
+      <div class="lore-toast-title">> ${entry.title.toUpperCase()} <</div>
+      <div class="lore-toast-sub">Registro liberado na aba [ ARQUIVOS DO SISTEMA ] no Hub</div>
+    `;
+    toast.classList.remove('hidden', 'fade-out');
+    toast.classList.add('visible');
+    setTimeout(() => {
+      toast.classList.add('fade-out');
+      setTimeout(() => { toast.classList.remove('visible'); }, 600);
+    }, 4500);
   }
 
   // ==========================================

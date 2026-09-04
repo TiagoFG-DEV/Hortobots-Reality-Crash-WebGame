@@ -5931,4 +5931,915 @@ html, body {
   font-family: 'Share Tech Mono', monospace;
 }
 
+/* ===================================================================
+   TRANSIÇÃO SUAVE: TELA PRETA DE FADE-OUT NA TELA DE TÍTULO
+   =================================================================== */
+.title-black-transition {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000000;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.9s cubic-bezier(0.2, 0.8, 0.25, 1);
+}
+
+.title-black-transition.fade-out {
+  opacity: 0;
+}
+
+/* ===================================================================
+   FUNDO ANIMADO: MALHA DE LOSANGOS DESCENDENTES (RACING COMPETITION GRID)
+   =================================================================== */
+.versus-diamond-racing-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  background-color: #020704;
+  background-image:
+    radial-gradient(ellipse at 50% 30%, rgba(0, 255, 136, 0.08) 0%, rgba(2, 7, 4, 0.96) 85%),
+    url("data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolygon points='24,2 46,24 24,46 2,24' fill='none' stroke='%2300ff88' stroke-width='1.2' stroke-opacity='0.16'/%3E%3Cpolygon points='24,10 38,24 24,38 10,24' fill='none' stroke='%2300e5ff' stroke-width='0.8' stroke-opacity='0.12'/%3E%3C/svg%3E");
+  background-size: 100% 100%, 48px 48px;
+  animation: diamondRacingScroll 2.8s linear infinite;
+}
+
+@keyframes diamondRacingScroll {
+  0% {
+    background-position: 0 0, 0 0;
+  }
+  100% {
+    background-position: 0 0, 0 48px;
+  }
+}
+
+/* ===================================================================
+   VERSUS: TELA DE AUTENTICAÇÃO E CONTAS
+   =================================================================== */
+.versus-auth-screen {
+  position: relative;
+  overflow-y: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.versus-auth-inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 14px;
+}
+
+.versus-arcade-header {
+  text-align: center;
+}
+
+.versus-circuit-tag {
+  font-size: 0.78rem;
+  letter-spacing: 3px;
+  color: #00e5ff;
+  margin-top: 4px;
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.6);
+}
+
+.versus-auth-card {
+  width: 100%;
+  background: rgba(0, 14, 8, 0.94);
+  border: 1px solid rgba(0, 255, 136, 0.35);
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 0 35px rgba(0, 255, 136, 0.12), inset 0 0 30px rgba(0, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.versus-auth-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.versus-auth-section-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #ffd700;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.25);
+  padding-bottom: 4px;
+}
+
+.versus-auth-section.secondary .versus-auth-section-title {
+  color: #00e5ff;
+  border-bottom-color: rgba(0, 229, 255, 0.25);
+}
+
+.versus-auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: rgba(0, 255, 136, 0.5);
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+  margin: 4px 0;
+}
+
+.versus-auth-divider::before,
+.versus-auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px dashed rgba(0, 255, 136, 0.25);
+}
+
+.versus-auth-divider span {
+  padding: 0 12px;
+}
+
+.versus-input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 600px) {
+  .versus-input-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.versus-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.versus-label {
+  font-size: 0.72rem;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.versus-input {
+  background: rgba(0, 8, 4, 0.95);
+  border: 1px solid rgba(0, 255, 136, 0.4);
+  color: #00ff88;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.95rem;
+  padding: 8px 12px;
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.versus-input:focus {
+  border-color: #00e5ff;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.35);
+}
+
+.versus-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: #ccc;
+  text-align: left;
+}
+
+.versus-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.versus-checkbox-label input[type="checkbox"] {
+  accent-color: #00ff88;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
+
+.versus-action-btn.google {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #00e5ff;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.2);
+}
+
+.versus-action-btn.google:hover {
+  background: rgba(0, 229, 255, 0.16);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.versus-action-btn.cyan {
+  background: linear-gradient(135deg, #00b4d8, #0077b6);
+  border-color: #00e5ff;
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.3);
+}
+
+.versus-action-btn.cyan:hover {
+  box-shadow: 0 0 24px rgba(0, 229, 255, 0.6);
+  transform: translateY(-2px);
+}
+
+.versus-status-msg {
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  letter-spacing: 1px;
+  border-radius: 4px;
+  border: 1px solid;
+}
+
+.versus-status-msg.error {
+  background: rgba(255, 51, 68, 0.12);
+  border-color: #ff3344;
+  color: #ff5566;
+}
+
+.versus-status-msg.success {
+  background: rgba(0, 255, 136, 0.12);
+  border-color: #00ff88;
+  color: #00ff88;
+}
+
+/* ===================================================================
+   VERSUS: REIMAGINAÇÃO DO MENU COM HEADER DE PERFIL DO PILOTO
+   =================================================================== */
+.versus-competition-screen {
+  position: relative;
+  overflow-y: auto;
+}
+
+.versus-profile-header {
+  width: 100%;
+  background: rgba(0, 16, 8, 0.92);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  border-radius: 6px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.85);
+  flex-wrap: wrap;
+}
+
+.versus-pilot-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.versus-pilot-badge {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffd700;
+  background: rgba(255, 215, 0, 0.12);
+  border: 1px solid #ffd700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+}
+
+.versus-pilot-meta {
+  text-align: left;
+}
+
+.versus-pilot-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #00ff88;
+  letter-spacing: 2px;
+  text-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+}
+
+.versus-pilot-bio {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 1px;
+  max-width: 260px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.versus-pilot-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.versus-stat-chip {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.versus-stat-chip.rank {
+  border-color: #ffd700;
+  color: #ffd700;
+  background: rgba(255, 215, 0, 0.08);
+}
+
+.versus-stat-chip.rank strong {
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+}
+
+.versus-stat-chip.wins strong {
+  color: #00ff88;
+}
+
+.versus-stat-chip.matches strong {
+  color: #00e5ff;
+}
+
+.versus-stat-chip.rate strong {
+  color: #ffd700;
+}
+
+.versus-profile-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.versus-mode-intro {
+  text-align: center;
+  margin-top: 6px;
+}
+
+.versus-mode-tag {
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  color: #00e5ff;
+}
+
+.versus-mode-tag.gold {
+  color: #ffd700;
+}
+
+/* ===================================================================
+   VERSUS: TELA COMPETITIVA FULLSCREEN DE SALAS ONLINE POR CÓDIGO
+   =================================================================== */
+.versus-fullscreen-room-screen {
+  position: relative;
+  overflow-y: auto;
+}
+
+.versus-room-inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px 16px;
+}
+
+.versus-room-header {
+  text-align: center;
+}
+
+.versus-room-tag {
+  font-size: 0.8rem;
+  color: #ffd700;
+  letter-spacing: 3px;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.versus-room-title {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #00ff88;
+  letter-spacing: 3px;
+  margin: 6px 0;
+  text-shadow: 0 0 14px rgba(0, 255, 136, 0.6);
+}
+
+.versus-room-sub {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 2px;
+}
+
+.versus-room-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 720px) {
+  .versus-room-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.versus-room-panel {
+  background: rgba(0, 16, 8, 0.94);
+  border: 1px solid rgba(0, 255, 136, 0.35);
+  border-radius: 8px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.85);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.versus-room-panel:hover {
+  border-color: rgba(0, 229, 255, 0.5);
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.15);
+}
+
+.panel-tag {
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+  color: #00e5ff;
+}
+
+.panel-title {
+  font-size: 1.2rem;
+  color: #ffd700;
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+.panel-desc {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.5;
+  margin: 0;
+  min-height: 48px;
+}
+
+.versus-room-active-box {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px dashed rgba(0, 255, 136, 0.3);
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.room-code-label {
+  font-size: 0.75rem;
+  color: #aaa;
+  letter-spacing: 1.5px;
+}
+
+.room-code-display-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.room-code-badge {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #00ff88;
+  letter-spacing: 4px;
+  background: rgba(0, 255, 136, 0.12);
+  border: 2px solid #00ff88;
+  padding: 6px 18px;
+  border-radius: 6px;
+  text-shadow: 0 0 12px rgba(0, 255, 136, 0.8);
+}
+
+.room-code-badge.joined {
+  color: #00e5ff;
+  border-color: #00e5ff;
+  background: rgba(0, 229, 255, 0.12);
+  text-shadow: 0 0 12px rgba(0, 229, 255, 0.8);
+}
+
+.room-code-input {
+  text-align: center;
+  font-size: 1.4rem;
+  letter-spacing: 4px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.versus-room-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.versus-room-grid.three-columns {
+  grid-template-columns: repeat(3, 1fr);
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+@media (max-width: 960px) {
+  .versus-room-grid.three-columns {
+    grid-template-columns: 1fr;
+    max-width: 500px;
+  }
+}
+
+.room-peer-status {
+  font-size: 0.85rem;
+  color: #ffd700;
+  letter-spacing: 1px;
+}
+
+.room-peer-status.highlight-status {
+  color: #00e5ff;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.7);
+  animation: pulseCyanText 1.5s infinite;
+}
+
+@keyframes pulseCyanText {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; text-shadow: 0 0 16px rgba(0, 229, 255, 1); }
+}
+
+.versus-queue-rp-badge {
+  font-size: 0.95rem;
+  color: #aaa;
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
+}
+
+.versus-queue-rp-badge strong {
+  color: #ffd700;
+  font-size: 1.15rem;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+}
+
+.versus-queue-active-box {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px dashed rgba(0, 229, 255, 0.4);
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.versus-radar-container {
+  width: 90px;
+  height: 90px;
+  position: relative;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 229, 255, 0.08) 0%, rgba(0, 20, 10, 0.8) 70%);
+  border: 2px solid rgba(0, 229, 255, 0.6);
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.3), inset 0 0 15px rgba(0, 229, 255, 0.2);
+  overflow: hidden;
+}
+
+.versus-radar-grid {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle, transparent 30%, rgba(0, 229, 255, 0.2) 31%, transparent 32%),
+    radial-gradient(circle, transparent 65%, rgba(0, 229, 255, 0.2) 66%, transparent 67%),
+    linear-gradient(to right, transparent 49%, rgba(0, 229, 255, 0.2) 50%, transparent 51%),
+    linear-gradient(to bottom, transparent 49%, rgba(0, 229, 255, 0.2) 50%, transparent 51%);
+}
+
+.versus-radar-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0deg, rgba(0, 229, 255, 0.4) 60deg, transparent 61deg);
+  animation: radarSpin 2s linear infinite;
+}
+
+@keyframes radarSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.versus-radar-blip {
+  position: absolute;
+  top: 30%;
+  left: 65%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00ff88;
+  box-shadow: 0 0 8px #00ff88;
+  animation: blipFade 2s ease-in-out infinite;
+}
+
+@keyframes blipFade {
+  0%, 100% { opacity: 0; transform: scale(0.5); }
+  35% { opacity: 1; transform: scale(1.3); }
+  60% { opacity: 0.2; transform: scale(1); }
+}
+
+.versus-queue-timer-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.versus-queue-timer-tag {
+  font-size: 0.78rem;
+  color: #aaa;
+  letter-spacing: 1px;
+}
+
+.versus-queue-timer-val {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #ffd700;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+}
+
+.pulse-btn {
+  animation: pulseRanked 2s infinite;
+}
+
+@keyframes pulseRanked {
+  0%, 100% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
+  50% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.8); }
+}
+
+.ready-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  background: linear-gradient(135deg, #00ff88, #008f39);
+  color: #000;
+  border: 1px solid #00ff88;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ready-btn:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.2);
+  cursor: not-allowed;
+}
+
+.ready-btn.active {
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  color: #000;
+  border-color: #ffd700;
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.7);
+  animation: pulseGold 1.5s infinite;
+}
+
+@keyframes pulseGold {
+  0%, 100% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); }
+  50% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.9); }
+}
+
+.versus-competitive-status-box {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 4px;
+  border: 1px solid #00e5ff;
+  background: rgba(0, 229, 255, 0.1);
+  color: #00e5ff;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+/* ===================================================================
+   MODAIS DO MODO VERSUS (EDITAR PERFIL & GOOGLE SIMULATOR)
+   =================================================================== */
+.versus-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.versus-modal-card {
+  width: 100%;
+  max-width: 520px;
+  background: #020c06;
+  border: 2px solid #00ff88;
+  border-radius: 8px;
+  box-shadow: 0 0 40px rgba(0, 255, 136, 0.25);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.versus-modal-card.google-modal {
+  border-color: #00e5ff;
+  box-shadow: 0 0 40px rgba(0, 229, 255, 0.25);
+}
+
+.versus-modal-header {
+  border-bottom: 1px solid rgba(0, 255, 136, 0.25);
+  padding-bottom: 8px;
+}
+
+.versus-modal-header .modal-tag {
+  font-size: 0.72rem;
+  color: #ffd700;
+  letter-spacing: 2px;
+}
+
+.versus-modal-header .modal-title {
+  font-size: 1.2rem;
+  color: #00ff88;
+  letter-spacing: 2px;
+  margin: 4px 0 0 0;
+}
+
+.versus-avatar-picker {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.avatar-pick-btn {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ccc;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.78rem;
+  padding: 8px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.avatar-pick-btn:hover {
+  border-color: #00e5ff;
+  color: #00e5ff;
+}
+
+.avatar-pick-btn.active {
+  background: rgba(0, 255, 136, 0.15);
+  border-color: #00ff88;
+  color: #00ff88;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
+}
+
+.versus-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 12px;
+}
+
+.google-accounts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.google-account-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.google-account-option:hover,
+.google-account-option.active {
+  background: rgba(0, 229, 255, 0.12);
+  border-color: #00e5ff;
+}
+
+.google-acc-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #00e5ff;
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.google-acc-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.google-acc-name {
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.google-acc-email {
+  color: #aaa;
+  font-size: 0.75rem;
+}
+
+/* ===================================================================
+   TOAST DE NOTIFICAÇÃO DE NOVO ARQUIVO DE LORE DESCOBERTO
+   =================================================================== */
+.lore-discovery-toast {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 10001;
+  background: rgba(2, 14, 8, 0.96);
+  border: 2px solid #00ff88;
+  border-radius: 6px;
+  padding: 16px 22px;
+  box-shadow: 0 0 30px rgba(0, 255, 136, 0.4), inset 0 0 20px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.lore-discovery-toast.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.lore-discovery-toast.fade-out {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.lore-toast-tag {
+  font-size: 0.75rem;
+  color: #ffd700;
+  letter-spacing: 2px;
+  font-weight: 700;
+}
+
+.lore-toast-title {
+  font-size: 1.15rem;
+  color: #00ff88;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.6);
+}
+
+.lore-toast-sub {
+  font-size: 0.78rem;
+  color: #aaa;
+  letter-spacing: 1px;
+}
+
+
 

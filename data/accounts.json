@@ -61,5 +61,20 @@
     "totalMatches": 0,
     "createdAt": 1788450540587,
     "lastSeen": 1788450540587
+  },
+  "PILOTO_A": {
+    "name": "PILOTO_A",
+    "password": "1234",
+    "googleLinked": false,
+    "googleEmail": "",
+    "rankingPoints": 100,
+    "wins": 0,
+    "losses": 0,
+    "totalMatches": 0,
+    "totalMedals": 0,
+    "customBio": "Piloto Cadastrado no Sistema Mnemosyne",
+    "avatarBadge": "quezas",
+    "createdAt": 1788530589601,
+    "lastSeen": 1788530589601
   }
 }

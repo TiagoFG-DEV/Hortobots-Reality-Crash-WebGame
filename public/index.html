@@ -37,6 +37,9 @@
 
     <!-- TELA 1: BOOT & INTRODUÇÃO (REINVENTADA ESTILO FNAF / TV DE TUBO CRT) -->
     <div id="titleScreen" class="term-screen title-screen-container">
+      <!-- Transição Suave: Overlay Preto de Fade-out sobre a Tela de Título -->
+      <div id="titleBlackTransition" class="title-black-transition"></div>
+
       <!-- Fundo 3D: Torre Realista Girando Suavemente com Iluminação Sombria -->
       <div id="title3DCanvasContainer" class="title-3d-canvas-container"></div>
 
@@ -108,7 +111,7 @@
             <div class="tape-slot-body">
               <span class="tape-cursor">></span>
               <span class="tape-label">SOBRE</span>
-              <span class="tape-sub">[ TRANSMISSÃO DIRETA DO CRIADOR ]</span>
+              <span class="tape-sub">[ TRANSMISSÃO DO DEV ]</span>
             </div>
             <div class="tape-indicator-led"></div>
           </div>
@@ -353,7 +356,7 @@
     <!-- TELA 5: RESOLUÇÃO FINAL / EXPLOSÃO & CRÉDITOS -->
     <div id="endingScreen" class="term-screen story-screen-container hidden">
       <div class="story-header">
-        <span style="font-weight: 700; color: var(--term-accent);">[FIM DE TRANSMISSÃO // RELATÓRIO DA MISSÃO]</span>
+        <span style="font-weight: 700; color: var(--term-accent);">[RELATÓRIO DA MISSÃO]</span>
       </div>
 
       <div class="ending-resolution-card" id="endingResolutionCard"></div>
@@ -375,7 +378,7 @@
 
         <div class="xp-modal-footer">
           <button class="term-btn gold" id="btnContinueFromXp" style="font-size: 1.15rem; padding: 10px 28px;">
-            [ CONTINUAR REDENÇÃO ► ]
+            [ CONTINUAR ► ]
           </button>
         </div>
       </div>
@@ -384,7 +387,7 @@
     <!-- MODAL DE RECOMPENSA: ESCOLHA DE 1 ENTRE 3 ITENS BÔNUS -->
     <div id="bonusItemModalOverlay" class="bonus-reward-overlay hidden">
       <div class="bonus-reward-modal">
-        <div class="reward-modal-tag">// RECOMPENSA DE SETOR PURIFICADO //</div>
+        <div class="reward-modal-tag">// RECOMPENSA DO SETOR //</div>
         <h2 style="color: var(--term-accent); font-size: 1.8rem; margin: 8px 0;">[ ESCOLHA 1 ITEM BÔNUS ]</h2>
         <p style="color: var(--term-fg); margin-bottom: 20px;">Selecione um dos bônus de dados para adicionar ao seu
           inventário:</p>
@@ -398,7 +401,7 @@
       <div class="cinematic-slash-strip" id="cinematicSlashStrip">
         <span class="cinematic-attacker" id="cinematicAttackerName">DINO-BYTE</span>
         <span class="cinematic-arrow">►</span>
-        <span class="cinematic-move" id="cinematicMoveName">MORDIDA JURÁSSICA</span>
+        <span class="cinematic-move" id="cinematicMoveName">ATAQUE JURÁSSICO</span>
       </div>
     </div>
 
@@ -437,7 +440,7 @@
 
         <!-- Fase 3: Prepare-se -->
         <div id="duelPhasePrepare" class="duel-phase-box hidden">
-          <h1 class="duel-prepare-glitch">>> PREPARE-SE <<< /h1>
+          <h1 class="duel-prepare-glitch"> >> PREPARE-SE << </h1>
         </div>
 
         <!-- Fase 4: Contagem 3... 2... 1... -->
@@ -447,7 +450,7 @@
 
         <!-- Fase 5: DUELEM! -->
         <div id="duelPhaseStart" class="duel-phase-box hidden">
-          <h1 class="duel-start-climax">>> DUELEM! <<< /h1>
+          <h1 class="duel-start-climax"> >> DUELEM! << </h1>
         </div>
       </div>
     </div>
@@ -457,7 +460,7 @@
       <div class="result-backdrop-grid defeat"></div>
       <div class="result-content-card defeat">
         <div class="result-sys-tag alert">// SOBRECARGA CRÍTICA //</div>
-        <h1 class="result-main-title defeat">>> SISTEMA EM COLAPSO <<< /h1>
+        <h1 class="result-main-title defeat">>> SISTEMA EM COLAPSO << </h1>
             <p style="color: #ff3344; font-size: 1.15rem;">Sua party foi subjugada pela Grande Inteligência.</p>
             <div class="result-badge-row">
               <span class="result-badge alert">[ REINICIALIZANDO NO PONTO SEGURO ]</span>
@@ -472,53 +475,332 @@
        VERSUS MODE SCREENS (DENTRO DO CRT MONITOR)
   ═══════════════════════════════════════════════════════════ -->
 
-    <!-- TELA: Login / Conta VERSUS -->
-    <div id="versusLoginScreen" class="term-screen versus-term-screen hidden">
-      <div class="versus-screen-inner">
-        <div class="versus-logo">
-          <span class="versus-logo-v">V</span><span class="versus-logo-s">ERSUS</span>
-          <div class="versus-logo-sub">HORTOBOTS RANKED SYSTEM // QUEZAS-DOS</div>
+    <!-- TELA: Autenticação / Contas VERSUS (Login, Registro e Vínculo Google) -->
+    <div id="versusLoginScreen" class="term-screen versus-term-screen versus-auth-screen hidden">
+      <div class="versus-diamond-racing-grid"></div>
+      <div class="versus-screen-inner versus-auth-inner">
+        <div class="versus-arcade-header">
+          <div class="versus-logo">
+            <span class="versus-logo-v">V</span><span class="versus-logo-s">ERSUS</span>
+          </div>
+          <div class="versus-circuit-tag">[ CIRCUITO COMPETITIVO // TERMINAL DE ACESSO ]</div>
         </div>
-        <div id="versusLoginForm" class="versus-card">
-          <h2 class="versus-card-title">IDENTIFICAÇÃO DO PILOTO</h2>
-          <div class="versus-input-group">
-            <label class="versus-label">NOME DE USUÁRIO</label>
-            <input type="text" id="versusPlayerName" class="versus-input" placeholder="Digite seu nome..."
-              maxlength="16" autocomplete="off" />
+
+        <div class="versus-auth-card">
+          <!-- SEÇÃO 1: LOGIN EM CONTA EXISTENTE -->
+          <div class="versus-auth-section">
+            <div class="versus-auth-section-title">> ACESSAR CONTA EXISTENTE</div>
+            <div class="versus-input-grid">
+              <div class="versus-input-group">
+                <label class="versus-label" for="versusLoginNick">NICKNAME DO PILOTO</label>
+                <input type="text" id="versusLoginNick" class="versus-input" placeholder="Ex: QUEZAS_01" maxlength="16" autocomplete="off" />
+              </div>
+              <div class="versus-input-group">
+                <label class="versus-label" for="versusLoginPass">SENHA DE ACESSO</label>
+                <input type="password" id="versusLoginPass" class="versus-input" placeholder="Digite sua senha..." maxlength="32" />
+              </div>
+            </div>
+
+            <div class="versus-btn-row">
+              <button class="versus-action-btn primary" id="versusAuthLoginBtn" type="button">[ ENTRAR NA CONTA ]</button>
+              <button class="versus-action-btn google" id="versusAuthGoogleBtn" type="button">
+                <svg class="google-icon" viewBox="0 0 24 24" width="16" height="16">
+                  <path fill="#00e5ff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#00ff88" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#ffd700" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                  <path fill="#00e5ff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+                [ CONTINUAR COM GOOGLE ]
+              </button>
+            </div>
           </div>
-          <div class="versus-btn-row">
-            <button class="versus-action-btn primary" id="versusCreateBtn">[ CRIAR / ENTRAR ]</button>
-            <button class="versus-action-btn ghost" id="versusLoginBackBtn">[ VOLTAR AO MENU ]</button>
+
+          <!-- SEPARADOR ESTILIZADO -->
+          <div class="versus-auth-divider">
+            <span>OU CADASTRE-SE ABAIXO</span>
           </div>
-          <div id="versusAccountInfo" class="versus-account-info hidden"></div>
+
+          <!-- SEÇÃO 2: CRIAR NOVA CONTA -->
+          <div class="versus-auth-section secondary">
+            <div class="versus-auth-section-title">> REGISTRO DE NOVO PILOTO</div>
+            <div class="versus-input-grid">
+              <div class="versus-input-group">
+                <label class="versus-label" for="versusRegNick">NOVO NICKNAME</label>
+                <input type="text" id="versusRegNick" class="versus-input" placeholder="Escolha seu Nick..." maxlength="16" autocomplete="off" />
+              </div>
+              <div class="versus-input-group">
+                <label class="versus-label" for="versusRegPass">CRIAR SENHA</label>
+                <input type="password" id="versusRegPass" class="versus-input" placeholder="Senha segura..." maxlength="32" />
+              </div>
+            </div>
+
+            <div class="versus-checkbox-row">
+              <label class="versus-checkbox-label">
+                <input type="checkbox" id="versusRegGoogleLinkCheck" />
+                <span>Vincular perfil a uma Conta Google</span>
+              </label>
+            </div>
+
+            <div class="versus-input-group hidden" id="versusRegGoogleEmailGroup">
+              <label class="versus-label" for="versusRegGoogleEmail">E-MAIL GOOGLE PARA VINCULAR</label>
+              <input type="email" id="versusRegGoogleEmail" class="versus-input" placeholder="seu-email@gmail.com" />
+            </div>
+
+            <div class="versus-btn-row">
+              <button class="versus-action-btn cyan" id="versusAuthRegBtn" type="button">[ CRIAR CONTA ]</button>
+              <button class="versus-action-btn ghost" id="versusLoginBackBtn" type="button">[ VOLTAR AO MENU ]</button>
+            </div>
+          </div>
+
+          <!-- FEEDBACK DE STATUS / ERRO -->
+          <div id="versusAuthStatusMsg" class="versus-status-msg hidden"></div>
         </div>
       </div>
     </div>
 
-    <!-- TELA: Escolha de Modo (Competitivo / Treino) -->
-    <div id="versusModeSelectScreen" class="term-screen versus-term-screen hidden">
+    <!-- TELA: Menu do Modo Versus Re-imaginado (Header com Perfil + Competição + Treino) -->
+    <div id="versusModeSelectScreen" class="term-screen versus-term-screen versus-competition-screen hidden">
+      <div class="versus-diamond-racing-grid"></div>
       <div class="versus-screen-inner">
-        <div class="versus-welcome-bar" id="versusWelcomeBar">BEM-VINDO, PILOTO!</div>
-        <h2 class="versus-section-title">SELECIONE O PROTOCOLO DE COMBATE</h2>
-        <div class="versus-mode-cards">
-          <div class="versus-mode-card" id="versusModeBotCard">
-            <div class="versus-mode-icon">[TREINO]</div>
-            <div class="versus-mode-name">MODO TREINO // IA</div>
-            <div class="versus-mode-desc">Enfrente o simulador tático da Torre. Pratique alinhamento de raias, escudos e
-              timing.</div>
-            <div class="versus-mode-badge bot">IA BOT</div>
-            <button class="versus-action-btn primary" id="versusBotBtn">[ INICIAR TREINO ]</button>
+        <!-- HEADER SUPERIOR: DADOS DO PILOTO LOGADO & RANKING -->
+        <div class="versus-profile-header" id="versusProfileHeader">
+          <div class="versus-pilot-identity">
+            <div class="versus-pilot-badge" id="versusProfileAvatarBadge">[QZ-01]</div>
+            <div class="versus-pilot-meta">
+              <div class="versus-pilot-name" id="versusProfileNickDisplay">PILOTO</div>
+              <div class="versus-pilot-bio" id="versusProfileBioDisplay">Piloto de Combate da Torre Central</div>
+            </div>
           </div>
-          <div class="versus-mode-card highlight" id="versusModeRankCard">
-            <div class="versus-mode-icon">[PVP]</div>
-            <div class="versus-mode-name">MODO COMPETITIVO</div>
-            <div class="versus-mode-desc">Duelo ranked de alta voltagem. O primeiro a acumular 10 medalhas de combate
-              vence!</div>
-            <div class="versus-mode-badge ranked">RANKED</div>
-            <button class="versus-action-btn ranked" id="versusRankedBtn">[ INICIAR RANKED ]</button>
+
+          <div class="versus-pilot-stats">
+            <div class="versus-stat-chip rank">
+              <span class="stat-label">RANKING:</span>
+              <strong id="versusProfileRPDisplay">100 RP</strong>
+            </div>
+            <div class="versus-stat-chip wins">
+              <span class="stat-label">VITÓRIAS:</span>
+              <strong id="versusProfileWinsDisplay">0</strong>
+            </div>
+            <div class="versus-stat-chip matches">
+              <span class="stat-label">PARTIDAS:</span>
+              <strong id="versusProfileMatchesDisplay">0</strong>
+            </div>
+            <div class="versus-stat-chip rate">
+              <span class="stat-label">WINRATE:</span>
+              <strong id="versusProfileWinrateDisplay">0%</strong>
+            </div>
+          </div>
+
+          <div class="versus-profile-actions">
+            <button class="versus-action-btn small cyan" id="versusProfileEditBtn" type="button">[ EDITAR PERFIL ]</button>
+            <button class="versus-action-btn small ghost" id="versusProfileLogoutBtn" type="button">[ TROCAR CONTA ]</button>
           </div>
         </div>
-        <button class="versus-action-btn ghost" id="versusModeBackBtn">[ VOLTAR ]</button>
+
+        <!-- TÍTULO PRINCIPAL DO CIRCUITO -->
+        <div class="versus-mode-intro">
+          <h2 class="versus-section-title">> SELECIONE O PROTOCOLO DE COMBATE <</h2>
+          <p class="versus-sub-title">ESCOLHA ENTRE PRÁTICA OFFLINE OU O CIRCUITO RANKED EM SALAS ONLINE</p>
+        </div>
+
+        <!-- CARDS DE MODO: TREINAMENTO VS COMPETITIVO -->
+        <div class="versus-mode-cards">
+          <!-- CARD TREINO -->
+          <div class="versus-mode-card" id="versusModeBotCard">
+            <div class="versus-mode-tag">// PROTOCOLO OFFLINE //</div>
+            <div class="versus-mode-icon">[ SIMULADOR ]</div>
+            <div class="versus-mode-name">MODO TREINAMENTO</div>
+            <div class="versus-mode-desc">
+              Enfrente o simulador tático da Torre Central. Pratique composições de equipe, alinhamento de raias e timing sem risco de perder pontos de ranking.
+            </div>
+            <div class="versus-mode-badge bot">OFFLINE // IA TÁTICA</div>
+            <button class="versus-action-btn primary" id="versusBotBtn" type="button">[ INICIAR TREINAMENTO ]</button>
+          </div>
+
+          <!-- CARD COMPETITIVO -->
+          <div class="versus-mode-card highlight" id="versusModeRankCard">
+            <div class="versus-mode-tag gold">// CIRCUITO RANKED //</div>
+            <div class="versus-mode-icon">[ ARENA ONLINE ]</div>
+            <div class="versus-mode-name">MODO COMPETITIVO</div>
+            <div class="versus-mode-desc">
+              Duelos de alta voltagem entre jogadores em salas fechadas por código. Vitória garante até +30 RP e derrota subtrai até -20 RP (mínimo 0).
+            </div>
+            <div class="versus-mode-badge ranked">RANKED // SALAS POR CÓDIGO</div>
+            <button class="versus-action-btn ranked" id="versusRankedBtn" type="button">[ ENTRAR NO COMPETITIVO ]</button>
+          </div>
+        </div>
+
+        <div class="versus-mode-footer">
+          <button class="versus-action-btn ghost" id="versusModeBackBtn" type="button">[ VOLTAR AO MENU PRINCIPAL ]</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TELA: Modo Competitivo em Tela Inteira (Criação e Entrada em Salas Fechadas por Código) -->
+    <div id="versusCompetitiveScreen" class="term-screen versus-term-screen versus-fullscreen-room-screen hidden">
+      <div class="versus-diamond-racing-grid"></div>
+      <div class="versus-screen-inner versus-room-inner">
+        <div class="versus-room-header">
+          <div class="versus-room-tag">[ CIRCUITO COMPETITIVO // SALAS ONLINE & MATCHMAKING ]</div>
+          <h1 class="versus-room-title">> ENFRENTAMENTO ONLINE ENTRE JOGADORES <</h1>
+          <p class="versus-room-sub">CRIE UMA SALA PRIVADA, ENTRE COM CÓDIGO OU BUSQUE DUELO RANQUEADO NA FILA GLOBAL</p>
+        </div>
+
+        <div class="versus-room-grid three-columns">
+          <!-- PAINEL 1: CRIAR SALA FECHADA -->
+          <div class="versus-room-panel" id="versusCreateRoomPanel">
+            <div class="panel-tag">[ OPÇÃO 1 // ANFITRIÃO ]</div>
+            <h3 class="panel-title">> CRIAR SALA FECHADA</h3>
+            <p class="panel-desc">Gere um código de sala criptografado para compartilhar com seu oponente. Você pode confirmar PRONTO imediatamente!</p>
+
+            <div id="versusHostInitialBox">
+              <button class="versus-action-btn ranked" id="versusCreateRoomActionBtn" type="button">[ GERAR CÓDIGO DA SALA ]</button>
+            </div>
+
+            <!-- EXIBIÇÃO DA SALA CRIADA -->
+            <div id="versusHostActiveBox" class="versus-room-active-box hidden">
+              <div class="room-code-label">CÓDIGO DE ACESSO DA SALA:</div>
+              <div class="room-code-display-row">
+                <span class="room-code-badge" id="versusHostCodeBadge">HORT-???</span>
+                <button class="versus-action-btn small cyan" id="versusCopyCodeBtn" type="button">[ COPIAR ]</button>
+              </div>
+              <div class="room-peer-status" id="versusHostOpponentStatus">Aguardando desafiante conectar...</div>
+              <button class="versus-action-btn ready-btn" id="versusHostReadyBtn" type="button">[ PRONTO PARA O COMBATE ]</button>
+            </div>
+          </div>
+
+          <!-- PAINEL 2: ENTRAR EM SALA POR CÓDIGO -->
+          <div class="versus-room-panel" id="versusJoinRoomPanel">
+            <div class="panel-tag">[ OPÇÃO 2 // DESAFIANTE ]</div>
+            <h3 class="panel-title">> ENTRAR POR CÓDIGO</h3>
+            <p class="panel-desc">Digite o código de 6 caracteres fornecido e clique em DUELAR. Se o criador já estiver pronto, a batalha inicia na hora!</p>
+
+            <div id="versusGuestInitialBox">
+              <div class="versus-input-group" style="margin-bottom: 16px;">
+                <label class="versus-label" for="versusJoinCodeInput">DIGITE O CÓDIGO DA SALA</label>
+                <input type="text" id="versusJoinCodeInput" class="versus-input room-code-input" placeholder="HORT-XXX" maxlength="8" autocomplete="off" />
+              </div>
+              <button class="versus-action-btn cyan" id="versusJoinRoomActionBtn" type="button">[ DUELAR ]</button>
+            </div>
+
+            <!-- EXIBIÇÃO DA SALA CONECTADA / ESPERA -->
+            <div id="versusGuestActiveBox" class="versus-room-active-box hidden">
+              <div class="room-code-label">SALA CONECTADA:</div>
+              <div class="room-code-badge joined" id="versusGuestCodeBadge">HORT-???</div>
+              <div class="room-peer-status highlight-status" id="versusGuestHostStatus">ESPERANDO POR DUELISTA</div>
+              <button class="versus-action-btn ready-btn active" id="versusGuestReadyBtn" type="button" disabled>[ PRONTO PARA O COMBATE ]</button>
+            </div>
+          </div>
+
+          <!-- PAINEL 3: BUSCAR DUELO! (FILA GLOBAL RANQUEADA) -->
+          <div class="versus-room-panel" id="versusMatchmakingPanel">
+            <div class="panel-tag">[ OPÇÃO 3 // FILA GLOBAL ]</div>
+            <h3 class="panel-title">> BUSCAR DUELO!</h3>
+            <p class="panel-desc">Entre na fila rápida de matchmaking. O sistema reúne duelistas com ranking próximo ou qualquer piloto disponível.</p>
+
+            <div id="versusQueueInitialBox">
+              <div class="versus-queue-rp-badge">SEU RANKING: <strong id="versusQueuePlayerRP">100 RP</strong></div>
+              <button class="versus-action-btn ranked pulse-btn" id="versusStartQueueBtn" type="button">[ BUSCAR DUELO! ]</button>
+            </div>
+
+            <!-- HUD DE BUSCA ATIVA / RADAR -->
+            <div id="versusQueueActiveBox" class="versus-queue-active-box hidden">
+              <div class="versus-radar-container">
+                <div class="versus-radar-sweep"></div>
+                <div class="versus-radar-grid"></div>
+                <div class="versus-radar-blip"></div>
+              </div>
+              <div class="versus-queue-timer-row">
+                <span class="versus-queue-timer-tag">TEMPO NA FILA:</span>
+                <strong class="versus-queue-timer-val" id="versusQueueTimer">00:00</strong>
+              </div>
+              <div class="room-peer-status" id="versusQueueStatusMsg">Varrendo rede por duelistas compatíveis...</div>
+              <button class="versus-action-btn ghost" id="versusCancelQueueBtn" type="button">[ CANCELAR BUSCA ]</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- NOTIFICAÇÕES E CONTROLE DA SALA -->
+        <div id="versusCompetitiveStatusBox" class="versus-competitive-status-box hidden"></div>
+
+        <div class="versus-room-footer">
+          <button class="versus-action-btn ghost" id="versusLeaveRoomBtn" type="button">[ CANCELAR / SAIR ]</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: EDIÇÃO DE PERFIL DO PILOTO -->
+    <div id="versusProfileModal" class="versus-modal-overlay hidden">
+      <div class="versus-modal-card">
+        <div class="versus-modal-header">
+          <span class="modal-tag">[ TERMINAL DE PILOTO ]</span>
+          <h3 class="modal-title">> EDITAR PERFIL DE COMBATE</h3>
+        </div>
+
+        <div class="versus-modal-body">
+          <div class="versus-input-group">
+            <label class="versus-label">INSÍGNIA DE AVATAR</label>
+            <div class="versus-avatar-picker" id="versusAvatarPicker">
+              <button type="button" class="avatar-pick-btn active" data-badge="[QZ-01]">[QZ-01] Quezas</button>
+              <button type="button" class="avatar-pick-btn" data-badge="[DB-01]">[DB-01] Dino-Byte</button>
+              <button type="button" class="avatar-pick-btn" data-badge="[CP-02]">[CP-02] Cowputer</button>
+              <button type="button" class="avatar-pick-btn" data-badge="[PL-03]">[PL-03] Penlinux</button>
+              <button type="button" class="avatar-pick-btn" data-badge="[TV-04]">[TV-04] Tigervex</button>
+              <button type="button" class="avatar-pick-btn" data-badge="[PB-05]">[PB-05] Pavabyte</button>
+            </div>
+          </div>
+
+          <div class="versus-input-group" style="margin-top: 14px;">
+            <label class="versus-label" for="versusEditBioInput">FRASE / LEMA DE COMBATE</label>
+            <input type="text" id="versusEditBioInput" class="versus-input" placeholder="Ex: Piloto Implacável da Torre Central" maxlength="40" />
+          </div>
+
+          <div class="versus-input-group" style="margin-top: 14px;">
+            <label class="versus-label" for="versusEditNewPassInput">ALTERAR SENHA (OPCIONAL)</label>
+            <input type="password" id="versusEditNewPassInput" class="versus-input" placeholder="Nova senha (deixe em branco para manter)" maxlength="32" />
+          </div>
+        </div>
+
+        <div class="versus-modal-footer">
+          <button class="versus-action-btn primary" id="versusSaveProfileBtn" type="button">[ SALVAR ALTERAÇÕES ]</button>
+          <button class="versus-action-btn ghost" id="versusCancelProfileBtn" type="button">[ CANCELAR ]</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: SELETOR / AUTENTICAÇÃO COM GOOGLE -->
+    <div id="versusGoogleModal" class="versus-modal-overlay hidden">
+      <div class="versus-modal-card google-modal">
+        <div class="versus-modal-header">
+          <span class="modal-tag">[ AUTENTICAÇÃO SEGURA GOOGLE ]</span>
+          <h3 class="modal-title">> CONTINUAR COM A CONTA GOOGLE</h3>
+        </div>
+
+        <div class="versus-modal-body">
+          <p style="color: #ccc; font-size: 0.88rem; line-height: 1.5; margin-bottom: 16px;">
+            Selecione uma conta Google ativa ou informe seu e-mail Google para vincular e acessar seu progresso no circuito:
+          </p>
+
+          <div class="google-accounts-list">
+            <button type="button" class="google-account-option active" data-email="piloto.principal@gmail.com">
+              <div class="google-acc-circle">G</div>
+              <div class="google-acc-info">
+                <div class="google-acc-name">Piloto Oficial</div>
+                <div class="google-acc-email">piloto.principal@gmail.com</div>
+              </div>
+            </button>
+          </div>
+
+          <div class="versus-input-group" style="margin-top: 14px;">
+            <label class="versus-label" for="versusGoogleCustomEmail">OU DIGITE OUTRO E-MAIL GOOGLE</label>
+            <input type="email" id="versusGoogleCustomEmail" class="versus-input" placeholder="seu-email@gmail.com" />
+          </div>
+        </div>
+
+        <div class="versus-modal-footer">
+          <button class="versus-action-btn google" id="versusConfirmGoogleBtn" type="button">[ AUTORIZAR COM GOOGLE ]</button>
+          <button class="versus-action-btn ghost" id="versusCancelGoogleBtn" type="button">[ CANCELAR ]</button>
+        </div>
       </div>
     </div>
 
@@ -650,12 +932,12 @@
           <!-- METADADOS DO SISTEMA -->
           <div class="about-meta-grid">
             <div class="about-meta-item">
-              <span class="about-meta-lbl">CRIADOR / DEV:</span>
-              <span class="about-meta-val highlight" id="aboutAuthor">DESENVOLVEDOR // COMANDO CENTRAL</span>
+              <span class="about-meta-lbl">DEV:</span>
+              <span class="about-meta-val highlight" id="aboutAuthor">Tiago Gregório</span>
             </div>
             <div class="about-meta-item">
               <span class="about-meta-lbl">DATA DA TRANSMISSÃO:</span>
-              <span class="about-meta-val" id="aboutDate">2026-09-03</span>
+              <span class="about-meta-val" id="aboutDate">20XX-0Z-YY</span>
             </div>
             <div class="about-meta-item">
               <span class="about-meta-lbl">CLEARANCE:</span>
@@ -663,7 +945,7 @@
             </div>
             <div class="about-meta-item">
               <span class="about-meta-lbl">SISTEMA HOST:</span>
-              <span class="about-meta-val">MNEMOSYNE TOWER CORE v4.9</span>
+              <span class="about-meta-val">MNEMOSYNE TOWER CORE v1.0b</span>
             </div>
           </div>
 
@@ -673,7 +955,7 @@
           <div class="about-section">
             <h3 class="about-sec-title">> DECLARAÇÃO DO DESENVOLVEDOR</h3>
             <div class="about-statement-box" id="aboutStatement">
-              Carregando transmissão confidencial...
+              Carregando transmissão...
             </div>
           </div>
 
@@ -689,10 +971,10 @@
           <div class="about-footer-row">
             <div class="about-signature-block">
               <span class="about-sig-lbl">AUTORIZAÇÃO DIGITAL:</span>
-              <span class="about-sig-txt" id="aboutSignature">[ FIM DA TRANSMISSÃO // BOA SORTE, PILOTO ]</span>
+              <span class="about-sig-txt" id="aboutSignature">[ ESPERO QUE GOSTE DA EXPERIÊNCIA ;D ]</span>
             </div>
             <button class="term-btn gold about-action-close" id="aboutActionCloseBtn" type="button">
-              [ CONFIRMAR LEITURA // RETORNAR AO MENU ]
+              [ FECHAR ]
             </button>
           </div>
         </div>

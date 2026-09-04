@@ -1,17 +1,15 @@
 {
-  "system": "QUEZAS-DOS v4.9 // HORTOBOTS REALITY CRASH",
+  "system": "QUEZAS-DOS v1.0b // HORTOBOTS REALITY CRASH",
   "title": "SOBRE ESSE JOGO",
-  "author": "DESENVOLVEDOR // COMANDO CENTRAL",
-  "date": "2026-09-03",
+  "author": "Tiago Gregório",
+  "date": "20XX-0Z-YY",
   "securityClearance": "NÍVEL 5 — TRANSMISSÃO ABERTA",
-  "statement": "Seja bem-vindo ao Hortobots: Reality Crash. Este projeto nasceu da paixão pela fusão entre a estética crua dos terminais fósforo-verde das antigas telas de tubo CRT e a adrenalina dos jogos de estratégia tática e combate em tempo real. Cada sistema — desde a renderização procedural das arenas e da Torre Mnemosyne até a sincronização entre elementos 2D e projeções 3D — foi concebido para entregar uma experiência densa, imersiva e responsiva. Quebre as defesas da Grande Inteligência, domine os minigames e leve seus robôs ao ápice da sobrecarga na Torre!",
+  "statement": "Seja bem-vindo ao Hortobots: Reality Crash. Este projeto nasceu da paixão pela fusão entre a estética crua dos terminais fósforo-verde do próprio CMD do Windows e a adrenalina dos jogos de estratégia tática e combate RPG. Cada sistema — desde a renderização das arenas e da Torre Mnemosyne até a sincronização entre elementos 2D e projeções 3D — foi concebido para entregar uma experiência densa, imersiva e responsiva. Quebre as defesas da Grande Inteligência, domine os minigames e leve seus robôs ao ápice da sobrecarga na Torre!",
   "patchHighlights": [
     "TORRE 3D REALISTA: Modelagem arquitetônica detalhada com base reforçada, 8 andares delimitados, escadaria em espiral e teto cônico com pináculo.",
-    "INTERFACE FNAF: Menu de fitas cassete analógicas com animação mecânica de inserção e transição de estática CRT.",
     "SISTEMA DE SOBRECARGA: Robôs não atacados acumulam +5 de ataque por round até o teto crítico de 50.",
-    "PRECISÃO DE MINIGAMES: Dano rigorosamente proporcional ao desempenho de 0% a 100% de attackPower.",
-    "CATÁLOGO DE ENERGIA MODULAR: Custos de ataques, escudos e suportes calibrados e customizáveis via JSON.",
-    "ARENA HÍBRIDA 2D/3D: Sincronização e sobreposição dimensional exata ponto a ponto."
+    "PRECISÃO DE MINIGAMES: Dano proporcional ao desempenho de 0% a 100% de attackPower.",
+    "CATÁLOGO DE ENERGIA MODULAR: Custos de ataques, escudos e suportes calibrados."
   ],
   "credits": {
     "design": "Engenharia de Software & Arquitetura de Jogos",
@@ -19,5 +17,5 @@
     "visuals": "Three.js 3D Procedural & Canvas 2D Retro Terminal",
     "engine": "Hortobots Custom Reality Engine"
   },
-  "signature": "[ FIM DA TRANSMISSÃO // BOA SORTE, PILOTO ]"
+  "signature": "[ ESPERO QUE GOSTE DA EXPERIÊNCIA, JOGADOR >;D ]"
 }
