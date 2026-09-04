@@ -76,5 +76,20 @@
     "avatarBadge": "quezas",
     "createdAt": 1788530589601,
     "lastSeen": 1788530589601
+  },
+  "PXZ005": {
+    "name": "PXZ005",
+    "password": "1Q2W3E4Ra!!",
+    "googleLinked": true,
+    "googleEmail": "tiagop05gregorio@gmail.com",
+    "rankingPoints": 100,
+    "wins": 0,
+    "losses": 0,
+    "totalMatches": 0,
+    "totalMedals": 0,
+    "customBio": "Piloto Cadastrado no Sistema Mnemosyne",
+    "avatarBadge": "[QZ-01]",
+    "createdAt": 1788546766046,
+    "lastSeen": 1788547096987
   }
 }

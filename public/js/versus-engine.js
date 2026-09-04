@@ -6,11 +6,11 @@
 export const VERSUS_ROBOTS = {
   DB: {
     id: 'DB', name: 'Dino-Byte', color: '#ff3344', colorName: 'RED',
-    baseHp: 10, baseAtk: 1, baseEnergy: 0,
+    baseHp: 10, baseAtk: 15, baseEnergy: 0,
     attacks: [
       { id: 'db_l1', name: 'Impacto Térmico',    level: 1, energyCost: 1, minigame: 'click_targets',  desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
       { id: 'db_l2', name: 'Garras QTE',          level: 2, energyCost: 3, minigame: 'arrow_qte',     desc: 'Custo: 3 EN · 50% ATK' },
-      { id: 'db_l3', name: 'Firewall Infernal',   level: 3, energyCost: 5, minigame: 'gravity_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 10)' },
+      { id: 'db_l3', name: 'Firewall Infernal',   level: 3, energyCost: 5, minigame: 'gravity_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
       name: 'Escudo de Grupo Verde',
@@ -26,11 +26,11 @@ export const VERSUS_ROBOTS = {
   },
   PL: {
     id: 'PL', name: 'Penlinux', color: '#00e5ff', colorName: 'CYAN',
-    baseHp: 10, baseAtk: 1, baseEnergy: 0,
+    baseHp: 10, baseAtk: 15, baseEnergy: 0,
     attacks: [
       { id: 'pl_l1', name: 'Deslize Glacial',    level: 1, energyCost: 1, minigame: 'swipe_path',     desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
       { id: 'pl_l2', name: 'Combo Glaciar',       level: 2, energyCost: 3, minigame: 'typing_sprint',  desc: 'Custo: 3 EN · 50% ATK' },
-      { id: 'pl_l3', name: 'Blizzard Plataforma', level: 3, energyCost: 5, minigame: 'platform_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 10)' },
+      { id: 'pl_l3', name: 'Blizzard Plataforma', level: 3, energyCost: 5, minigame: 'platform_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
       name: 'Escudo do Atacante',
@@ -46,11 +46,11 @@ export const VERSUS_ROBOTS = {
   },
   CP: {
     id: 'CP', name: 'Cowputer-Moo', color: '#ffd700', colorName: 'GOLD',
-    baseHp: 10, baseAtk: 1, baseEnergy: 0,
+    baseHp: 10, baseAtk: 15, baseEnergy: 0,
     attacks: [
       { id: 'cp_l1', name: 'Laço Circular',    level: 1, energyCost: 1, minigame: 'circle_click',  desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
       { id: 'cp_l2', name: 'Código do Xerife', level: 2, energyCost: 3, minigame: 'dual_keys',     desc: 'Custo: 3 EN · 50% ATK' },
-      { id: 'cp_l3', name: 'Pólvora Digital',  level: 3, energyCost: 5, minigame: 'shooter_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 10)' },
+      { id: 'cp_l3', name: 'Pólvora Digital',  level: 3, energyCost: 5, minigame: 'shooter_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
       name: 'Escudo Energético Amarelo',
@@ -66,11 +66,11 @@ export const VERSUS_ROBOTS = {
   },
   PB: {
     id: 'PB', name: 'Pavabyte', color: '#ff69b4', colorName: 'PINK',
-    baseHp: 10, baseAtk: 1, baseEnergy: 0,
+    baseHp: 10, baseAtk: 15, baseEnergy: 0,
     attacks: [
       { id: 'pb_l1', name: 'Reflexo Prismático', level: 1, energyCost: 1, minigame: 'mirror_sequence', desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
       { id: 'pb_l2', name: 'Teste de Reação',    level: 2, energyCost: 3, minigame: 'reaction_test',   desc: 'Custo: 3 EN · 50% ATK' },
-      { id: 'pb_l3', name: 'Órbita Caótica',     level: 3, energyCost: 5, minigame: 'orbit_dodge',     desc: 'Custo: 5 EN · 110% ATK (Máx 10)' },
+      { id: 'pb_l3', name: 'Órbita Caótica',     level: 3, energyCost: 5, minigame: 'orbit_dodge',     desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
       name: 'Escudo Duplo Azul',
@@ -86,11 +86,11 @@ export const VERSUS_ROBOTS = {
   },
   TV: {
     id: 'TV', name: 'Tigervex', color: '#ff8c00', colorName: 'ORANGE',
-    baseHp: 10, baseAtk: 1, baseEnergy: 0,
+    baseHp: 10, baseAtk: 15, baseEnergy: 0,
     attacks: [
       { id: 'tv_l1', name: 'Talho Veloz',      level: 1, energyCost: 1, minigame: 'slash_draw',      desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
       { id: 'tv_l2', name: 'Sequência Tesla',  level: 2, energyCost: 3, minigame: 'arrow_sequence',  desc: 'Custo: 3 EN · 50% ATK' },
-      { id: 'tv_l3', name: 'Coração de Ferro', level: 3, energyCost: 5, minigame: 'green_heart_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 10)' },
+      { id: 'tv_l3', name: 'Coração de Ferro', level: 3, energyCost: 5, minigame: 'green_heart_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
       name: 'Escudo Elétrico Fraco',
@@ -215,6 +215,9 @@ export class VersusEngine {
     this._processHotEffects(this.playerTeam);
     this._processHotEffects(this.enemyTeam);
     this._resetRoleAssignments();
+    if (this.mode === 'bot') {
+      this.botSelectTurnActions();
+    }
   }
 
   // Resets ONLY which robot does which role — NOT stats
@@ -222,6 +225,8 @@ export class VersusEngine {
     const clearRoles = (team) => team.forEach(r => {
       r.action = null;
       r._chosenAttack = null;
+      r._chosenTarget = null;
+      r._chosenAllyTarget = null;
     });
     clearRoles(this.playerTeam);
     clearRoles(this.enemyTeam);
@@ -308,9 +313,9 @@ export class VersusEngine {
     // REGRA DO USUÁRIO:
     // O primeiro ataque custa 1 energia, dá 25% de ataque (mínimo 1).
     // O segundo custa 3 energias, dá 50% de ataque.
-    // O terceiro custa 5 energias, dá 110% de ataque (máximo 10).
+    // O terceiro custa 5 energias, dá 110% de ataque (máximo 20).
     const atkLevel = attackMove?.level || 1;
-    const curAtk = attackerRobot.attackPower || 1;
+    const curAtk = attackerRobot.attackPower || 15;
     let baseDmg = 1;
 
     if (atkLevel === 1) {
@@ -318,7 +323,7 @@ export class VersusEngine {
     } else if (atkLevel === 2) {
       baseDmg = Math.max(1, Math.round(curAtk * 0.50));
     } else {
-      baseDmg = Math.min(10, Math.max(1, Math.round(curAtk * 1.10)));
+      baseDmg = Math.min(20, Math.max(1, Math.round(curAtk * 1.10)));
     }
 
     const rawDamage = Math.max(1, Math.round(baseDmg * ratio));
@@ -470,7 +475,7 @@ export class VersusEngine {
     // Regeneração de energia a cada round (+1 base para vivos, +1 bônus se poupou)
     this._processEnergyPerRound();
 
-    // REGRA DO USUÁRIO: o ataque cresce 1 por round até no max chegar em 10 onde sobrecarrega o robô
+    // REGRA DO USUÁRIO: o ataque cresce 1 por round até no max chegar em 20 onde sobrecarrega o robô
     const buffedRobots = this._processAttackBuffs();
 
     // Limpa contadores de golpes
@@ -479,11 +484,16 @@ export class VersusEngine {
     });
     this.targetedRobotsThisRound.clear();
 
-    // Checa se algum robô atingiu 10 para ativar a sobrecarga
+    // Checa se algum robô atingiu 20 para ativar a sobrecarga
     this._checkAttackOverload();
 
     // Reset ONLY role assignments — stats persist
     this._resetRoleAssignments();
+
+    // No modo treino, a IA planeja e bloqueia suas ações antes do início das decisões
+    if (this.mode === 'bot') {
+      this.botSelectTurnActions();
+    }
 
     return buffedRobots;
   }
@@ -494,15 +504,15 @@ export class VersusEngine {
 
     allRobots.forEach(bot => {
       if (bot.isAlive) {
-        if (bot.attackPower < 10) {
+        if (bot.attackPower < 20) {
           const oldAtk = bot.attackPower;
-          bot.attackPower = Math.min(10, bot.attackPower + 1);
+          bot.attackPower = Math.min(20, bot.attackPower + 1);
           buffed.push({
             bot,
             oldAtk,
             newAtk: bot.attackPower,
             diff: bot.attackPower - oldAtk,
-            isOverloaded: bot.attackPower >= 10
+            isOverloaded: bot.attackPower >= 20
           });
         }
       }
@@ -513,7 +523,7 @@ export class VersusEngine {
 
   _checkAttackOverload() {
     const allRobots = [...this.playerTeam, ...this.enemyTeam];
-    this.isAttackOverloaded = allRobots.some(r => r.isAlive && r.attackPower >= 10);
+    this.isAttackOverloaded = allRobots.some(r => r.isAlive && r.attackPower >= 20);
     return this.isAttackOverloaded;
   }
 
@@ -621,6 +631,8 @@ export class VersusEngine {
     this.enemyTeam.forEach(r => {
       r.action = 'rest';
       r._chosenAttack = null;
+      r._chosenTarget = null;
+      r._chosenAllyTarget = null;
     });
 
     const actions = this.generateBotActions();
@@ -630,11 +642,12 @@ export class VersusEngine {
       actions.attacker.action = 'attack';
       actions.attacker._chosenAttack = actions.chosenAttack;
 
-      // Define estrategicamente o alvo do atacante inimigo
+      // Define estrategicamente o alvo do atacante inimigo ANTES do início do combate
       const alivePlayer = this.playerTeam.filter(r => r.isAlive);
       if (alivePlayer.length > 0) {
-        const target = alivePlayer[Math.floor(Math.random() * alivePlayer.length)];
-        actions.attacker._chosenTarget = target;
+        const sameLane = alivePlayer.find(r => r.row === actions.attacker.row);
+        const lowestHp = [...alivePlayer].sort((a, b) => a.currentHp - b.currentHp)[0];
+        actions.attacker._chosenTarget = sameLane || lowestHp || alivePlayer[0];
       }
     }
 

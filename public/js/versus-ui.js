@@ -771,7 +771,7 @@ function buildCompactDraftList() {
         <div class="compact-draft-glyph" style="background:${r.color}; box-shadow:0 0 10px ${r.color}55">${id}</div>
         <div class="compact-draft-info">
           <strong>${r.name}</strong>
-          <span>${r.baseHp || 10} HP · ${r.baseAtk || 1} ATK · ${elem}</span>
+          <span>${r.baseHp || 10} HP · ${r.baseAtk || 15} ATK · ${elem}</span>
         </div>
       </div>
       <div class="compact-draft-pick-badge" id="draft-badge-${id}"></div>
@@ -868,7 +868,11 @@ $('versusConfirmTeamBtn')?.addEventListener('click', async () => {
   }
 
   // 2. Inicia o combate na arena 2D
+  engine.mode = currentMode;
   engine.startCombat();
+  if (currentMode === 'bot' && typeof engine.botSelectTurnActions === 'function') {
+    engine.botSelectTurnActions();
+  }
 
   $('versusDraftSection')?.classList.add('hidden');
   $('versusCommandSection')?.classList.remove('hidden');
@@ -1125,7 +1129,7 @@ function renderCommandCards() {
             <div class="cmd-hp-bar"><div class="cmd-hp-fill" style="width:${hpPct}%;background:${hpPct > 35 ? '#00ff88' : '#ff4455'}"></div></div>
           </div>
           <div class="cmd-energy-badge">ENERGIA: <strong>${bot.currentEnergy}</strong>/10</div>
-          <div class="cmd-atk-badge" style="font-size:0.75rem;font-weight:700;color:${bot.attackPower >= 10 ? '#ff1133' : '#ffd700'};margin-top:2px;">ATK: <strong>${bot.attackPower}</strong>/10 ${bot.attackPower >= 10 ? '[SOBRECARGA]' : ''}</div>
+          <div class="cmd-atk-badge" style="font-size:0.75rem;font-weight:700;color:${bot.attackPower >= 20 ? '#ff1133' : '#ffd700'};margin-top:2px;">ATK: <strong>${bot.attackPower}</strong>/20 ${bot.attackPower >= 20 ? '[SOBRECARGA]' : ''}</div>
         </div>
       </div>
       <span class="cmd-collapsed-badge" style="${badgeStyle}">${badgeText}</span>
@@ -1292,22 +1296,12 @@ async function executeSimultaneousClash() {
     bot.row = bot.homeRow;
   });
 
-  // IA do Oponente no Modo Treino
+  // IA do Oponente no Modo Treino: As ações e alvos já foram decididos antecipadamente no início do round!
+  // Fallback de segurança apenas se as ações ainda não foram atribuídas
   if (currentMode === 'bot') {
-    if (typeof engine.botSelectTurnActions === 'function') {
+    const hasPlanned = engine.enemyTeam.some(r => r.action && r.action !== 'rest');
+    if (!hasPlanned && typeof engine.botSelectTurnActions === 'function') {
       engine.botSelectTurnActions();
-    } else if (typeof engine.generateBotActions === 'function') {
-      const bActions = engine.generateBotActions();
-      if (bActions) {
-        if (bActions.attacker) {
-          bActions.attacker.action = 'attack';
-          bActions.attacker._chosenAttack = bActions.chosenAttack;
-          const aliveP = engine.playerTeam.filter(r => r.isAlive);
-          if (aliveP.length > 0) bActions.attacker._chosenTarget = aliveP[0];
-        }
-        if (bActions.defender) bActions.defender.action = 'defense';
-        if (bActions.supporter) bActions.supporter.action = 'support';
-      }
     }
   }
 
@@ -1502,9 +1496,9 @@ async function executeSimultaneousClash() {
     // Usa a habilidade que custa energia
     versus3DEngine.trigger3DSupportHelix(supporter.side, supporter.homeRow);
 
-    const target = (isPlayer && supporter._chosenAllyTarget)
-      ? supporter._chosenAllyTarget
-      : (s.team.find(r => !r.isAlive || r.currentHp <= 0) || s.team.find(r => r.isAlive && r.currentHp < r.maxHp) || supporter);
+    // O alvo de suporte foi decidido antecipadamente na fase de comando (não altera no meio do combate)
+    const target = supporter._chosenAllyTarget
+      || (isPlayer ? supporter : (s.team.find(r => r.isAlive && r.currentHp < r.maxHp) || supporter));
 
     const events = engine.resolveSupport(supporter, target);
     for (const ev of events) {
@@ -1558,23 +1552,28 @@ async function executeSimultaneousClash() {
   engine.endPlayerTurn();
   const buffedRobots = engine.endEnemyTurn();
 
-  // Loga os robôs que receberam sobrecarga de ataque (+1 por round até 10)
+  // Loga os robôs que receberam sobrecarga de ataque (+1 por round até 20)
   if (buffedRobots && buffedRobots.length > 0) {
     buffedRobots.forEach(b => {
       const sideName = b.bot.side === 'PLAYER' ? 'ALIADO' : 'INIMIGO';
-      addLog(`[SOBRECARGA // ${sideName}] ${b.bot.name}: Ataque aumentou +${b.diff} (${b.oldAtk} -> ${b.newAtk}/10)!`, 'info');
+      addLog(`[SOBRECARGA // ${sideName}] ${b.bot.name}: Ataque aumentou +${b.diff} (${b.oldAtk} -> ${b.newAtk}/20)!`, 'info');
     });
   }
 
-  // Verifica sobrecarga máxima de 10 para ativar o Alerta de Emergência
+  // Verifica sobrecarga máxima de 20 para ativar o Alerta de Emergência
   if (engine.isAttackOverloaded) {
-    addLog(`[ALERTA DE EMERGÊNCIA] Sistemas de ataque em SOBRECARGA MÁXIMA (10)!`, 'miss');
+    addLog(`[ALERTA DE EMERGÊNCIA] Sistemas de ataque em SOBRECARGA MÁXIMA (20)!`, 'miss');
     getAudio().playHeavyImpact();
   }
 
   updateArenaHUD();
   updateStatusPanel();
   resetRoleAssignmentUI();
+
+  // No modo bot, planeja e trava as decisões do bot para o próximo round antes do jogador agir
+  if (currentMode === 'bot' && typeof engine.botSelectTurnActions === 'function') {
+    engine.botSelectTurnActions();
+  }
 
   // O menu volta no próximo round em todos os rounds!
   $('versusLeftDeck')?.classList.remove('minimized');
@@ -1646,27 +1645,50 @@ function renderMedalDots(container, count) {
 
 function updateStatusPanel() {
   const pPanel = $('versusPlayerStatus');
-  if (!pPanel) return;
-  pPanel.innerHTML = '';
+  if (pPanel) {
+    pPanel.innerHTML = '';
+    engine.playerTeam.forEach(bot => {
+      const pct = Math.max(0, Math.min(100, Math.floor((bot.currentHp / bot.maxHp) * 100)));
+      const shieldInfo = bot.shield ? ` [ESCUDO: ${bot.shield.roundsLeft || 2}R]` : '';
+      const atkColor = bot.attackPower >= 20 ? '#ff1133' : '#ffd700';
+      const atkInfo = bot.isAlive ? ` <span style="color:${atkColor};font-weight:700;">[ATK:${bot.attackPower}]</span>` : '';
+      const row = document.createElement('div');
+      row.className = 'compact-bot-status';
+      row.innerHTML = `
+        <strong style="color:${bot.color};min-width:32px;">${bot.id}</strong>
+        <div class="compact-bot-hp-bar">
+          <div class="compact-bot-hp-fill" style="width:${pct}%;background:${pct > 30 ? '#00ff88' : '#ff4455'}"></div>
+        </div>
+        <span style="font-size:0.7rem;color:var(--term-dim);min-width:105px;">
+          ${bot.isAlive ? `${bot.currentHp}HP${shieldInfo}${atkInfo}` : 'DOWN'}
+        </span>
+      `;
+      pPanel.appendChild(row);
+    });
+  }
 
-  engine.playerTeam.forEach(bot => {
-    const pct = Math.max(0, Math.min(100, Math.floor((bot.currentHp / bot.maxHp) * 100)));
-    const shieldInfo = bot.shield ? ` [ESCUDO: ${bot.shield.roundsLeft || 2}R]` : '';
-    const atkColor = bot.attackPower >= 10 ? '#ff1133' : '#ffd700';
-    const atkInfo = bot.isAlive ? ` <span style="color:${atkColor};font-weight:700;">[ATK:${bot.attackPower}]</span>` : '';
-    const row = document.createElement('div');
-    row.className = 'compact-bot-status';
-    row.innerHTML = `
-      <strong style="color:${bot.color};min-width:32px;">${bot.id}</strong>
-      <div class="compact-bot-hp-bar">
-        <div class="compact-bot-hp-fill" style="width:${pct}%;background:${pct > 30 ? '#00ff88' : '#ff4455'}"></div>
-      </div>
-      <span style="font-size:0.7rem;color:var(--term-dim);min-width:105px;">
-        ${bot.isAlive ? `${bot.currentHp}HP${shieldInfo}${atkInfo}` : 'DOWN'}
-      </span>
-    `;
-    pPanel.appendChild(row);
-  });
+  const ePanel = $('versusEnemyStatus');
+  if (ePanel) {
+    ePanel.innerHTML = '';
+    engine.enemyTeam.forEach(bot => {
+      const pct = Math.max(0, Math.min(100, Math.floor((bot.currentHp / bot.maxHp) * 100)));
+      const shieldInfo = bot.shield ? ` [ESCUDO: ${bot.shield.roundsLeft || 2}R]` : '';
+      const atkColor = bot.attackPower >= 20 ? '#ff1133' : '#ffd700';
+      const atkInfo = bot.isAlive ? ` <span style="color:${atkColor};font-weight:700;">[ATK:${bot.attackPower}]</span>` : '';
+      const row = document.createElement('div');
+      row.className = 'compact-bot-status';
+      row.innerHTML = `
+        <strong style="color:${bot.color};min-width:32px;">${bot.id}</strong>
+        <div class="compact-bot-hp-bar">
+          <div class="compact-bot-hp-fill" style="width:${pct}%;background:${pct > 30 ? '#00ff88' : '#ff4455'}"></div>
+        </div>
+        <span style="font-size:0.7rem;color:var(--term-dim);min-width:105px;">
+          ${bot.isAlive ? `${bot.currentHp}HP${shieldInfo}${atkInfo}` : 'DOWN'}
+        </span>
+      `;
+      ePanel.appendChild(row);
+    });
+  }
 }
 
 function updateGuide(title, sub) {
