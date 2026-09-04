@@ -717,19 +717,30 @@ export class TerminalGameApp {
 
     const aboutBtn = document.getElementById('termAboutBtn');
     if (aboutBtn) {
-      aboutBtn.onclick = () => this.showAboutModal();
+      aboutBtn.onclick = (e) => {
+        e.preventDefault();
+        this.showAboutModal();
+      };
+      aboutBtn.onkeydown = (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.showAboutModal();
+        }
+      };
     }
 
-    const closeAbout = () => {
-      this.audio.playKeyClack();
-      document.getElementById('devAboutModal')?.classList.add('hidden');
-    };
+    const closeAbout = () => this.closeAboutModal();
 
-    document.getElementById('aboutModalCloseBtn')?.addEventListener('click', closeAbout);
-    document.getElementById('aboutActionCloseBtn')?.addEventListener('click', closeAbout);
-    document.getElementById('aboutBackdrop')?.addEventListener('click', closeAbout);
-    document.getElementById('devAboutCloseBtn')?.addEventListener('click', closeAbout);
-    document.getElementById('devAboutOkBtn')?.addEventListener('click', closeAbout);
+    ['aboutModalCloseBtn', 'aboutActionCloseBtn', 'aboutBackdrop', 'devAboutCloseBtn', 'devAboutOkBtn'].forEach(id => {
+      document.getElementById(id)?.addEventListener('click', closeAbout);
+    });
+
+    // Fechar ao clicar no overlay escuro de fundo
+    document.getElementById('devAboutModal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'devAboutModal' || e.target.id === 'aboutBackdrop') {
+        closeAbout();
+      }
+    });
 
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
@@ -951,7 +962,7 @@ export class TerminalGameApp {
   }
 
   // ─── Modal About: Mensagem do Desenvolvedor via JSON ───
-  async openAboutModal() {
+  async showAboutModal() {
     this.audio.playKeyClack();
     const modal = document.getElementById('devAboutModal');
     if (!modal) return;
@@ -971,7 +982,7 @@ export class TerminalGameApp {
       const highEl = document.getElementById('aboutHighlights');
       const sigEl = document.getElementById('aboutSignature');
 
-      if (headerTitle && data.title) headerTitle.textContent = `// ${data.title} //`;
+      if (headerTitle) headerTitle.textContent = data.title ? data.title.toUpperCase() : 'SOBRE ESSE JOGO';
       if (authorEl && data.author) authorEl.textContent = data.author;
       if (dateEl && data.date) dateEl.textContent = data.date;
       if (clearEl && data.securityClearance) clearEl.textContent = data.securityClearance;
@@ -984,12 +995,20 @@ export class TerminalGameApp {
     } catch (err) {
       console.warn('Falha ao carregar /data/about.json:', err);
       const statEl = document.getElementById('aboutStatement');
-      if (statEl) statEl.textContent = 'Mensagem do desenvolvedor registrada no sistema. Transmissão ativa.';
+      if (statEl) statEl.textContent = 'Hortobots: Reality Crash - Jogo de estratégia tática e combate de robôs com terminais retrô CRT e projeções holográficas 3D.';
     }
   }
 
   openAboutModal() {
-    this.showAboutModal();
+    return this.showAboutModal();
+  }
+
+  closeAboutModal() {
+    this.audio.playKeyClack();
+    const modal = document.getElementById('devAboutModal');
+    if (modal) {
+      modal.classList.add('hidden');
+    }
   }
 
   // ─── Atualização Dinâmica do Checkpoint na Fita 02 ───
