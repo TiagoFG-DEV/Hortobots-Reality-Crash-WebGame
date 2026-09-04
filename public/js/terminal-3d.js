@@ -907,15 +907,17 @@ export class Terminal3DEngine {
 
     if (typeof THREE === 'undefined') return;
 
-    const width = container.clientWidth || (window.innerWidth * 0.46);
+    const width = container.clientWidth || (window.innerWidth * 0.42);
     const height = container.clientHeight || window.innerHeight;
 
     const scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x020703, 0.015);
 
-    // Câmera posicionada para que a torre preencha do topo até a base da tela, perfeitamente centrada na direita
-    const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
-    camera.position.set(0, 0.4, 14.0);
+    // Câmera perfeitamente enquadrada para que a torre preencha do topo até a base na direita da tela sem cortes
+    const aspect = width / height;
+    const camera = new THREE.PerspectiveCamera(50, aspect, 0.1, 1000);
+    const targetZ = Math.max(13.8, 9.4 / (2 * Math.tan((50 * Math.PI / 180) / 2) * Math.min(0.9, aspect)));
+    camera.position.set(0, 0.4, targetZ);
     camera.lookAt(0, 0.4, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -1006,9 +1008,11 @@ export class Terminal3DEngine {
     // Redimensionamento de janela
     const onResize = () => {
       if (!this.titleRenderer || !this.titleCamera || !container) return;
-      const w = container.clientWidth || window.innerWidth;
+      const w = container.clientWidth || (window.innerWidth * 0.42);
       const h = container.clientHeight || window.innerHeight;
-      this.titleCamera.aspect = w / h;
+      const asp = w / h;
+      this.titleCamera.aspect = asp;
+      this.titleCamera.position.z = Math.max(13.8, 9.4 / (2 * Math.tan((50 * Math.PI / 180) / 2) * Math.min(0.9, asp)));
       this.titleCamera.updateProjectionMatrix();
       this.titleRenderer.setSize(w, h);
     };

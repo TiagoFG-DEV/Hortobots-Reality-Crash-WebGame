@@ -340,16 +340,6 @@ html, body {
   background: radial-gradient(circle at center, rgba(3, 14, 8, 0.5) 0%, rgba(1, 4, 2, 0.95) 100%);
 }
 
-/* Fundo 3D da Torre Girando */
-.title-3d-canvas-container {
-  position: absolute;
-  inset: 0;
-  width: 100% !important;
-  height: 100% !important;
-  z-index: 1;
-  pointer-events: none;
-  opacity: 0.85;
-}
 
 /* Overlay de Estática Analógica CRT (Fita inserida no deck) */
 .title-static-glitch-overlay {
@@ -627,18 +617,24 @@ html, body {
   flex-direction: column;
 }
 
+/* ===================================================
+   TORRE HOLOGRÁFICA 3D DA TELA DE TÍTULO - ALINHADA NA DIREITA
+   ================================================== */
 .title-3d-canvas-container {
   position: absolute;
   top: 0;
-  right: 2%;
-  width: 46%;
-  height: 100%;
+  right: 0;
+  bottom: 0;
+  left: auto !important;
+  width: 42% !important;
+  height: 100% !important;
   pointer-events: none;
   z-index: 4;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  opacity: 0.95;
 }
 
 .title-3d-canvas-container canvas {

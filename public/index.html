@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
   <link rel="stylesheet" href="/css/terminal.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
+
 <body>
   <div class="crt-scanlines"></div>
   <div class="crt-vignette"></div>
@@ -17,17 +19,18 @@
     <!-- Header Minimalista e Padronizado -->
     <header class="term-sys-header">
       <div class="term-brand">
-        <strong>[HORTOBOTS]</strong> // QUEZAS-DOS <span class="term-dim">// v4.9 CRT</span>
+        <strong>[HORTOBOTS]</strong> // QUEZAS-DOS <span class="term-dim">// v1.0b</span>
       </div>
       <div class="term-controls">
         <button class="term-btn home-nav-btn hidden" id="termHomeBtn" title="Voltar à Tela de Título (Salvar Partida)">
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="vertical-align: -2px; margin-right: 4px;">
-            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"
+            style="vertical-align: -2px; margin-right: 4px;">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
           </svg>
           <span>[ INÍCIO ]</span>
         </button>
-        <div class="biome-status-badge" id="termBiomeBadge">[ SETOR: FLORESTA DIGITAL ]</div>
-        <div class="party-status-badge" id="termPartyBadge">[ PARTY: 1/5 ]</div>
+        <div class="biome-status-badge" id="termBiomeBadge">[ SETOR: BASE ]</div>
+        <div class="party-status-badge" id="termPartyBadge">[VAZIO]</div>
         <button class="term-btn gold" id="termAudioToggle">[ SOM: ON ]</button>
       </div>
     </header>
@@ -53,7 +56,7 @@
  ██╔══██║██║   ██║██╔══██╗   ██║   ██║   ██║██╔══██╗██║   ██║   ██║   ╚════██║
  ██║  ██║╚██████╔╝██║  ██║   ██║   ╚██████╔╝██████╔╝╚██████╔╝   ██║   ███████║
  ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═════╝  ╚═════╝    ╚═╝   ╚══════╝
-       // R E A L I T Y   C R A S H //   SISTEMA MNEMOSYNE v4.9
+       // R E A L I T Y   C R A S H //   A Torre Virtual da Grande Inteligência Artificial.
           </pre>
           <div class="title-scanline-bar"></div>
         </div>
@@ -104,7 +107,7 @@
             <div class="tape-slot-bracket">[ ARCH-04 ]</div>
             <div class="tape-slot-body">
               <span class="tape-cursor">></span>
-              <span class="tape-label">ABOUT // MENSAGEM DO DEV</span>
+              <span class="tape-label">SOBRE</span>
               <span class="tape-sub">[ TRANSMISSÃO DIRETA DO CRIADOR ]</span>
             </div>
             <div class="tape-indicator-led"></div>
@@ -216,7 +219,8 @@
           <div class="hub-sectors-col-left">
             <div class="hologram-3d-card" style="height: 100%; min-height: 280px;">
               <div class="hologram-header">
-                <span style="font-size: 0.85rem; color: var(--term-accent); font-weight: 700;">// TELEMETRIA DA TORRE 3D</span>
+                <span style="font-size: 0.85rem; color: var(--term-accent); font-weight: 700;">// TELEMETRIA DA TORRE
+                  3D</span>
                 <span class="hologram-live-badge">[ AO VIVO ]</span>
               </div>
               <div id="hub3DCoreCanvasContainer" class="hologram-canvas-container" style="height: 230px;"></div>
@@ -227,12 +231,14 @@
           </div>
 
           <!-- Coluna 2: Destino Atual & Botão Centralizado -->
-          <div class="hub-sectors-col-right" style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div class="hub-sectors-col-right"
+            style="display: flex; flex-direction: column; justify-content: space-between;">
             <!-- PAINEL DE INTELIGÊNCIA TÁTICA DO ANDAR -->
             <div class="sector-tactical-intel-box" style="margin-bottom: 12px;">
               <div class="tactical-intel-row">
                 <span class="intel-tag">// RESTRIÇÃO TÁTICA DA FORMAÇÃO:</span>
-                <strong id="tacticalRestrictionLabel" style="color: var(--term-accent);">Formação Livre (1 a 3 Robôs)</strong>
+                <strong id="tacticalRestrictionLabel" style="color: var(--term-accent);">Formação Livre (1 a 3
+                  Robôs)</strong>
               </div>
               <div class="tactical-intel-row" style="margin-top: 8px;">
                 <span class="intel-tag">// INIMIGOS NO PRÓXIMO ANDAR:</span>
@@ -242,11 +248,13 @@
 
             <!-- CARD CENTRAL DE AÇÃO E AVANÇO -->
             <div class="hub-next-action-card">
-              <div style="font-size: 0.85rem; color: var(--term-dim); letter-spacing: 2px; font-weight: 700;">// CABINE PRONTA //</div>
+              <div style="font-size: 0.85rem; color: var(--term-dim); letter-spacing: 2px; font-weight: 700;">// CABINE
+                PRONTA //</div>
               <div style="font-size: 1.1rem; color: var(--term-fg); margin: 6px 0 14px 0;">
                 Avance com sua equipe para o próximo setor da Torre Virtual.
               </div>
-              <button class="term-btn gold btn-advance-floor" id="btnAdvanceNextFloor" style="width: 100%; font-size: 1.2rem; padding: 14px; font-weight: 900;">
+              <button class="term-btn gold btn-advance-floor" id="btnAdvanceNextFloor"
+                style="width: 100%; font-size: 1.2rem; padding: 14px; font-weight: 900;">
                 [ >> ELEVAR CABINE / INICIAR COMBATE NO ANDAR >> ]
               </button>
             </div>
@@ -265,10 +273,12 @@
 
       <!-- CONTEÚDO DA ABA 3: MOCHILA / INVENTÁRIO DE ITENS -->
       <div id="hubViewInventory" class="hub-tab-view hidden">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+        <div
+          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
           <div>
             <h3 style="color: var(--term-accent); margin-bottom: 4px;">[ ITENS ]</h3>
-            <span style="color: var(--term-dim); font-size: 0.85rem;">> Utilizáveis para recuperação rápida de HP, Energia e Purificação.</span>
+            <span style="color: var(--term-dim); font-size: 0.85rem;">> Utilizáveis para recuperação rápida de HP,
+              Energia e Purificação.</span>
           </div>
           <div class="inventory-capacity-box" style="text-align: right; min-width: 190px;">
             <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px;">
@@ -293,7 +303,8 @@
             </div>
           </div>
           <div class="lore-progress-status">
-            <span id="loreDecodedCounter" style="color: var(--term-accent); font-weight: 700; font-size: 0.9rem;">DESCRIPTOGRAFADOS: 1/8</span>
+            <span id="loreDecodedCounter"
+              style="color: var(--term-accent); font-weight: 700; font-size: 0.9rem;">DESCRIPTOGRAFADOS: 1/8</span>
             <div class="lore-progress-track">
               <div class="lore-progress-fill" id="loreProgressFill" style="width: 12.5%;"></div>
             </div>
@@ -336,7 +347,8 @@
           <div id="storyTargetOverlay" class="versus-target-overlay hidden">
             <div class="versus-target-hud">
               <div class="target-hud-title" id="storyTargetTitle">ESCOLHA O ALVO NO TABULEIRO</div>
-              <div class="target-hud-sub" id="storyTargetSub">[ CLIQUE DIRETAMENTE NO HOSTIL EM EVIDÊNCIA NA DIREITA ]</div>
+              <div class="target-hud-sub" id="storyTargetSub">[ CLIQUE DIRETAMENTE NO HOSTIL EM EVIDÊNCIA NA DIREITA ]
+              </div>
             </div>
           </div>
         </div>
@@ -349,8 +361,8 @@
       <!-- Dock de Ações do Turno -->
       <div class="battle-command-deck">
         <div class="command-deck-header">
-          <span id="turnBannerPrompt">>> COMANDO DO COMBATENTE <<</span>
-          <span id="activeRobotTurnIndicator" style="color: var(--term-accent); font-weight: 700;"></span>
+          <span id="turnBannerPrompt">>> COMANDO DO COMBATENTE <<< /span>
+              <span id="activeRobotTurnIndicator" style="color: var(--term-accent); font-weight: 700;"></span>
         </div>
 
         <div class="deck-buttons-row">
@@ -374,7 +386,7 @@
       <div class="story-header">
         <span style="font-weight: 700; color: var(--term-accent);">[FIM DE TRANSMISSÃO // RELATÓRIO DA MISSÃO]</span>
       </div>
-      
+
       <div class="ending-resolution-card" id="endingResolutionCard"></div>
 
       <div class="story-footer-actions" style="margin-top: 20px;">
@@ -382,268 +394,277 @@
       </div>
     </div>
 
-  <!-- MODAL CINEMÁTICO DE PROGRESSÃO & GANHO DE XP (LEVEL UP) -->
-  <div id="xpLevelUpCinematicOverlay" class="xp-levelup-overlay hidden">
-    <div class="xp-levelup-modal">
-      <div class="xp-modal-header">
-        <div class="xp-modal-tag">// PROGRESSÃO DA EQUIPE APÓS O COMBATE //</div>
-        <h2 class="xp-modal-title">[ GANHO DE EXPERIÊNCIA & EVOLUÇÃO ]</h2>
-      </div>
-
-      <div class="xp-bots-list" id="xpBotsListContainer"></div>
-
-      <div class="xp-modal-footer">
-        <button class="term-btn gold" id="btnContinueFromXp" style="font-size: 1.15rem; padding: 10px 28px;">
-          [ CONTINUAR REDENÇÃO ► ]
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL DE RECOMPENSA: ESCOLHA DE 1 ENTRE 3 ITENS BÔNUS -->
-  <div id="bonusItemModalOverlay" class="bonus-reward-overlay hidden">
-    <div class="bonus-reward-modal">
-      <div class="reward-modal-tag">// RECOMPENSA DE SETOR PURIFICADO //</div>
-      <h2 style="color: var(--term-accent); font-size: 1.8rem; margin: 8px 0;">[ ESCOLHA 1 ITEM BÔNUS ]</h2>
-      <p style="color: var(--term-fg); margin-bottom: 20px;">Selecione um dos bônus de dados para adicionar ao seu inventário:</p>
-      
-      <div class="reward-cards-row" id="rewardCardsRow"></div>
-    </div>
-  </div>
-
-  <!-- BANNER CINEMÁTICO DE TURNO -->
-  <div id="turnCinematicBanner" class="turn-cinematic-banner hidden">
-    <div class="cinematic-slash-strip" id="cinematicSlashStrip">
-      <span class="cinematic-attacker" id="cinematicAttackerName">DINO-BYTE</span>
-      <span class="cinematic-arrow">►</span>
-      <span class="cinematic-move" id="cinematicMoveName">MORDIDA JURÁSSICA</span>
-    </div>
-  </div>
-
-  <!-- OVERLAY DE CONTAGEM REGRESSIVA PRÉ-MINIGAME -->
-  <div id="preCountdownOverlay" class="pre-countdown-overlay hidden">
-    <div class="countdown-inner-card">
-      <h1 id="countdownActionTitle" style="color: var(--term-accent); font-size: 2.2rem; margin-bottom: 8px;">GOLPE</h1>
-      <p id="countdownInstructionLegend" style="font-size: 1.1rem; color: #fff; margin-bottom: 16px;">INSTRUÇÃO</p>
-      <div class="countdown-number-digit" id="countdownNumberDigit">3</div>
-    </div>
-  </div>
-
-  <!-- OVERLAY DE MINIGAMES CRT BLACKOUT -->
-  <div id="terminalBlackoutOverlay" class="terminal-blackout-overlay hidden"></div>
-
-  <!-- GRANDE CINEMÁTICA PRÉ-DUELO (10 SEGUNDOS COM MÚSICA E SUSPENSE) -->
-  <div id="preDuelCinematicOverlay" class="pre-duel-cinematic-overlay hidden">
-    <div class="duel-cinematic-bg-grid"></div>
-    <div class="duel-cinematic-content">
-      <!-- Fase 1: Alerta de Setor -->
-      <div id="duelPhaseSector" class="duel-phase-box hidden">
-        <div class="duel-sys-alert">// CONEXÃO HOSTIL DETECTADA //</div>
-        <h1 class="duel-sector-title" id="duelCinematicSectorTitle">ANDAR 1</h1>
-        <div class="duel-theme-badge" id="duelCinematicThemeBadge">[ FLORESTA DIGITAL ]</div>
-      </div>
-
-      <!-- Fase 2: VS Confronto com Party Completa -->
-      <div id="duelPhaseVS" class="duel-phase-box hidden">
-        <div class="duel-vs-grid">
-          <div class="duel-fighter-col player" id="duelCinematicPlayerFighter">EQUIPE QUEZAS</div>
-          <div class="duel-vs-badge">VS</div>
-          <div class="duel-fighter-col enemy" id="duelCinematicEnemyFighter">INIMIGO</div>
-        </div>
-      </div>
-
-      <!-- Fase 3: Prepare-se -->
-      <div id="duelPhasePrepare" class="duel-phase-box hidden">
-        <h1 class="duel-prepare-glitch">>> PREPARE-SE <<</h1>
-      </div>
-
-      <!-- Fase 4: Contagem 3... 2... 1... -->
-      <div id="duelPhaseCountdown" class="duel-phase-box hidden">
-        <div class="duel-big-digit" id="duelBigDigitDisplay">3</div>
-      </div>
-
-      <!-- Fase 5: DUELEM! -->
-      <div id="duelPhaseStart" class="duel-phase-box hidden">
-        <h1 class="duel-start-climax">>> DUELEM! <<</h1>
-      </div>
-    </div>
-  </div>
-
-  <!-- TELA DE DERROTA -->
-  <div id="defeatCinematicOverlay" class="battle-result-overlay defeat hidden">
-    <div class="result-backdrop-grid defeat"></div>
-    <div class="result-content-card defeat">
-      <div class="result-sys-tag alert">// SOBRECARGA CRÍTICA //</div>
-      <h1 class="result-main-title defeat">>> SISTEMA EM COLAPSO <<</h1>
-      <p style="color: #ff3344; font-size: 1.15rem;">Sua party foi subjugada pela Grande Inteligência.</p>
-      <div class="result-badge-row">
-        <span class="result-badge alert">[ REINICIALIZANDO NO PONTO SEGURO ]</span>
-      </div>
-      <div class="result-timer-bar">
-        <div class="result-timer-progress defeat" id="defeatTimerProgress"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════════════
-       VERSUS MODE SCREENS (DENTRO DO CRT MONITOR)
-  ═══════════════════════════════════════════════════════════ -->
-
-  <!-- TELA: Login / Conta VERSUS -->
-  <div id="versusLoginScreen" class="term-screen versus-term-screen hidden">
-    <div class="versus-screen-inner">
-      <div class="versus-logo">
-        <span class="versus-logo-v">V</span><span class="versus-logo-s">ERSUS</span>
-        <div class="versus-logo-sub">HORTOBOTS RANKED SYSTEM // QUEZAS-DOS</div>
-      </div>
-      <div id="versusLoginForm" class="versus-card">
-        <h2 class="versus-card-title">IDENTIFICAÇÃO DO PILOTO</h2>
-        <div class="versus-input-group">
-          <label class="versus-label">NOME DE USUÁRIO</label>
-          <input type="text" id="versusPlayerName" class="versus-input" placeholder="Digite seu nome..." maxlength="16" autocomplete="off" />
-        </div>
-        <div class="versus-btn-row">
-          <button class="versus-action-btn primary" id="versusCreateBtn">[ CRIAR / ENTRAR ]</button>
-          <button class="versus-action-btn ghost" id="versusLoginBackBtn">[ VOLTAR AO MENU ]</button>
-        </div>
-        <div id="versusAccountInfo" class="versus-account-info hidden"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- TELA: Escolha de Modo (Competitivo / Treino) -->
-  <div id="versusModeSelectScreen" class="term-screen versus-term-screen hidden">
-    <div class="versus-screen-inner">
-      <div class="versus-welcome-bar" id="versusWelcomeBar">BEM-VINDO, PILOTO!</div>
-      <h2 class="versus-section-title">SELECIONE O PROTOCOLO DE COMBATE</h2>
-      <div class="versus-mode-cards">
-        <div class="versus-mode-card" id="versusModeBotCard">
-          <div class="versus-mode-icon">[TREINO]</div>
-          <div class="versus-mode-name">MODO TREINO // IA</div>
-          <div class="versus-mode-desc">Enfrente o simulador tático da Torre. Pratique alinhamento de raias, escudos e timing.</div>
-          <div class="versus-mode-badge bot">IA BOT</div>
-          <button class="versus-action-btn primary" id="versusBotBtn">[ INICIAR TREINO ]</button>
-        </div>
-        <div class="versus-mode-card highlight" id="versusModeRankCard">
-          <div class="versus-mode-icon">[PVP]</div>
-          <div class="versus-mode-name">MODO COMPETITIVO</div>
-          <div class="versus-mode-desc">Duelo ranked de alta voltagem. O primeiro a acumular 10 medalhas de combate vence!</div>
-          <div class="versus-mode-badge ranked">RANKED</div>
-          <button class="versus-action-btn ranked" id="versusRankedBtn">[ INICIAR RANKED ]</button>
-        </div>
-      </div>
-      <button class="versus-action-btn ghost" id="versusModeBackBtn">[ VOLTAR ]</button>
-    </div>
-  </div>
-
-  <!-- TELA PRINCIPAL: ARENA UNIFICADA VERSUS -->
-  <div id="versusArenaScreen" class="term-screen versus-unified-screen hidden">
-    <!-- Top HUD Minimalista -->
-    <div class="versus-top-hud">
-      <div class="versus-hud-side player">
-        <div class="versus-hud-name-box">
-          <span class="versus-side-tag">PILOTO</span>
-          <strong id="versusHudPlayerName">PLAYER</strong>
-        </div>
-        <div class="versus-medals-badge">
-          <span>MEDALHAS:</span> <strong id="versusPlayerMedalCount">0</strong>/10
-          <div class="versus-medals-dots" id="versusPlayerMedals"></div>
-        </div>
-        <div class="versus-player-status" id="versusPlayerStatus"></div>
-      </div>
-
-      <div class="versus-hud-match-status">
-        <div class="versus-round-tag">ROUND <span id="versusRoundNum">1</span></div>
-        <div class="versus-initiative-badge" id="versusInitiativeBadge">[ INICIATIVA: SORTEANDO... ]</div>
-      </div>
-
-      <div class="versus-hud-side enemy">
-        <div class="versus-medals-badge">
-          <span>MEDALHAS:</span> <strong id="versusEnemyMedalCount">0</strong>/10
-          <div class="versus-medals-dots" id="versusEnemyMedals"></div>
-        </div>
-        <div class="versus-hud-name-box">
-          <span class="versus-side-tag">ADVERSÁRIO</span>
-          <strong id="versusHudEnemyName">BOT</strong>
-        </div>
-      </div>
-    </div>
-
-    <!-- Corpo de Trabalho: Painel Esquerdo (Comandos) + Arena Direita (Tabuleiro + Terminal) -->
-    <div class="versus-workstation-body">
-      <!-- PAINEL ESQUERDO ESTÁVEL E ESPAÇOSO -->
-      <div class="versus-left-deck" id="versusLeftDeck">
-        <!-- Guia Tático -->
-        <div class="versus-dynamic-guide" id="versusDynamicGuide">
-          <div class="guide-message" id="versusGuideMessage">RECRUTAMENTO (0/3)</div>
-          <div class="guide-sub" id="versusGuideSub">Selecione 3 combatentes para suas linhas</div>
+    <!-- MODAL CINEMÁTICO DE PROGRESSÃO & GANHO DE XP (LEVEL UP) -->
+    <div id="xpLevelUpCinematicOverlay" class="xp-levelup-overlay hidden">
+      <div class="xp-levelup-modal">
+        <div class="xp-modal-header">
+          <div class="xp-modal-tag">// PROGRESSÃO DA EQUIPE APÓS O COMBATE //</div>
+          <h2 class="xp-modal-title">[ GANHO DE EXPERIÊNCIA & EVOLUÇÃO ]</h2>
         </div>
 
-        <!-- DECK 1: RECRUTAMENTO (Draft inicial) -->
-        <div class="versus-deck-section" id="versusDraftSection">
-          <div class="versus-compact-draft-grid" id="versusRobotGrid"></div>
-          
-          <!-- Inspetor Holográfico 3D do Robô em Foco -->
-          <div class="versus-draft-3d-box" id="versusDraft3DBox">
-            <div class="draft-3d-header">// TELEMETRIA HOLOGRÁFICA 3D //</div>
-            <div id="versusDraft3DPreview" class="versus-draft-3d-preview"></div>
-            <div id="versusDraft3DName" class="draft-3d-name">[ RECRUTAMENTO DE COMBATENTES ]</div>
-          </div>
+        <div class="xp-bots-list" id="xpBotsListContainer"></div>
 
-          <button class="term-btn gold full-w" id="versusConfirmTeamBtn" disabled>[ CONFIRMAR ESCALAÇÃO <span id="versusPickCounter">(0/3)</span> ]</button>
-        </div>
-
-        <!-- DECK 2: COMANDO TÁTICO DOS 3 ROBÔS (Super Intuitivo) -->
-        <div class="versus-deck-section hidden" id="versusCommandSection">
-          <div class="versus-robots-command-stack" id="versusRobotsCommandStack">
-            <!-- Gerado dinamicamente para cada um dos 3 robôs ativos -->
-          </div>
-
-          <button class="term-btn gold full-w versus-execute-btn" id="versusConfirmTurnBtn">
-            [ EXECUTAR EMBATE // INICIAR ROUND ]
+        <div class="xp-modal-footer">
+          <button class="term-btn gold" id="btnContinueFromXp" style="font-size: 1.15rem; padding: 10px 28px;">
+            [ CONTINUAR REDENÇÃO ► ]
           </button>
         </div>
       </div>
+    </div>
 
-      <!-- PAINEL DIREITO: TABULEIRO MASSIVO + TERMINAL INFERIOR -->
-      <div class="versus-right-arena">
-        <div class="versus-canvas-wrapper" id="versusCanvasWrapper">
-          <div id="versus3DCanvasContainer" class="versus-3d-canvas-container hidden"></div>
-          <canvas id="versusBoardCanvas" width="880" height="460"></canvas>
+    <!-- MODAL DE RECOMPENSA: ESCOLHA DE 1 ENTRE 3 ITENS BÔNUS -->
+    <div id="bonusItemModalOverlay" class="bonus-reward-overlay hidden">
+      <div class="bonus-reward-modal">
+        <div class="reward-modal-tag">// RECOMPENSA DE SETOR PURIFICADO //</div>
+        <h2 style="color: var(--term-accent); font-size: 1.8rem; margin: 8px 0;">[ ESCOLHA 1 ITEM BÔNUS ]</h2>
+        <p style="color: var(--term-fg); margin-bottom: 20px;">Selecione um dos bônus de dados para adicionar ao seu
+          inventário:</p>
 
-          <!-- OVERLAY DE SELEÇÃO DE ALVO (Apenas escurece e orienta, seleção é 100% no tabuleiro) -->
-          <div id="versusTargetOverlay" class="versus-target-overlay hidden">
-            <div class="versus-target-hud">
-              <div class="target-hud-title" id="versusTargetTitle">ESCOLHA O ALVO NO TABULEIRO</div>
-              <div class="target-hud-sub" id="versusTargetSub">[ CLIQUE DIRETAMENTE NO ROBÔ ADVERSÁRIO EM EVIDÊNCIA ]</div>
-            </div>
-          </div>
+        <div class="reward-cards-row" id="rewardCardsRow"></div>
+      </div>
+    </div>
 
-          <!-- BANNER DE ALERTA DE EMERGÊNCIA (Ativado quando qualquer robô atinge 50 de ataque) -->
-          <div id="versusEmergencyAlert" class="versus-emergency-alert hidden">
-            <div class="emergency-alert-stripe"></div>
-            <div class="emergency-alert-content">
-              <span class="emergency-tag">[ ! ]</span>
-              <span class="emergency-text" id="versusEmergencyText">ALERTA DE EMERGÊNCIA: SISTEMAS DE ATAQUE SOBRECARREGADOS // POTÊNCIA MÁXIMA (50) DETECTADA</span>
-              <span class="emergency-tag">[ ! ]</span>
-            </div>
-            <div class="emergency-alert-stripe"></div>
+    <!-- BANNER CINEMÁTICO DE TURNO -->
+    <div id="turnCinematicBanner" class="turn-cinematic-banner hidden">
+      <div class="cinematic-slash-strip" id="cinematicSlashStrip">
+        <span class="cinematic-attacker" id="cinematicAttackerName">DINO-BYTE</span>
+        <span class="cinematic-arrow">►</span>
+        <span class="cinematic-move" id="cinematicMoveName">MORDIDA JURÁSSICA</span>
+      </div>
+    </div>
+
+    <!-- OVERLAY DE CONTAGEM REGRESSIVA PRÉ-MINIGAME -->
+    <div id="preCountdownOverlay" class="pre-countdown-overlay hidden">
+      <div class="countdown-inner-card">
+        <h1 id="countdownActionTitle" style="color: var(--term-accent); font-size: 2.2rem; margin-bottom: 8px;">GOLPE
+        </h1>
+        <p id="countdownInstructionLegend" style="font-size: 1.1rem; color: #fff; margin-bottom: 16px;">INSTRUÇÃO</p>
+        <div class="countdown-number-digit" id="countdownNumberDigit">3</div>
+      </div>
+    </div>
+
+    <!-- OVERLAY DE MINIGAMES CRT BLACKOUT -->
+    <div id="terminalBlackoutOverlay" class="terminal-blackout-overlay hidden"></div>
+
+    <!-- GRANDE CINEMÁTICA PRÉ-DUELO (10 SEGUNDOS COM MÚSICA E SUSPENSE) -->
+    <div id="preDuelCinematicOverlay" class="pre-duel-cinematic-overlay hidden">
+      <div class="duel-cinematic-bg-grid"></div>
+      <div class="duel-cinematic-content">
+        <!-- Fase 1: Alerta de Setor -->
+        <div id="duelPhaseSector" class="duel-phase-box hidden">
+          <div class="duel-sys-alert">// CONEXÃO HOSTIL DETECTADA //</div>
+          <h1 class="duel-sector-title" id="duelCinematicSectorTitle">ANDAR 1</h1>
+          <div class="duel-theme-badge" id="duelCinematicThemeBadge">[ FLORESTA DIGITAL ]</div>
+        </div>
+
+        <!-- Fase 2: VS Confronto com Party Completa -->
+        <div id="duelPhaseVS" class="duel-phase-box hidden">
+          <div class="duel-vs-grid">
+            <div class="duel-fighter-col player" id="duelCinematicPlayerFighter">EQUIPE QUEZAS</div>
+            <div class="duel-vs-badge">VS</div>
+            <div class="duel-fighter-col enemy" id="duelCinematicEnemyFighter">INIMIGO</div>
           </div>
         </div>
 
-        <!-- Terminal Narrativo de Log Tático em Tempo Real -->
-        <div class="versus-narrative-terminal">
-          <div class="terminal-narrative-header">
-            <span class="term-dot"></span>
-            <span>// LOG TÁTICO // TELEMETRIA EM TEMPO REAL</span>
-          </div>
-          <div class="terminal-narrative-body" id="versusLog"></div>
+        <!-- Fase 3: Prepare-se -->
+        <div id="duelPhasePrepare" class="duel-phase-box hidden">
+          <h1 class="duel-prepare-glitch">>> PREPARE-SE <<< /h1>
+        </div>
+
+        <!-- Fase 4: Contagem 3... 2... 1... -->
+        <div id="duelPhaseCountdown" class="duel-phase-box hidden">
+          <div class="duel-big-digit" id="duelBigDigitDisplay">3</div>
+        </div>
+
+        <!-- Fase 5: DUELEM! -->
+        <div id="duelPhaseStart" class="duel-phase-box hidden">
+          <h1 class="duel-start-climax">>> DUELEM! <<< /h1>
         </div>
       </div>
     </div>
-  </div>
+
+    <!-- TELA DE DERROTA -->
+    <div id="defeatCinematicOverlay" class="battle-result-overlay defeat hidden">
+      <div class="result-backdrop-grid defeat"></div>
+      <div class="result-content-card defeat">
+        <div class="result-sys-tag alert">// SOBRECARGA CRÍTICA //</div>
+        <h1 class="result-main-title defeat">>> SISTEMA EM COLAPSO <<< /h1>
+            <p style="color: #ff3344; font-size: 1.15rem;">Sua party foi subjugada pela Grande Inteligência.</p>
+            <div class="result-badge-row">
+              <span class="result-badge alert">[ REINICIALIZANDO NO PONTO SEGURO ]</span>
+            </div>
+            <div class="result-timer-bar">
+              <div class="result-timer-progress defeat" id="defeatTimerProgress"></div>
+            </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+       VERSUS MODE SCREENS (DENTRO DO CRT MONITOR)
+  ═══════════════════════════════════════════════════════════ -->
+
+    <!-- TELA: Login / Conta VERSUS -->
+    <div id="versusLoginScreen" class="term-screen versus-term-screen hidden">
+      <div class="versus-screen-inner">
+        <div class="versus-logo">
+          <span class="versus-logo-v">V</span><span class="versus-logo-s">ERSUS</span>
+          <div class="versus-logo-sub">HORTOBOTS RANKED SYSTEM // QUEZAS-DOS</div>
+        </div>
+        <div id="versusLoginForm" class="versus-card">
+          <h2 class="versus-card-title">IDENTIFICAÇÃO DO PILOTO</h2>
+          <div class="versus-input-group">
+            <label class="versus-label">NOME DE USUÁRIO</label>
+            <input type="text" id="versusPlayerName" class="versus-input" placeholder="Digite seu nome..."
+              maxlength="16" autocomplete="off" />
+          </div>
+          <div class="versus-btn-row">
+            <button class="versus-action-btn primary" id="versusCreateBtn">[ CRIAR / ENTRAR ]</button>
+            <button class="versus-action-btn ghost" id="versusLoginBackBtn">[ VOLTAR AO MENU ]</button>
+          </div>
+          <div id="versusAccountInfo" class="versus-account-info hidden"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TELA: Escolha de Modo (Competitivo / Treino) -->
+    <div id="versusModeSelectScreen" class="term-screen versus-term-screen hidden">
+      <div class="versus-screen-inner">
+        <div class="versus-welcome-bar" id="versusWelcomeBar">BEM-VINDO, PILOTO!</div>
+        <h2 class="versus-section-title">SELECIONE O PROTOCOLO DE COMBATE</h2>
+        <div class="versus-mode-cards">
+          <div class="versus-mode-card" id="versusModeBotCard">
+            <div class="versus-mode-icon">[TREINO]</div>
+            <div class="versus-mode-name">MODO TREINO // IA</div>
+            <div class="versus-mode-desc">Enfrente o simulador tático da Torre. Pratique alinhamento de raias, escudos e
+              timing.</div>
+            <div class="versus-mode-badge bot">IA BOT</div>
+            <button class="versus-action-btn primary" id="versusBotBtn">[ INICIAR TREINO ]</button>
+          </div>
+          <div class="versus-mode-card highlight" id="versusModeRankCard">
+            <div class="versus-mode-icon">[PVP]</div>
+            <div class="versus-mode-name">MODO COMPETITIVO</div>
+            <div class="versus-mode-desc">Duelo ranked de alta voltagem. O primeiro a acumular 10 medalhas de combate
+              vence!</div>
+            <div class="versus-mode-badge ranked">RANKED</div>
+            <button class="versus-action-btn ranked" id="versusRankedBtn">[ INICIAR RANKED ]</button>
+          </div>
+        </div>
+        <button class="versus-action-btn ghost" id="versusModeBackBtn">[ VOLTAR ]</button>
+      </div>
+    </div>
+
+    <!-- TELA PRINCIPAL: ARENA UNIFICADA VERSUS -->
+    <div id="versusArenaScreen" class="term-screen versus-unified-screen hidden">
+      <!-- Top HUD Minimalista -->
+      <div class="versus-top-hud">
+        <div class="versus-hud-side player">
+          <div class="versus-hud-name-box">
+            <span class="versus-side-tag">PILOTO</span>
+            <strong id="versusHudPlayerName">PLAYER</strong>
+          </div>
+          <div class="versus-medals-badge">
+            <span>MEDALHAS:</span> <strong id="versusPlayerMedalCount">0</strong>/10
+            <div class="versus-medals-dots" id="versusPlayerMedals"></div>
+          </div>
+          <div class="versus-player-status" id="versusPlayerStatus"></div>
+        </div>
+
+        <div class="versus-hud-match-status">
+          <div class="versus-round-tag">ROUND <span id="versusRoundNum">1</span></div>
+          <div class="versus-initiative-badge" id="versusInitiativeBadge">[ INICIATIVA: SORTEANDO... ]</div>
+        </div>
+
+        <div class="versus-hud-side enemy">
+          <div class="versus-medals-badge">
+            <span>MEDALHAS:</span> <strong id="versusEnemyMedalCount">0</strong>/10
+            <div class="versus-medals-dots" id="versusEnemyMedals"></div>
+          </div>
+          <div class="versus-hud-name-box">
+            <span class="versus-side-tag">ADVERSÁRIO</span>
+            <strong id="versusHudEnemyName">BOT</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Corpo de Trabalho: Painel Esquerdo (Comandos) + Arena Direita (Tabuleiro + Terminal) -->
+      <div class="versus-workstation-body">
+        <!-- PAINEL ESQUERDO ESTÁVEL E ESPAÇOSO -->
+        <div class="versus-left-deck" id="versusLeftDeck">
+          <!-- Guia Tático -->
+          <div class="versus-dynamic-guide" id="versusDynamicGuide">
+            <div class="guide-message" id="versusGuideMessage">RECRUTAMENTO (0/3)</div>
+            <div class="guide-sub" id="versusGuideSub">Selecione 3 combatentes para suas linhas</div>
+          </div>
+
+          <!-- DECK 1: RECRUTAMENTO (Draft inicial) -->
+          <div class="versus-deck-section" id="versusDraftSection">
+            <div class="versus-compact-draft-grid" id="versusRobotGrid"></div>
+
+            <!-- Inspetor Holográfico 3D do Robô em Foco -->
+            <div class="versus-draft-3d-box" id="versusDraft3DBox">
+              <div class="draft-3d-header">// TELEMETRIA HOLOGRÁFICA 3D //</div>
+              <div id="versusDraft3DPreview" class="versus-draft-3d-preview"></div>
+              <div id="versusDraft3DName" class="draft-3d-name">[ RECRUTAMENTO DE COMBATENTES ]</div>
+            </div>
+
+            <button class="term-btn gold full-w" id="versusConfirmTeamBtn" disabled>[ CONFIRMAR ESCALAÇÃO <span
+                id="versusPickCounter">(0/3)</span> ]</button>
+          </div>
+
+          <!-- DECK 2: COMANDO TÁTICO DOS 3 ROBÔS (Super Intuitivo) -->
+          <div class="versus-deck-section hidden" id="versusCommandSection">
+            <div class="versus-robots-command-stack" id="versusRobotsCommandStack">
+              <!-- Gerado dinamicamente para cada um dos 3 robôs ativos -->
+            </div>
+
+            <button class="term-btn gold full-w versus-execute-btn" id="versusConfirmTurnBtn">
+              [ EXECUTAR EMBATE // INICIAR ROUND ]
+            </button>
+          </div>
+        </div>
+
+        <!-- PAINEL DIREITO: TABULEIRO MASSIVO + TERMINAL INFERIOR -->
+        <div class="versus-right-arena">
+          <div class="versus-canvas-wrapper" id="versusCanvasWrapper">
+            <div id="versus3DCanvasContainer" class="versus-3d-canvas-container hidden"></div>
+            <canvas id="versusBoardCanvas" width="880" height="460"></canvas>
+
+            <!-- OVERLAY DE SELEÇÃO DE ALVO (Apenas escurece e orienta, seleção é 100% no tabuleiro) -->
+            <div id="versusTargetOverlay" class="versus-target-overlay hidden">
+              <div class="versus-target-hud">
+                <div class="target-hud-title" id="versusTargetTitle">ESCOLHA O ALVO NO TABULEIRO</div>
+                <div class="target-hud-sub" id="versusTargetSub">[ CLIQUE DIRETAMENTE NO ROBÔ ADVERSÁRIO EM EVIDÊNCIA ]
+                </div>
+              </div>
+            </div>
+
+            <!-- BANNER DE ALERTA DE EMERGÊNCIA (Ativado quando qualquer robô atinge 50 de ataque) -->
+            <div id="versusEmergencyAlert" class="versus-emergency-alert hidden">
+              <div class="emergency-alert-stripe"></div>
+              <div class="emergency-alert-content">
+                <span class="emergency-tag">[ ! ]</span>
+                <span class="emergency-text" id="versusEmergencyText">ALERTA DE EMERGÊNCIA: SISTEMAS DE ATAQUE
+                  SOBRECARREGADOS // POTÊNCIA MÁXIMA (50) DETECTADA</span>
+                <span class="emergency-tag">[ ! ]</span>
+              </div>
+              <div class="emergency-alert-stripe"></div>
+            </div>
+          </div>
+
+          <!-- Terminal Narrativo de Log Tático em Tempo Real -->
+          <div class="versus-narrative-terminal">
+            <div class="terminal-narrative-header">
+              <span class="term-dot"></span>
+              <span>// LOG TÁTICO // TELEMETRIA EM TEMPO REAL</span>
+            </div>
+            <div class="terminal-narrative-body" id="versusLog"></div>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- MODAL DO DESENVOLVEDOR (ABOUT) - CENTRALIZADO, RESPONSIVO, DOSSIÊ CRT -->
-    <div id="devAboutModal" class="dev-about-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="aboutModalHeaderTitle">
+    <div id="devAboutModal" class="dev-about-modal-overlay hidden" role="dialog" aria-modal="true"
+      aria-labelledby="aboutModalHeaderTitle">
       <div class="dev-about-modal-backdrop" id="aboutBackdrop"></div>
       <div class="dev-about-window">
         <!-- CABEÇALHO DO DOSSIÊ -->
@@ -652,7 +673,8 @@
             <span class="about-tag-confidential">[ ARQUIVO CONFIDENCIAL // QUEZAS-OS v4.9 ]</span>
             <h2 class="about-header-title" id="aboutModalHeaderTitle">// MENSAGEM DO DESENVOLVEDOR //</h2>
           </div>
-          <button class="about-close-btn" id="aboutModalCloseBtn" type="button" aria-label="Fechar">[ ✕ FECHAR ]</button>
+          <button class="about-close-btn" id="aboutModalCloseBtn" type="button" aria-label="Fechar">[ ✕ FECHAR
+            ]</button>
         </div>
 
         <!-- CORPO DO DOSSIÊ COM SCROLL ELEGANTE -->
@@ -714,7 +736,8 @@
   <!-- OVERLAY CINEMÁTICA 3D: ASCENSÃO DA TORRE -->
   <div id="towerAscent3DOverlay" class="tower-ascent-3d-overlay hidden">
     <div id="towerAscent3DCanvasContainer" class="tower-ascent-canvas"></div>
-    <div class="tower-ascent-hud" style="display: flex; justify-content: center; align-items: center; text-align: center;">
+    <div class="tower-ascent-hud"
+      style="display: flex; justify-content: center; align-items: center; text-align: center;">
       <div class="ascent-hud-center">
         <h1 class="ascent-floor-title" id="ascentFloorTitle">1 ANDAR</h1>
       </div>
@@ -726,8 +749,11 @@
     <div id="coin3DCanvasContainer" class="coin-3d-canvas-container"></div>
     <div class="coin-3d-hud-layer">
       <div class="coin-3d-header">
-        <h2 class="coin-3d-title" style="font-size: 1.25rem; margin: 0; color: var(--term-accent); letter-spacing: 2px;">[ MOEDA DA SORTE! ]</h2>
-        <div class="coin-3d-guess-badge" id="coin3DPlayerGuessBadge" style="font-size: 0.85rem; padding: 3px 10px; margin-top: 4px;">PALPITE: CARA</div>
+        <h2 class="coin-3d-title"
+          style="font-size: 1.25rem; margin: 0; color: var(--term-accent); letter-spacing: 2px;">[ MOEDA DA SORTE! ]
+        </h2>
+        <div class="coin-3d-guess-badge" id="coin3DPlayerGuessBadge"
+          style="font-size: 0.85rem; padding: 3px 10px; margin-top: 4px;">PALPITE: CARA</div>
       </div>
       <div class="coin-3d-result-box" id="coin3DResultBox" style="padding: 8px 16px;">
         <div class="coin-3d-status-text" id="coin3DStatusText" style="font-size: 0.95rem;">Lançando moeda 3D...</div>
@@ -766,4 +792,5 @@
   <script type="module" src="/js/terminal-game.js"></script>
   <script type="module" src="/js/versus-ui.js"></script>
 </body>
+
 </html>
