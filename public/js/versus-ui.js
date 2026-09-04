@@ -23,7 +23,7 @@ let account     = null;
 
 // ── DOM Helpers ──────────────────────────────────────────────────────
 const $ = (id) => document.getElementById(id);
-const screens = ['versusLoginScreen', 'versusModeSelectScreen', 'versusCompetitiveScreen', 'versusArenaScreen'];
+const screens = ['versusLoginScreen', 'versusRegisterScreen', 'versusModeSelectScreen', 'versusCompetitiveScreen', 'versusArenaScreen'];
 
 function showScreen(id) {
   screens.forEach(s => {
@@ -187,15 +187,18 @@ $('versusModeRankCard')?.addEventListener('click', (e) => {
 
 // ── Auth: Status Message Helper ──────────────────────────────────────
 function showAuthStatus(msg, isError = true) {
-  const box = $('versusAuthStatusMsg');
-  if (!box) return;
-  box.className = `versus-status-msg ${isError ? 'error' : 'success'}`;
-  box.textContent = msg;
-  box.classList.remove('hidden');
+  const boxes = [$('versusAuthStatusMsg'), $('versusRegStatusMsg')];
+  boxes.forEach(box => {
+    if (!box) return;
+    box.className = `versus-status-msg ${isError ? 'error' : 'success'}`;
+    box.textContent = msg;
+    box.classList.remove('hidden');
+  });
 }
 
 function clearAuthStatus() {
   $('versusAuthStatusMsg')?.classList.add('hidden');
+  $('versusRegStatusMsg')?.classList.add('hidden');
 }
 
 // ── Auth: Login Tradicional ──────────────────────────────────────────
@@ -311,8 +314,22 @@ $('versusConfirmGoogleBtn')?.addEventListener('click', async () => {
   }
 });
 
+// ── Auth: Navegação entre Login e Registro ───────────────────────────
+$('versusGoToRegisterBtn')?.addEventListener('click', () => {
+  clearAuthStatus();
+  showScreen('versusRegisterScreen');
+  getAudio().playKeyClack();
+});
+
+$('versusGoToLoginBtn')?.addEventListener('click', () => {
+  clearAuthStatus();
+  showScreen('versusLoginScreen');
+  getAudio().playKeyClack();
+});
+
 // ── Auth: Voltar ao Menu Principal ───────────────────────────────────
 $('versusLoginBackBtn')?.addEventListener('click', showTitle);
+$('versusRegisterBackBtn')?.addEventListener('click', showTitle);
 
 // ── Perfil: Logout / Trocar Conta ────────────────────────────────────
 $('versusProfileLogoutBtn')?.addEventListener('click', () => {
@@ -321,6 +338,8 @@ $('versusProfileLogoutBtn')?.addEventListener('click', () => {
   clearAuthStatus();
   if ($('versusLoginNick')) $('versusLoginNick').value = '';
   if ($('versusLoginPass')) $('versusLoginPass').value = '';
+  if ($('versusRegNick')) $('versusRegNick').value = '';
+  if ($('versusRegPass')) $('versusRegPass').value = '';
   network.disconnect();
   showScreen('versusLoginScreen');
 });

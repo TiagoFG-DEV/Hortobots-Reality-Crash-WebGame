@@ -756,7 +756,7 @@ export class TerminalGameApp {
     if (homeBtn) {
       homeBtn.onclick = async () => {
         // Se estiver numa tela do Versus, volta ao título direto
-        const isVersusActive = ['versusLoginScreen', 'versusModeSelectScreen'].some(id => !document.getElementById(id)?.classList.contains('hidden'));
+        const isVersusActive = ['versusLoginScreen', 'versusRegisterScreen', 'versusModeSelectScreen'].some(id => !document.getElementById(id)?.classList.contains('hidden'));
         if (isVersusActive) {
           this.audio.playKeyClack();
           this.showTitle();
@@ -850,7 +850,7 @@ export class TerminalGameApp {
         }
       }
     });
-    ['versusLoginScreen', 'versusModeSelectScreen', 'versusArenaScreen'].forEach(vs => {
+    ['versusLoginScreen', 'versusRegisterScreen', 'versusModeSelectScreen', 'versusArenaScreen'].forEach(vs => {
       document.getElementById(vs)?.classList.add('hidden');
     });
 

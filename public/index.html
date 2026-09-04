@@ -475,7 +475,7 @@
        VERSUS MODE SCREENS (DENTRO DO CRT MONITOR)
   ═══════════════════════════════════════════════════════════ -->
 
-    <!-- TELA: Autenticação / Contas VERSUS (Login, Registro e Vínculo Google) -->
+    <!-- TELA: Autenticação / Login VERSUS -->
     <div id="versusLoginScreen" class="term-screen versus-term-screen versus-auth-screen hidden">
       <div class="versus-diamond-racing-grid"></div>
       <div class="versus-screen-inner versus-auth-inner">
@@ -483,11 +483,10 @@
           <div class="versus-logo">
             <span class="versus-logo-v">V</span><span class="versus-logo-s">ERSUS</span>
           </div>
-          <div class="versus-circuit-tag">[ CIRCUITO COMPETITIVO // TERMINAL DE ACESSO ]</div>
+          <div class="versus-circuit-tag">[ CIRCUITO COMPETITIVO // TERMINAL DE LOGIN ]</div>
         </div>
 
         <div class="versus-auth-card">
-          <!-- SEÇÃO 1: LOGIN EM CONTA EXISTENTE -->
           <div class="versus-auth-section">
             <div class="versus-auth-section-title">> ACESSAR CONTA EXISTENTE</div>
             <div class="versus-input-grid">
@@ -501,7 +500,7 @@
               </div>
             </div>
 
-            <div class="versus-btn-row">
+            <div class="versus-btn-row" style="margin-top: 6px;">
               <button class="versus-action-btn primary" id="versusAuthLoginBtn" type="button">[ ENTRAR NA CONTA ]</button>
               <button class="versus-action-btn google" id="versusAuthGoogleBtn" type="button">
                 <svg class="google-icon" viewBox="0 0 24 24" width="16" height="16">
@@ -515,12 +514,34 @@
             </div>
           </div>
 
-          <!-- SEPARADOR ESTILIZADO -->
+          <!-- SEPARADOR / NAVEGAÇÃO -->
           <div class="versus-auth-divider">
-            <span>OU CADASTRE-SE ABAIXO</span>
+            <span>NOVO NO CIRCUITO?</span>
           </div>
 
-          <!-- SEÇÃO 2: CRIAR NOVA CONTA -->
+          <div class="versus-btn-row">
+            <button class="versus-action-btn cyan" id="versusGoToRegisterBtn" type="button">[ CRIAR NOVA CONTA ]</button>
+            <button class="versus-action-btn ghost" id="versusLoginBackBtn" type="button">[ VOLTAR AO MENU ]</button>
+          </div>
+
+          <!-- FEEDBACK DE STATUS / ERRO -->
+          <div id="versusAuthStatusMsg" class="versus-status-msg hidden"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TELA: Registro de Novo Piloto VERSUS -->
+    <div id="versusRegisterScreen" class="term-screen versus-term-screen versus-auth-screen hidden">
+      <div class="versus-diamond-racing-grid"></div>
+      <div class="versus-screen-inner versus-auth-inner">
+        <div class="versus-arcade-header">
+          <div class="versus-logo">
+            <span class="versus-logo-v">V</span><span class="versus-logo-s">ERSUS</span>
+          </div>
+          <div class="versus-circuit-tag">[ CIRCUITO COMPETITIVO // REGISTRO DE NOVO PILOTO ]</div>
+        </div>
+
+        <div class="versus-auth-card">
           <div class="versus-auth-section secondary">
             <div class="versus-auth-section-title">> REGISTRO DE NOVO PILOTO</div>
             <div class="versus-input-grid">
@@ -534,7 +555,7 @@
               </div>
             </div>
 
-            <div class="versus-checkbox-row">
+            <div class="versus-checkbox-row" style="margin-top: 4px;">
               <label class="versus-checkbox-label">
                 <input type="checkbox" id="versusRegGoogleLinkCheck" />
                 <span>Vincular perfil a uma Conta Google</span>
@@ -546,14 +567,23 @@
               <input type="email" id="versusRegGoogleEmail" class="versus-input" placeholder="seu-email@gmail.com" />
             </div>
 
-            <div class="versus-btn-row">
-              <button class="versus-action-btn cyan" id="versusAuthRegBtn" type="button">[ CRIAR CONTA ]</button>
-              <button class="versus-action-btn ghost" id="versusLoginBackBtn" type="button">[ VOLTAR AO MENU ]</button>
+            <div class="versus-btn-row" style="margin-top: 6px;">
+              <button class="versus-action-btn cyan" id="versusAuthRegBtn" type="button">[ CONFIRMAR CADASTRO ]</button>
             </div>
           </div>
 
+          <!-- SEPARADOR / NAVEGAÇÃO -->
+          <div class="versus-auth-divider">
+            <span>JÁ POSSUI CONTA?</span>
+          </div>
+
+          <div class="versus-btn-row">
+            <button class="versus-action-btn primary" id="versusGoToLoginBtn" type="button">[ FAZER LOGIN ]</button>
+            <button class="versus-action-btn ghost" id="versusRegisterBackBtn" type="button">[ VOLTAR AO MENU ]</button>
+          </div>
+
           <!-- FEEDBACK DE STATUS / ERRO -->
-          <div id="versusAuthStatusMsg" class="versus-status-msg hidden"></div>
+          <div id="versusRegStatusMsg" class="versus-status-msg hidden"></div>
         </div>
       </div>
     </div>

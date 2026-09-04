@@ -22,8 +22,8 @@ export class TerminalAudioManager {
       violetTape: '/audio/Relax and Choose Your Champion.mp3',
 
       // Músicas para o modo VERSUS:
-      versusLobby: '/audio/Relax and Choose Your Champion.mp3',
-      versusDraft: '/audio/Relax and Choose Your Champion.mp3',
+      versusLobby: '/audio/Lizardilhas POP Theme.mp3',
+      versusDraft: '/audio/Lizardilhas POP Theme.mp3',
       versusBattle: '/audio/Energetic Battle Tendence.mp3',
       versusVictory: '/audio/The Final Credits.mp3',
 
