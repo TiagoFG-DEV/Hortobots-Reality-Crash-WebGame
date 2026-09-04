@@ -1,6 +1,6 @@
 {
   "description": "Configuração de Custos de Energia para Habilidades e Ataques do Modo Versus (Valores entre 1 e 5)",
-  "version": "1.0.0",
+  "version": "1.5b",
   "robots": {
     "DB": {
       "name": "Dino-Byte",

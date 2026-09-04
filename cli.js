@@ -11,7 +11,7 @@ console.log(`\x1b[32m
  |_| |_|\____/|_| \_\ |_|  \____/|____/ \____/  |_| |____/ 
                   A TORRE DIGITAL DE QUEZADILHAS
 =============================================================================
- [MODO TERMINAL / QUEZAS-DOS CLI ATIVO]
+ [MODO TERMINAL / QUEZAS-DOS CLI v1.5b ATIVO]
  Servidor Web CRT rodando em: http://localhost:3333
 \x1b[0m`);
 

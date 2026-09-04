@@ -538,7 +538,7 @@ function displayStatus(state) {
 // RUN DEBUG SIMULATION
 // ═══════════════════════════════════════════════════════════
 async function runDebug() {
-  header('HORTOBOTS — DEBUG VERSUS MODE v1.0');
+  header('HORTOBOTS — DEBUG VERSUS MODE v1.5b');
 
   // ─── TEST 1: Robot Selection ───
   section('TESTE 1: Seleção de Robôs');

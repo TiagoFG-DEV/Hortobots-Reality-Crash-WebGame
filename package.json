@@ -1,14 +1,14 @@
 {
   "name": "hortobots-digital-tower",
-  "version": "1.0.0",
-  "description": "RPG de turno da Torre Digital de Quezadilhas - Hortobots",
+  "version": "1.5.0-beta",
+  "description": "RPG de turno da Torre Digital de Quezadilhas - Hortobots v1.5b",
   "type": "module",
-  "main": "src/index.js",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "web": "node server.js",
-    "cli": "node src/index.js",
-    "test": "node tests/battle.test.js; node tests/level.test.js; node tests/tower.test.js"
+    "cli": "node cli.js",
+    "test": "node debug-versus.js"
   },
   "keywords": [
     "rpg",

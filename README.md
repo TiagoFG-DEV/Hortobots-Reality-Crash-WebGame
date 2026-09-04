@@ -1,7 +1,7 @@
 # HORTOBOTS: REALITY CRASH // A TORRE VIRTUAL
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Versão-2.5.0_Gold-ffd700?style=for-the-badge&logo=retroarch&logoColor=black" alt="Versão 2.5.0">
+  <img src="https://img.shields.io/badge/Versão-1.5b-ffd700?style=for-the-badge&logo=retroarch&logoColor=black" alt="Versão 1.5b">
   <img src="https://img.shields.io/badge/Engine-Vanilla_JS_ES_Modules-00ff66?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript">
   <img src="https://img.shields.io/badge/Gráficos_3D-Three.js_WebGL-00e5ff?style=for-the-badge&logo=three.js&logoColor=black" alt="Three.js">
   <img src="https://img.shields.io/badge/Estilo-CRT_Cyberpunk_Retro-ff3344?style=for-the-badge&logo=css3&logoColor=white" alt="CSS3 CRT">
