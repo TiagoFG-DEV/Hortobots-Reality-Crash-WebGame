@@ -1,28 +1,28 @@
 // public/js/beat-pulse-manager.js — Sistema de Beat Detection & Camera Shake Rítmico de Batalha
-// Utiliza Meyda (ou fallback nativo de FFT Web Audio API) para sincronizar o pulso visual de zoom e camera shake
+// Algoritmo de alta sensibilidade com Web Audio API FFT nativa e zoom sutil rítmico
 
 export class BeatPulseManager {
   constructor(audioManager) {
     this.audioManager = audioManager;
-    this.meydaAnalyzer = null;
     this.nativeAnalyser = null;
     this.sourceNode = null;
     this.isInitialized = false;
 
-    // Configurações de sensibilidade e detecção de batidas
+    // Configurações de alta sensibilidade e detecção de batidas
     this.lastBeatTime = 0;
-    this.minBeatIntervalMs = 175; // Limita a no máximo ~340 BPM para evitar tremores erráticos
+    this.minBeatIntervalMs = 110; // Permite captar até ~540 BPM (batidas rápidas, semicolcheias e ritmos eletrônicos)
     this.energyHistory = [];
-    this.historySize = 40;
-    this.decayRate = 0.86; // Amortecimento suave por frame (~140ms)
+    this.historySize = 25; // Janela móvel curta (~0.4s a 60fps) para adaptação dinâmica rápida
+    this.prevEnergy = 0;
+    this.decayRate = 0.82; // Amortecimento ágil para cada pulso respirar com precisão
 
-    // Estado da física de pulso
+    // Estado da física de pulso atenuada (zoom sutil, estável e confortável aos olhos)
     this.currentPulse = 0;
     this.currentShakeX = 0;
     this.currentShakeY = 0;
     this.animFrameId = null;
 
-    // Configuração de acessibilidade (1.0 = Intenso 100%, 0.5 = Suave 50%, 0 = Desativado)
+    // Configuração de acessibilidade (1.0 = 100%, 0.5 = 50%, 0 = Desativado)
     const savedSetting = (typeof localStorage !== 'undefined' ? localStorage.getItem('hortobots_beat_pulse_setting') : null) || 'high';
     this.intensitySetting = savedSetting; // 'high' | 'low' | 'off'
     this.intensityMultipliers = { high: 1.0, low: 0.45, off: 0.0 };
@@ -41,10 +41,10 @@ export class BeatPulseManager {
         this.sourceNode = audioCtx.createMediaElementSource(bgmAudio);
       }
 
-      // 2. Analisador nativo Web Audio API de Alta Performance (sem Meyda ou ScriptProcessorNode depreciado)
+      // 2. Analisador nativo Web Audio API com alta reatividade a transientes
       this.nativeAnalyser = audioCtx.createAnalyser();
       this.nativeAnalyser.fftSize = 512;
-      this.nativeAnalyser.smoothingTimeConstant = 0.72;
+      this.nativeAnalyser.smoothingTimeConstant = 0.40; // Reatividade rápida para captar ataques de percussão
 
       // 3. Conecta o fluxo de áudio: source -> nativeAnalyser -> destination
       this.sourceNode.connect(this.nativeAnalyser);
@@ -57,9 +57,21 @@ export class BeatPulseManager {
     }
   }
 
-  // Medição nativa de FFT Web Audio API (Sub-grave, Bumbo e Transientes de 40Hz a 250Hz)
+  // Medição nativa de FFT Web Audio API com alta sensibilidade a batidas
   _processNativeFFT() {
-    if (!this.nativeAnalyser || !this._isBattleActive()) return;
+    if (!this._isBattleActive()) return;
+
+    // Auto-inicialização de segurança caso o contexto tenha sido desbloqueado após a carga inicial
+    if (!this.nativeAnalyser || !this.isInitialized) {
+      if (this.audioManager && this.audioManager.audioCtx && this.audioManager.bgmAudio) {
+        this.initAudioGraph(this.audioManager.audioCtx, this.audioManager.bgmAudio);
+      }
+      if (!this.nativeAnalyser) return;
+    }
+
+    if (this.audioManager?.audioCtx?.state === 'suspended') {
+      this.audioManager.audioCtx.resume().catch(() => {});
+    }
 
     const mult = this.intensityMultipliers[this.intensitySetting] || 0;
     if (mult <= 0) return;
@@ -67,49 +79,77 @@ export class BeatPulseManager {
     const buffer = new Uint8Array(this.nativeAnalyser.frequencyBinCount);
     this.nativeAnalyser.getByteFrequencyData(buffer);
 
-    // Medição focada em sub-grave e bumbo (bins 1 a 6 = ~40Hz a 180Hz)
+    // 1. Sub-grave e Grave / Bumbo (bins 0 a 8: ~20Hz a 350Hz)
     let bassEnergy = 0;
-    const bassBins = 6;
-    for (let i = 1; i <= bassBins; i++) {
+    const bassBins = 9;
+    for (let i = 0; i < bassBins; i++) {
       bassEnergy += buffer[i] || 0;
     }
     bassEnergy = bassEnergy / (bassBins * 255);
 
-    // Medição de fluxo espectral de médios (transientes de percussão / sintetizadores)
+    // 2. Médios-Graves e Caixa / Percussão (bins 9 a 28: ~350Hz a 1200Hz)
     let midEnergy = 0;
-    for (let i = 7; i <= 24; i++) {
+    const midBins = 20;
+    for (let i = 9; i < 9 + midBins; i++) {
       midEnergy += buffer[i] || 0;
     }
-    midEnergy = midEnergy / (18 * 255);
+    midEnergy = midEnergy / (midBins * 255);
 
-    const combinedEnergy = (bassEnergy * 0.75) + (midEnergy * 0.25);
+    // 3. Agudos e Transientes de Pratos (bins 29 a 64: ~1200Hz a 2800Hz)
+    let highEnergy = 0;
+    const highBins = 36;
+    for (let i = 29; i < 29 + highBins; i++) {
+      highEnergy += buffer[i] || 0;
+    }
+    highEnergy = highEnergy / (highBins * 255);
 
-    this.energyHistory.push(combinedEnergy);
+    // Energia instantânea balanceada para apreender todo tipo de ritmo
+    const instantEnergy = (bassEnergy * 0.58) + (midEnergy * 0.32) + (highEnergy * 0.10);
+
+    // Histórico móvel adaptativo
+    this.energyHistory.push(instantEnergy);
     if (this.energyHistory.length > this.historySize) this.energyHistory.shift();
 
     const avgEnergy = this.energyHistory.reduce((a, b) => a + b, 0) / (this.energyHistory.length || 1);
     const now = performance.now();
 
-    // Detecção adaptativa de batida
-    if (combinedEnergy > 0.38 && combinedEnergy > avgEnergy * 1.32 && (now - this.lastBeatTime) > this.minBeatIntervalMs) {
+    // Delta em relação ao frame anterior (Spectral Flux / Detecção de Ataque)
+    const delta = instantEnergy - (this.prevEnergy || 0);
+    this.prevEnergy = instantEnergy;
+
+    // CONDIÇÃO DE ALTA SENSIBILIDADE (limiar baixo para captar praticamente todos os pulsos):
+    // 1. Energia acima do piso mínimo bem leve (> 0.030)
+    // 2. Intervalo mínimo de 110ms respeitado
+    // 3. Ocorrência de ataque súbito (delta > 0.008) OU energia levemente acima da média móvel (> avg * 1.04)
+    const timeDiff = now - this.lastBeatTime;
+    const isBeat = (timeDiff > this.minBeatIntervalMs) &&
+      (instantEnergy > 0.030) &&
+      (
+        delta > 0.008 ||
+        instantEnergy > (avgEnergy * 1.04)
+      );
+
+    if (isBeat) {
       this.lastBeatTime = now;
-      const strength = Math.min(1.0, (combinedEnergy / (avgEnergy * 1.45 || 1)));
+      // Normalização suave da força do pulso
+      const rawStrength = (instantEnergy - 0.02) / Math.max(0.05, avgEnergy * 0.85);
+      const strength = Math.min(1.0, Math.max(0.25, rawStrength));
       this._triggerPulse(strength * mult);
     }
   }
 
   _triggerPulse(strength) {
-    // Impacto Arcade Intenso: impulso na escala e tremor direcional
-    this.currentPulse = Math.min(1.0, this.currentPulse + (strength * 0.95));
+    // Adiciona impulso atenuado (zoom suave sem solavancos bruscos na tela)
+    this.currentPulse = Math.min(0.55, this.currentPulse + (strength * 0.28));
 
-    // Deslocamento angular sutil (±2.8px a ±3.2px)
+    // Tremor angular micro-sutil (±0.25px a ±0.55px) — pura textura analógica CRT
     const angle = Math.random() * Math.PI * 2;
-    const dist = (1.8 + Math.random() * 2.0) * strength;
+    const dist = (0.20 + Math.random() * 0.35) * strength;
     this.currentShakeX = Math.cos(angle) * dist;
     this.currentShakeY = Math.sin(angle) * dist;
 
-    // Pulso periférico de vinheta neon nas batidas mais fortes
-    if (strength > 0.65) {
+    // Vinheta neon discreta apenas em momentos de ápice rítmico
+    if (strength > 0.90) {
       this._flashBattleVignette();
     }
   }
@@ -126,7 +166,7 @@ export class BeatPulseManager {
     }
 
     vignette.classList.remove('pulse-flash');
-    void vignette.offsetWidth; // Reflow
+    void vignette.offsetWidth; // Força reflow
     vignette.classList.add('pulse-flash');
   }
 
@@ -168,23 +208,26 @@ export class BeatPulseManager {
         // Se NÃO estiver em batalha, garante que qualquer transformação seja removida imediatamente
         if (this.currentPulse > 0) {
           this.currentPulse = 0;
+          this.currentShakeX = 0;
+          this.currentShakeY = 0;
           this._resetElementTransforms();
         }
         this.animFrameId = requestAnimationFrame(loop);
         return;
       }
 
-      // Processa a análise rítmica via FFT nativa de alta performance
+      // Processa a análise rítmica via FFT nativa de alta sensibilidade
       this._processNativeFFT();
 
-      // Amortecimento físico suave (decay exponencial)
-      if (this.currentPulse > 0.002) {
+      // Amortecimento físico suave e ágil (decay exponencial)
+      if (this.currentPulse > 0.001) {
         this.currentPulse *= this.decayRate;
-        this.currentShakeX *= 0.82;
-        this.currentShakeY *= 0.82;
+        this.currentShakeX *= 0.75;
+        this.currentShakeY *= 0.75;
 
-        // Escala arcade: até ~1.032x de zoom na batida máxima
-        const scale = 1 + (this.currentPulse * 0.032);
+        // Escala suave: até ~1.0085x de zoom máximo (menos de 1% de escala!)
+        // Pulsa confortavelmente como a respiração/batimento cardíaco da música
+        const scale = 1 + (this.currentPulse * 0.015);
         const tx = (this.currentShakeX).toFixed(2);
         const ty = (this.currentShakeY).toFixed(2);
 
@@ -192,6 +235,8 @@ export class BeatPulseManager {
         targetEl.style.transformOrigin = 'center center';
       } else if (this.currentPulse !== 0) {
         this.currentPulse = 0;
+        this.currentShakeX = 0;
+        this.currentShakeY = 0;
         targetEl.style.transform = '';
       }
 

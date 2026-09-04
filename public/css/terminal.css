@@ -7652,7 +7652,7 @@ html, body {
   inset: 0;
   pointer-events: none;
   z-index: 40;
-  box-shadow: inset 0 0 60px rgba(0, 229, 255, 0.35), inset 0 0 120px rgba(0, 255, 102, 0.15);
+  box-shadow: inset 0 0 50px rgba(0, 229, 255, 0.15), inset 0 0 100px rgba(0, 255, 102, 0.08);
   opacity: 0;
   transition: opacity 0.2s ease-out;
   border-radius: inherit;
@@ -7664,12 +7664,12 @@ html, body {
 
 @keyframes beatVignetteFlash {
   0% {
-    opacity: 0.85;
-    box-shadow: inset 0 0 80px rgba(0, 229, 255, 0.45), inset 0 0 140px rgba(0, 255, 102, 0.25);
+    opacity: 0.28;
+    box-shadow: inset 0 0 60px rgba(0, 229, 255, 0.25), inset 0 0 100px rgba(0, 255, 102, 0.12);
   }
   100% {
     opacity: 0;
-    box-shadow: inset 0 0 30px rgba(0, 229, 255, 0);
+    box-shadow: inset 0 0 20px rgba(0, 229, 255, 0);
   }
 }
 

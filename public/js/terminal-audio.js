@@ -5,6 +5,7 @@ export class TerminalAudioManager {
   constructor() {
     this.audioCtx = null;
     this.bgmAudio = new Audio();
+    this.bgmAudio.crossOrigin = 'anonymous';
     this.bgmAudio.loop = true;
     this.bgmAudio.volume = 0.65;
     this.targetVolume = 0.65;
