@@ -7468,5 +7468,68 @@ html, body {
   letter-spacing: 1px;
 }
 
+/* ===================================================================
+   SISTEMA DE PULSO RÍTMICO & CAMERA SHAKE DE BATALHA (BEAT PULSE)
+   =================================================================== */
+.beat-pulse-toggle-btn {
+  background: rgba(0, 20, 10, 0.85);
+  border: 1px solid var(--term-fg, #00ff66);
+  color: var(--term-fg, #00ff66);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 3px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 0 6px rgba(0, 255, 102, 0.2);
+}
+
+.beat-pulse-toggle-btn:hover {
+  background: rgba(0, 255, 102, 0.15);
+  box-shadow: 0 0 12px rgba(0, 255, 102, 0.5);
+  transform: translateY(-1px);
+}
+
+.beat-pulse-toggle-btn.off {
+  border-color: #556655;
+  color: #778877;
+  background: rgba(10, 15, 10, 0.6);
+  box-shadow: none;
+  opacity: 0.65;
+}
+
+.battle-beat-vignette-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 40;
+  box-shadow: inset 0 0 60px rgba(0, 229, 255, 0.35), inset 0 0 120px rgba(0, 255, 102, 0.15);
+  opacity: 0;
+  transition: opacity 0.2s ease-out;
+  border-radius: inherit;
+}
+
+.battle-beat-vignette-overlay.pulse-flash {
+  animation: beatVignetteFlash 0.22s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+
+@keyframes beatVignetteFlash {
+  0% {
+    opacity: 0.85;
+    box-shadow: inset 0 0 80px rgba(0, 229, 255, 0.45), inset 0 0 140px rgba(0, 255, 102, 0.25);
+  }
+  100% {
+    opacity: 0;
+    box-shadow: inset 0 0 30px rgba(0, 229, 255, 0);
+  }
+}
+
+
 
 

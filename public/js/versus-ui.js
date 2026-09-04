@@ -2167,6 +2167,14 @@ $('versusResultMenuBtn')?.addEventListener('click', () => {
   getAudio().playBGM('versusLobby', 600);
 });
 
+// Botão de Pulso de Câmera na Batida da Música (Arena Versus)
+$('versusBeatPulseToggle')?.addEventListener('click', () => {
+  const audio = getAudio();
+  if (audio && audio.beatPulseManager) {
+    audio.beatPulseManager.cycleIntensity();
+  }
+});
+
 // ════════════════════════════════════════════════════════════════════
 // SECTION 9 — Terminal de Narrativa & Utilitários
 // ════════════════════════════════════════════════════════════════════

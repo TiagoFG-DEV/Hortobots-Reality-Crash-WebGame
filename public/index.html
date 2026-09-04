@@ -309,6 +309,7 @@
         <div class="battle-header-ticker">
           <span class="ticker-badge">// REGISTRO DE COMBATE //</span>
           <div class="battle-compact-log-ticker" id="battleLogTerminal"></div>
+          <button class="beat-pulse-toggle-btn" id="storyBeatPulseToggle" type="button" title="Alternar intensidade do pulso de câmera no ritmo da música">[ PULSO: 100% ]</button>
         </div>
 
         <!-- Tabuleiro Canvas 2D Tático do Modo História -->
@@ -882,6 +883,7 @@
         <div class="versus-hud-match-status">
           <div class="versus-round-tag">ROUND <span id="versusRoundNum">1</span></div>
           <div class="versus-initiative-badge" id="versusInitiativeBadge">[ INICIATIVA: SORTEANDO... ]</div>
+          <button class="versus-action-btn small ghost beat-pulse-toggle-btn" id="versusBeatPulseToggle" type="button" style="margin-top:4px;padding:2px 8px;font-size:0.65rem;" title="Alternar intensidade do pulso de câmera no ritmo da música">[ PULSO: 100% ]</button>
         </div>
 
         <div class="versus-hud-side enemy">
@@ -1113,6 +1115,9 @@
       <div class="versus-phase-scanlines"></div>
     </div>
   </div>
+
+  <!-- Biblioteca de Análise de Áudio & Beat Detection -->
+  <script src="/js/libs/meyda.min.js"></script>
 
   <!-- Script Principal do Jogo -->
   <script type="module" src="/js/terminal-game.js"></script>

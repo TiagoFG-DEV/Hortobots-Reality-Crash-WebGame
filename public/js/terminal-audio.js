@@ -1,4 +1,6 @@
 // TERMINAL/public/js/terminal-audio.js - Gerenciador de Áudio com SFX Retro de Jogos Antigos e Músicas Originais
+import { BeatPulseManager } from './beat-pulse-manager.js';
+
 export class TerminalAudioManager {
   constructor() {
     this.audioCtx = null;
@@ -10,20 +12,21 @@ export class TerminalAudioManager {
     this.isMuted = false;
     this.fadeInterval = null;
 
-    // MÚSICAS ORIGINAIS DO JOGO (PRESERVADAS RIGOROSAMENTE)
+    // MÚSICAS ORIGINAIS DO JOGO (PRESERVADAS RIGOROSAMENTE CONFORME DIRETRIZES DO USUÁRIO)
     this.tracks = {
-      // Som Padrão dos Menus e Hubs
-      title: '/audio/Relax and Choose Your Champion.mp3',
-      lobby: '/audio/Lizardilhas POP Theme.mp3',
-      elevator: '/audio/Lizardilhas POP Theme.mp3',
-      popTheme: '/audio/Lizardilhas POP Theme.mp3',
+      // Menu Principal e Hubs do MODO HISTÓRIA (Obrigatório: Lobby Theme.mp3)
+      title: '/audio/Lobby Theme.mp3',
+      lobby: '/audio/Lobby Theme.mp3',
+      elevator: '/audio/Lobby Theme.mp3',
+      storyLobby: '/audio/Lobby Theme.mp3',
       champion: '/audio/Relax and Choose Your Champion.mp3',
-      menuAlt: '/audio/Lizardilhas POP Theme.mp3',
+      menuAlt: '/audio/Lobby Theme.mp3',
       violetTape: '/audio/Relax and Choose Your Champion.mp3',
 
-      // Músicas para o modo VERSUS:
+      // Menus e Telas do MODO VERSUS (Obrigatório: Lizardilhas POP Theme.mp3)
       versusLobby: '/audio/Lizardilhas POP Theme.mp3',
       versusDraft: '/audio/Lizardilhas POP Theme.mp3',
+      popTheme: '/audio/Lizardilhas POP Theme.mp3',
       versusBattle: '/audio/Energetic Battle Tendence.mp3',
       versusVictory: '/audio/The Final Credits.mp3',
 
@@ -80,6 +83,13 @@ export class TerminalAudioManager {
       victory: 'https://assets.mixkit.co/active_storage/sfx/1433/1433-preview.mp3'
     };
 
+    // Gerenciador de Beat Pulse e Camera Shake de Batalha
+    this.beatPulseManager = new BeatPulseManager(this);
+    if (typeof window !== 'undefined') {
+      window.terminalAudioManager = this;
+      window.getBeatPulseManager = () => this.beatPulseManager;
+    }
+
     this._setupAutoplayUnlock();
   }
 
@@ -105,10 +115,14 @@ export class TerminalAudioManager {
     if (this.audioCtx.state === 'suspended') {
       this.audioCtx.resume();
     }
+    if (this.beatPulseManager && !this.beatPulseManager.isInitialized) {
+      this.beatPulseManager.initAudioGraph(this.audioCtx, this.bgmAudio);
+    }
   }
 
   playBGM(key, fadeDurationMs = 600) {
     if (this.isMuted) return;
+    this.initCtx();
     const url = this.tracks[key];
     if (!url) {
       console.warn(`[Audio] Faixa não encontrada: ${key}`);

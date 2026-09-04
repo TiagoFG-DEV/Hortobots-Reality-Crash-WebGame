@@ -665,6 +665,16 @@ export class TerminalGameApp {
       };
     }
 
+    // Botão de Pulso de Câmera na Batida da Música (Batalha Modo História)
+    const storyPulseBtn = document.getElementById('storyBeatPulseToggle');
+    if (storyPulseBtn) {
+      storyPulseBtn.onclick = () => {
+        if (this.audio && this.audio.beatPulseManager) {
+          this.audio.beatPulseManager.cycleIntensity();
+        }
+      };
+    }
+
     // Início de BGM do Título na primeira interação
     const startTitleMusic = () => {
       if (!this.audio.currentTrack) {
