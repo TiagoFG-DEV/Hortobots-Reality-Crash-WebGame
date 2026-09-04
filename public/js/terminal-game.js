@@ -41,9 +41,9 @@ const ROBOT_TEMPLATES = {
     xpGrowthPerLevel: 35,
     growthStats: { hp: 8, atk: 3, movePowerGrowth: 1 },
     moves: [
-      { id: 'jurassic_bite', name: 'Mordida Jurássica', cost: 2, basePower: 12, minigame: 'dino_targets', unlockLevel: 1, desc: 'Ataque dentado veloz que exige mira térmica rápida.' },
-      { id: 'flame_claw', name: 'Garras Flamejantes', cost: 4, basePower: 20, minigame: 'dino_arrows', unlockLevel: 4, desc: 'Talhos incandescentes em sequência direcional.' },
-      { id: 'draconic_firewall', name: 'Firewall Dracônico', cost: 6, basePower: 30, minigame: 'dino_timing', unlockLevel: 6, desc: 'Descarga de calor concentrada no pico de pressão.' }
+      { id: 'jurassic_bite', name: 'Expurgo Térmico', cost: 2, basePower: 12, minigame: 'click_targets', unlockLevel: 1, desc: 'Clique veloz: feche pelo menos 15 terminais antes do tempo acabar.' },
+      { id: 'flame_claw', name: 'Garras QTE', cost: 4, basePower: 20, minigame: 'arrow_qte', unlockLevel: 4, desc: 'Comandos direcionais de alta velocidade nas setas do teclado.' },
+      { id: 'draconic_firewall', name: 'Firewall Dracônico', cost: 6, basePower: 30, minigame: 'dino_targets', unlockLevel: 6, desc: 'Arena tática: desvie dos meteoros e colete os nós de ignição térmica.' }
     ],
     finisher: { id: 'lizards_roar', name: 'Rugido Hiperbárico do Lagarto', cost: 10, basePower: 45, unlockLevel: 2, minigame: 'chained_finisher', desc: 'O golpe supremo que desencadeia os 3 protocolos em sequência rápida!' }
   },
@@ -61,9 +61,9 @@ const ROBOT_TEMPLATES = {
     xpGrowthPerLevel: 40,
     growthStats: { hp: 10, atk: 2, movePowerGrowth: 1 },
     moves: [
-      { id: 'stampede_ram', name: 'Laço Magnético', cost: 2, basePower: 11, minigame: 'cow_lasso', unlockLevel: 1, desc: 'Lança o laço magnético no ponto de rotação polar.' },
-      { id: 'horn_overload', name: 'Sobrecarga de Chifres', cost: 4, basePower: 19, minigame: 'cow_decrypt', unlockLevel: 4, desc: 'Decodificação rápida de frequência binária.' },
-      { id: 'western_dust', name: 'Poeira do Velho Oeste', cost: 6, basePower: 28, minigame: 'cow_quickdraw', unlockLevel: 6, desc: 'Saque relâmpago ao primeiro sinal de faísca.' }
+      { id: 'stampede_ram', name: 'Laço Circular', cost: 2, basePower: 11, minigame: 'circle_click', unlockLevel: 1, desc: 'Clique de precisão no momento exato em que o ponteiro cruzar o anel polar.' },
+      { id: 'horn_overload', name: 'Código do Xerife', cost: 4, basePower: 19, minigame: 'dual_keys', unlockLevel: 4, desc: 'Alternância rápida de teclas duplas no teclado.' },
+      { id: 'western_dust', name: 'Poeira do Velho Oeste', cost: 6, basePower: 28, minigame: 'cow_lasso', unlockLevel: 6, desc: 'Arena tática: gire junto com o laço magnético sem tocar nas bordas eletrificadas.' }
     ],
     finisher: { id: 'bovine_voltage', name: 'Choque Bovino de Alta Tensão', cost: 10, basePower: 42, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Ataque sísmico total encadeando laço, código e saque rápido!' }
   },
@@ -81,9 +81,9 @@ const ROBOT_TEMPLATES = {
     xpGrowthPerLevel: 35,
     growthStats: { hp: 7, atk: 4, movePowerGrowth: 1 },
     moves: [
-      { id: 'frost_slide', name: 'Deslize Glacial', cost: 2, basePower: 13, minigame: 'pen_slide', unlockLevel: 1, desc: 'Desvia dos blocos de gelo na pista em alta velocidade.' },
-      { id: 'glacier_quake', name: 'Terremoto de Iceberg', cost: 4, basePower: 22, minigame: 'pen_stomp', unlockLevel: 4, desc: 'Ondas convergentes travadas no tempo exato.' },
-      { id: 'dance_pass', name: 'Passinho do Hee-Hee', cost: 6, basePower: 32, minigame: 'pen_rhythm', unlockLevel: 6, desc: 'Ritmo musical acrobático no compasso da batida.' }
+      { id: 'frost_slide', name: 'Condutor Criogênico', cost: 2, basePower: 13, minigame: 'swipe_path', unlockLevel: 1, desc: 'Arraste o cursor pelo traço de gelo condutor sem sair da linha.' },
+      { id: 'glacier_quake', name: 'Combo Glaciar', cost: 4, basePower: 22, minigame: 'typing_sprint', unlockLevel: 4, desc: 'Digitação veloz de palavras-chave árticas no teclado.' },
+      { id: 'dance_pass', name: 'Deslize Glacial', cost: 6, basePower: 32, minigame: 'pen_slide', unlockLevel: 6, desc: 'Arena tática: pista em alta velocidade desviando das estalactites.' }
     ],
     finisher: { id: 'hee_hee_avalanche', name: 'Avalanche Ártica do Hee-Hee', cost: 10, basePower: 48, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Coreografia devastadora executando os 3 ritmos em cadeia!' }
   },
@@ -101,9 +101,9 @@ const ROBOT_TEMPLATES = {
     xpGrowthPerLevel: 45,
     growthStats: { hp: 9, atk: 4, movePowerGrowth: 1 },
     moves: [
-      { id: 'titanium_slash', name: 'Talho de Titânio', cost: 2, basePower: 14, minigame: 'tiger_slice', unlockLevel: 1, desc: 'Fatia os cabos de dados condutores em sequência cirúrgica.' },
-      { id: 'plasma_pounce', name: 'Bote de Plasma', cost: 4, basePower: 24, minigame: 'tiger_plasma', unlockLevel: 4, desc: 'Carrega e retém energia de plasma até o ponto ótimo de 95%.' },
-      { id: 'white_fang', name: 'Presas Relâmpago', cost: 6, basePower: 34, minigame: 'tiger_tesla', unlockLevel: 6, desc: 'Conexão em cadeia das bobinas Tesla.' }
+      { id: 'titanium_slash', name: 'Talho Veloz', cost: 2, basePower: 14, minigame: 'slash_draw', unlockLevel: 1, desc: 'Arraste velozmente o traço de corte para fatiar o circuito condutor.' },
+      { id: 'plasma_pounce', name: 'Sequência Tesla', cost: 4, basePower: 24, minigame: 'arrow_sequence', unlockLevel: 4, desc: 'Sequência de setas direcionais nas bobinas Tesla sem cometer erros.' },
+      { id: 'white_fang', name: 'Bote de Plasma', cost: 6, basePower: 34, minigame: 'tiger_plasma', unlockLevel: 6, desc: 'Arena tática: desvie dos orbes tesla teleguiados que perseguem o seu núcleo.' }
     ],
     finisher: { id: 'thunder_core', name: 'Ruptura do Núcleo Trovão', cost: 10, basePower: 50, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Liberação total da usina interna em feixe colinear triplo!' }
   },
@@ -121,9 +121,9 @@ const ROBOT_TEMPLATES = {
     xpGrowthPerLevel: 40,
     growthStats: { hp: 8, atk: 3, movePowerGrowth: 1 },
     moves: [
-      { id: 'prism_flare', name: 'Clarão Prismático', cost: 2, basePower: 12, minigame: 'pava_prism', unlockLevel: 1, desc: 'Alinha o prisma para convergir o feixe de luz espectral.' },
-      { id: 'spectral_tail', name: 'Cauda Espectral', cost: 4, basePower: 22, minigame: 'pava_fan', unlockLevel: 4, desc: 'Memoriza e reflete a sequência do leque holográfico.' },
-      { id: 'code_cascade', name: 'Cascata de Códigos', cost: 6, basePower: 32, minigame: 'pava_cascade', unlockLevel: 6, desc: 'Chuva torrencial de fótons dourados.' }
+      { id: 'prism_flare', name: 'Reflexo Prismático', cost: 2, basePower: 12, minigame: 'mirror_sequence', unlockLevel: 1, desc: 'Clique nos espelhos na ordem correta para convergir o feixe de luz.' },
+      { id: 'spectral_tail', name: 'Teste de Reação', cost: 4, basePower: 22, minigame: 'reaction_test', unlockLevel: 4, desc: 'Reação relâmpago ao sinal óptico no terminal.' },
+      { id: 'code_cascade', name: 'Cascata de Códigos', cost: 6, basePower: 32, minigame: 'pava_cascade', unlockLevel: 6, desc: 'Arena tática: colete fótons dourados e esquive das partículas corrompidas.' }
     ],
     finisher: { id: 'rainbow_laser', name: 'Matriz Laser Arco-Íris', cost: 10, basePower: 46, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Bombardeio orbital óptico convergente executado em 3 fases!' }
   },
@@ -141,8 +141,8 @@ const ROBOT_TEMPLATES = {
     xpGrowthPerLevel: 35,
     growthStats: { hp: 7, atk: 3, movePowerGrowth: 1 },
     moves: [
-      { id: 'quezas_hack', name: 'Pulso de Desfragmentação', cost: 2, basePower: 12, minigame: 'dino_targets', unlockLevel: 1, desc: 'Disparo de neutralização de cabos de corrupção.' },
-      { id: 'quezas_strike', name: 'Talho de Dados', cost: 4, basePower: 18, minigame: 'dino_arrows', unlockLevel: 1, desc: 'Corte de precisão nos circuitos corrompidos.' }
+      { id: 'quezas_hack', name: 'Expurgo de Dados', cost: 2, basePower: 12, minigame: 'click_targets', unlockLevel: 1, desc: 'Feche os terminais de sobreaquecimento antes do overflow.' },
+      { id: 'quezas_strike', name: 'Talho de Dados', cost: 4, basePower: 18, minigame: 'arrow_qte', unlockLevel: 1, desc: 'QTE direcional de alta velocidade.' }
     ]
   }
 };
@@ -1246,8 +1246,8 @@ export class TerminalGameApp {
           defenseStance: null,
           isLethalWithstandTriggered: false,
           moves: quezasTmpl.moves || [
-            { id: 'quezas_hack', name: 'Pulso de Desfragmentação', cost: 2, basePower: 12, minigame: 'dino_targets', desc: 'Disparo de neutralização de cabos.' },
-            { id: 'quezas_strike', name: 'Talho de Dados', cost: 4, basePower: 18, minigame: 'dino_arrows', desc: 'Corte de precisão nos circuitos corrompidos.' }
+            { id: 'quezas_hack', name: 'Expurgo de Dados', cost: 2, basePower: 12, minigame: 'click_targets', desc: 'Feche os terminais de sobreaquecimento antes do overflow.' },
+            { id: 'quezas_strike', name: 'Talho de Dados', cost: 4, basePower: 18, minigame: 'arrow_qte', desc: 'QTE direcional de alta velocidade.' }
           ]
         };
 
@@ -1390,13 +1390,21 @@ export class TerminalGameApp {
     if (data) {
       this.currentFloorIndex = data.floorIndex || 0;
       this.lastCheckpointFloorIndex = data.lastCheckpointFloorIndex || data.floorIndex || 0;
-      this.party = (data.party || []).map(b => ({
-        ...b,
-        currentHp: b.currentHp !== undefined ? b.currentHp : b.maxHp,
-        stunTurns: 0,
-        isOverclocked: false,
-        defenseStance: null
-      }));
+      this.party = (data.party || []).map(b => {
+        const tmpl = this.getRobotTemplate(b.id) || ROBOT_TEMPLATES[b.id?.toUpperCase()];
+        const updatedMoves = tmpl ? tmpl.moves.map(m => {
+          const existing = (b.moves || []).find(em => em.id === m.id);
+          return { ...m, ...(existing || {}), minigame: m.minigame, name: m.name, desc: m.desc };
+        }) : b.moves;
+        return {
+          ...b,
+          moves: updatedMoves || b.moves,
+          currentHp: b.currentHp !== undefined ? b.currentHp : b.maxHp,
+          stunTurns: 0,
+          isOverclocked: false,
+          defenseStance: null
+        };
+      });
       this.activeBattlerIds = data.activeBattlerIds || (this.party[0] ? [this.party[0].id] : []);
       this.inventory = data.inventory || { energy_drink: 3, nano_patch: 3, quezas_jalapeno: 2, antivirus_patch: 2 };
       this.clearedFloors = new Set(data.clearedFloors || []);
@@ -2694,16 +2702,23 @@ export class TerminalGameApp {
     const overclockMult = bot.isOverclocked ? 1.5 : 1.0;
     bot.isOverclocked = false;
 
-    let rawCalc = (move.basePower + bot.attackPower * 0.4) * result.multiplier * elemMult * overclockMult;
-    if (this.activeBattleEvent && this.activeBattleEvent.id === 'TITAN_RAGE') {
-      rawCalc += 4;
+    let totalDmg = 0;
+    if (result && result.multiplier > 0) {
+      let rawCalc = (move.basePower + bot.attackPower * 0.4) * result.multiplier * elemMult * overclockMult;
+      if (this.activeBattleEvent && this.activeBattleEvent.id === 'TITAN_RAGE') {
+        rawCalc += 4;
+      }
+      totalDmg = Math.floor(rawCalc);
+      totalDmg = Math.max(5, Math.min(95, totalDmg));
     }
-    let totalDmg = Math.floor(rawCalc);
-    totalDmg = Math.max(5, Math.min(95, totalDmg));
 
-    this.combatLogs.push(`> ${bot.name} executou [${move.name}] em ${target.name}! ${result.feedback}`);
-    this.combatLogs.push(`> Causou ${totalDmg} de dano direto no HP!`);
-    target.currentHp = Math.max(0, target.currentHp - totalDmg);
+    this.combatLogs.push(`> ${bot.name} executou [${move.name}] em ${target.name}! ${result ? result.feedback : ''}`);
+    if (totalDmg > 0) {
+      this.combatLogs.push(`> Causou ${totalDmg} de dano direto no HP!`);
+      target.currentHp = Math.max(0, target.currentHp - totalDmg);
+    } else {
+      this.combatLogs.push(`> O ataque falhou e não causou dano!`);
+    }
     this.renderBattleArena();
 
     // Animação no Tabuleiro 2D (avanço, projétil, impacto com VFX, drenagem suave de vida e delay)

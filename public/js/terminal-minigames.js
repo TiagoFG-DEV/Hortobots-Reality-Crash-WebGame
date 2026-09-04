@@ -1,10 +1,13 @@
 // TERMINAL/public/js/terminal-minigames.js - Motor Avançado de Minigames (Undertale Bullet-Hell, FNF Rítmico, Terminal de Comandos e Reflexos)
+import { VersusMinigames } from './versus-minigames.js';
+
 export class TerminalMinigames {
   constructor(overlayElement, audioManager, engine3D = null) {
     this.overlay = overlayElement;
     this.audio = audioManager;
     this.engine3D = engine3D;
     this.currentAnimFrame = null;
+    this.versusMinigames = new VersusMinigames(this.overlay);
   }
 
   triggerScreenShake() {
@@ -28,6 +31,21 @@ export class TerminalMinigames {
 
   getMinigameInstruction(type) {
     const map = {
+      // Minigames L1 (Cliques / Arrastar do Versus)
+      click_targets: 'CLIQUE VELOZ! FECHE PELO MENOS 15 TERMINAIS ANTES DO TEMPO ACABAR!',
+      circle_click: 'CLIQUE NO MOMENTO EXATO EM QUE O CURSOR CRUZAR O ANEL DE FREQUÊNCIA!',
+      swipe_path: 'CONDUZA O SINAL DE GELO PELO CONDUTOR ÓPTICO SEM ESCAPAR DO TRAÇO!',
+      slash_draw: 'ARRASTE VELOZMENTE O TRAÇO DE CORTE PARA EXECUTAR O TALHO DE TITÂNIO!',
+      mirror_sequence: 'CLIQUE NOS ESPELHOS NA SEQUÊNCIA CORRETA PARA REFLETIR O PRISMA!',
+
+      // Minigames L2 (Teclado / Reação Rápida do Versus)
+      arrow_qte: 'PRESSIONE AS TECLAS DIRECIONAIS [SETAS] NA ORDEM INDICADA!',
+      dual_keys: 'PRESSIONE AS DUAS TECLAS ALTERNADAS RAPIDAMENTE NO TECLADO!',
+      typing_sprint: 'DIGITE A PALAVRA-CHAVE NO TECLADO COM VELOCIDADE MÁXIMA!',
+      arrow_sequence: 'EXECUTE A SEQUÊNCIA DE SETAS DO CIRCUITO TESLA SEM ERRAR!',
+      reaction_test: 'AGUARDE O SINAL VERDE E PRESSIONE A BARRA DE ESPAÇO IMEDIATAMENTE!',
+
+      // Minigames L3 (Desvio e Coleta Clássicos do Modo História)
       dino_targets: 'DESVIE DOS METEOROS E COLETE OS NÓS DE IGNIÇÃO TÉRMICA!',
       targets: 'DESVIE DOS METEOROS E COLETE OS NÓS DE IGNIÇÃO TÉRMICA!',
       dino_arrows: 'CUIDADO: GARRAS LASER TELEGUIDADAS! SAIA DA LINHA DE MIRA RAPIDAMENTE!',
@@ -95,6 +113,37 @@ export class TerminalMinigames {
 
     this.overlay.classList.remove('hidden');
     this.overlay.innerHTML = '';
+
+    // Minigames padronizados compartilhados com o Modo Versus (L1 e L2)
+    const VERSUS_MINIGAMES = [
+      'click_targets', 'circle_click', 'swipe_path', 'slash_draw', 'mirror_sequence',
+      'arrow_qte', 'dual_keys', 'typing_sprint', 'arrow_sequence', 'reaction_test'
+    ];
+
+    if (VERSUS_MINIGAMES.includes(minigameType)) {
+      const coreColor = this.getRobotCoreColor(robotKey);
+      const won = await this.versusMinigames.run(minigameType, coreColor, robotKey);
+      this.overlay.classList.add('hidden');
+      this.overlay.innerHTML = '';
+      if (won) {
+        this.audio?.playPowerUp();
+        this.triggerScreenShake();
+        return {
+          accuracy: 1.0,
+          multiplier: 1.0,
+          isCrit: false,
+          feedback: `COMANDO EXECUTADO COM SUCESSO! (1.00x DANO TOTAL)`
+        };
+      } else {
+        this.audio?.playDenied();
+        return {
+          accuracy: 0.0,
+          multiplier: 0.0,
+          isCrit: false,
+          feedback: `FALHA NA EXECUÇÃO DO COMANDO! (GOLPE FALHOU)`
+        };
+      }
+    }
 
     let result;
     switch (minigameType) {

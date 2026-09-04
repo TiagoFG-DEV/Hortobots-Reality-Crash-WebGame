@@ -134,19 +134,21 @@ export class VersusMinigames {
   // L1 MINIGAMES — Mouse / Click
   // ════════════════════════════════════════════════════════════════
 
-  // L1-DB: Prompts de terminal que precisam ser fechados antes de sumirem (EXPURGO TÉRMICO)
+  // L1-DB: Prompts de terminal que precisam ser fechados antes de sumirem (EXPURGO TÉRMICO FRENÉTICO)
   _clickTargets(color, name) {
     return new Promise(resolve => {
-      const duration = 6500;
-      const needed = 8;
+      const duration = 7000;
+      const needed = 15;
       let clicked = 0;
       let timeLeft = duration / 1000;
+      let spawnedTotal = 0;
+      const maxToSpawn = 36;
 
       this.overlay.innerHTML = this._buildMgLayout(
         color,
         name,
-        'EXPURGO TÉRMICO',
-        'CLIQUE RAPIDAMENTE NOS 8 ALERTAS DO KERNEL ANTES DO OVERFLOW',
+        'EXPURGO TÉRMICO FRENÉTICO',
+        'CLIQUE VELOZ! FECHE PELO MENOS 15 TERMINAIS ANTES DO TEMPO ACABAR!',
         duration
       );
       const canvas = this.overlay.querySelector('canvas');
@@ -154,6 +156,7 @@ export class VersusMinigames {
       const W = canvas.width, H = canvas.height;
       const timerEl = this.overlay.querySelector('.vmg-timer');
       const scoreEl = this.overlay.querySelector('.vmg-score');
+      if (scoreEl) scoreEl.textContent = `0/${needed}`;
 
       const targets = [];
       const promptTitles = [
@@ -162,28 +165,37 @@ export class VersusMinigames {
         'KERNEL_PANIC',
         'VOLT_SPIKE',
         'SIGKILL #409',
-        'MEM_LEAK 0xEE'
+        'MEM_LEAK 0xEE',
+        'TEMP_CRIT 98C',
+        'BUS_ERR 0x1A',
+        'STACK_CORRUPT'
       ];
 
       const spawnTarget = () => {
-        const pw = 164;
-        const ph = 66;
+        if (spawnedTotal >= maxToSpawn) return;
+        spawnedTotal++;
+        const pw = 128;
+        const ph = 52;
         targets.push({
-          x: 20 + Math.random() * (W - pw - 40),
-          y: 20 + Math.random() * (H - ph - 40),
+          x: 15 + Math.random() * (W - pw - 30),
+          y: 15 + Math.random() * (H - ph - 30),
           w: pw,
           h: ph,
           title: promptTitles[Math.floor(Math.random() * promptTitles.length)],
           life: 1.0,
-          decay: 0.007 + Math.random() * 0.004,
+          decay: 0.0085 + Math.random() * 0.005,
           clicked: false,
         });
       };
 
-      for (let i = 0; i < 2; i++) spawnTarget();
+      // Spawns iniciais rápidos
+      for (let i = 0; i < 3; i++) spawnTarget();
+      // Intervalo acelerado de spawn (~180ms - 5x mais rápido gerando 30+ terminais)
       const spawnInterval = setInterval(() => {
-        if (targets.filter(t => !t.clicked).length < 3) spawnTarget();
-      }, 1000);
+        if (targets.filter(t => !t.clicked).length < 8 && spawnedTotal < maxToSpawn) {
+          spawnTarget();
+        }
+      }, 180);
 
       const debris = [];
 
@@ -192,20 +204,27 @@ export class VersusMinigames {
         const mx = (e.clientX - rect.left) * (W / rect.width);
         const my = (e.clientY - rect.top) * (H / rect.height);
 
-        targets.forEach(t => {
+        // Permite clicar nos alertas mais recentes primeiro (ordem reversa)
+        for (let i = targets.length - 1; i >= 0; i--) {
+          const t = targets[i];
           if (!t.clicked && mx >= t.x && mx <= t.x + t.w && my >= t.y && my <= t.y + t.h) {
             t.clicked = true;
             clicked++;
-            if (scoreEl) scoreEl.textContent = `${clicked}/${needed}`;
+            if (scoreEl) {
+              scoreEl.textContent = `${clicked}/${needed}`;
+              if (clicked >= needed) {
+                scoreEl.style.color = '#00ff88';
+              }
+            }
 
             // SHAKE DA CÂMERA INTENSO!
-            this._shake(12);
+            this._shake(10);
             getAudio().playKeyClack();
 
             // Estilhaços de código e glitch
-            for (let d = 0; d < 16; d++) {
+            for (let d = 0; d < 12; d++) {
               const ang = Math.random() * Math.PI * 2;
-              const spd = Math.random() * 5 + 2;
+              const spd = Math.random() * 4 + 2;
               debris.push({
                 x: t.x + t.w / 2,
                 y: t.y + t.h / 2,
@@ -214,11 +233,12 @@ export class VersusMinigames {
                 text: ['0x00', 'KILL', '01', 'HALT', 'SIGTERM', '0xFF'][Math.floor(Math.random() * 6)],
                 color: color || '#ff3344',
                 life: 1.0,
-                decay: 0.04
+                decay: 0.05
               });
             }
+            break; // Um clique remove o alerta de topo
           }
-        });
+        }
       });
 
       const start = performance.now();
@@ -242,7 +262,7 @@ export class VersusMinigames {
         for (let y = 0; y < H; y += 32) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
 
         // Scanline horizontal em movimento
-        const scanY = (elapsed * 0.15) % H;
+        const scanY = (elapsed * 0.18) % H;
         ctx.fillStyle = 'rgba(255, 80, 80, 0.06)';
         ctx.fillRect(0, scanY, W, 4);
 
@@ -258,47 +278,47 @@ export class VersusMinigames {
           if (t.clicked) continue;
 
           ctx.save();
-          const pulse = Math.sin(elapsed * 0.015 + t.x) * 0.3 + 0.7;
+          const pulse = Math.sin(elapsed * 0.02 + t.x) * 0.3 + 0.7;
           ctx.shadowColor = color || '#ff3344';
-          ctx.shadowBlur = 14 * pulse;
+          ctx.shadowBlur = 10 * pulse;
 
           // Janela do Prompt
           ctx.fillStyle = 'rgba(12, 4, 6, 0.95)';
           ctx.strokeStyle = color || '#ff3344';
-          ctx.lineWidth = 2;
+          ctx.lineWidth = 1.5;
           ctx.beginPath();
-          ctx.roundRect(t.x, t.y, t.w, t.h, 6);
+          ctx.roundRect(t.x, t.y, t.w, t.h, 5);
           ctx.fill();
           ctx.stroke();
 
           // Barra Superior do Prompt
           ctx.fillStyle = color || '#ff3344';
           ctx.beginPath();
-          ctx.roundRect(t.x, t.y, t.w, 20, [6, 6, 0, 0]);
+          ctx.roundRect(t.x, t.y, t.w, 16, [5, 5, 0, 0]);
           ctx.fill();
 
           // Título do Erro
           ctx.fillStyle = '#000';
-          ctx.font = 'bold 10px monospace';
+          ctx.font = 'bold 9px monospace';
           ctx.textAlign = 'left';
-          ctx.fillText(`[!] ${t.title}`, t.x + 6, t.y + 14);
+          ctx.fillText(`[!] ${t.title}`, t.x + 4, t.y + 11);
 
           // Botão Fechar [X]
           ctx.fillStyle = '#fff';
-          ctx.font = 'bold 11px monospace';
+          ctx.font = 'bold 9px monospace';
           ctx.textAlign = 'right';
-          ctx.fillText('[X]', t.x + t.w - 6, t.y + 14);
+          ctx.fillText('[X]', t.x + t.w - 4, t.y + 11);
 
           // Mensagem
           ctx.fillStyle = '#ff8888';
-          ctx.font = '10px monospace';
+          ctx.font = '9px monospace';
           ctx.textAlign = 'center';
-          ctx.fillText('>> CLIQUE PARA FECHAR <<', t.x + t.w / 2, t.y + 38);
+          ctx.fillText('>> FECHAR <<', t.x + t.w / 2, t.y + 30);
 
           // Barra de Contagem Regressiva
-          const barW = (t.w - 16) * Math.max(0, t.life);
+          const barW = (t.w - 12) * Math.max(0, t.life);
           ctx.fillStyle = t.life > 0.4 ? '#00ff88' : '#ff3344';
-          ctx.fillRect(t.x + 8, t.y + t.h - 10, barW, 4);
+          ctx.fillRect(t.x + 6, t.y + t.h - 8, barW, 3);
 
           ctx.restore();
         }
@@ -316,21 +336,28 @@ export class VersusMinigames {
           ctx.save();
           ctx.globalAlpha = p.life;
           ctx.fillStyle = p.color;
-          ctx.font = 'bold 11px monospace';
+          ctx.font = 'bold 10px monospace';
           ctx.shadowColor = p.color;
-          ctx.shadowBlur = 8;
+          ctx.shadowBlur = 6;
           ctx.fillText(p.text, p.x, p.y);
           ctx.restore();
         }
 
-        if (clicked >= needed || timeLeft <= 0) {
+        // Medição estrita ao esgotar o tempo: mínimo de 15 terminais clicados
+        if (timeLeft <= 0) {
           done = true;
           clearInterval(spawnInterval);
           this._stop();
           const success = clicked >= needed;
           if (success) this._shake(16);
-          this._showResult(canvas, success, success ? 'PROCESSO ESTABILIZADO // KERNEL RESFRIADO!' : 'TEMPO ESGOTADO // KERNEL OVERFLOW!');
-          setTimeout(() => resolve(success), 900);
+          this._showResult(
+            canvas,
+            success,
+            success
+              ? `EXPURGO COMPLETO! // ${clicked}/${needed} TERMINAIS PURGADOS`
+              : `FALHA NO EXPURGO! // APENAS ${clicked}/${needed} TERMINAIS`
+          );
+          setTimeout(() => resolve(success), 950);
         }
       };
       loop();
