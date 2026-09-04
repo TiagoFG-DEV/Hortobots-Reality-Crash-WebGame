@@ -2828,6 +2828,113 @@ html, body {
   100% { background-position: 0 400px; }
 }
 
+/* ─── Temas Dinâmicos da Intro Pré-Duelo ─── */
+/* 1. Padrão: Cyber OS (Verde/Ciano) */
+.pre-duel-cinematic-overlay.theme-default {
+  background: #020608;
+}
+.pre-duel-cinematic-overlay.theme-default .duel-cinematic-bg-grid {
+  background-image: 
+    linear-gradient(rgba(0, 229, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 136, 0.1) 1px, transparent 1px);
+}
+.pre-duel-cinematic-overlay.theme-default .duel-theme-badge {
+  border-color: #00e5ff;
+  color: #00e5ff;
+}
+
+/* 2. Cinza Metálico Brilhante e Branco (Titânio / Chrome Industrial) */
+.pre-duel-cinematic-overlay.theme-metallic {
+  background: radial-gradient(circle at center, #1a2430 0%, #0c1218 65%, #05070a 100%);
+}
+.pre-duel-cinematic-overlay.theme-metallic .duel-cinematic-bg-grid {
+  background-image: 
+    linear-gradient(rgba(224, 235, 245, 0.18) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(160, 185, 210, 0.18) 1px, transparent 1px);
+}
+.pre-duel-cinematic-overlay.theme-metallic .duel-sys-alert {
+  color: #ffffff;
+  text-shadow: 0 0 14px rgba(255, 255, 255, 0.9), 0 0 25px rgba(180, 210, 240, 0.7);
+}
+.pre-duel-cinematic-overlay.theme-metallic .duel-sector-title {
+  color: #ffffff;
+  text-shadow: 0 0 25px rgba(255, 255, 255, 0.9), 0 0 50px rgba(180, 210, 240, 0.7);
+}
+.pre-duel-cinematic-overlay.theme-metallic .duel-theme-badge {
+  border-color: #ffffff;
+  color: #ffffff;
+  background: rgba(20, 32, 44, 0.85);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+}
+.pre-duel-cinematic-overlay.theme-metallic .duel-start-climax {
+  color: #ffffff;
+  text-shadow: 0 0 30px #ffffff, 0 0 60px #a0c4e8;
+}
+
+/* 3. Rosinha e Branco Kawaii (Cherry Terminal - ZERO Roxo/Violeta) */
+.pre-duel-cinematic-overlay.theme-kawaii {
+  background: radial-gradient(circle at center, #26121c 0%, #180a12 65%, #080306 100%);
+}
+.pre-duel-cinematic-overlay.theme-kawaii .duel-cinematic-bg-grid {
+  background-image: 
+    linear-gradient(rgba(255, 141, 161, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.16) 1px, transparent 1px);
+}
+.pre-duel-cinematic-overlay.theme-kawaii .duel-sys-alert {
+  color: #ff8da1;
+  text-shadow: 0 0 15px #ff5588;
+}
+.pre-duel-cinematic-overlay.theme-kawaii .duel-sector-title {
+  color: #ffffff;
+  text-shadow: 0 0 25px #ff8da1, 0 0 45px #ff5588;
+}
+.pre-duel-cinematic-overlay.theme-kawaii .duel-theme-badge {
+  border-color: #ff8da1;
+  color: #ffffff;
+  background: rgba(45, 16, 28, 0.85);
+  box-shadow: 0 0 15px rgba(255, 141, 161, 0.45);
+}
+.pre-duel-cinematic-overlay.theme-kawaii .duel-prepare-glitch {
+  color: #ff8da1;
+  text-shadow: 0 0 20px #ff5588;
+}
+.pre-duel-cinematic-overlay.theme-kawaii .duel-start-climax {
+  color: #ffffff;
+  text-shadow: 0 0 30px #ff8da1, 0 0 60px #ff5588;
+}
+
+/* 4. Verde Terminal Mesmo (Mainframe Fósforo CRT P1) */
+.pre-duel-cinematic-overlay.theme-matrix {
+  background: #020803;
+}
+.pre-duel-cinematic-overlay.theme-matrix .duel-cinematic-bg-grid {
+  background-image: 
+    linear-gradient(rgba(0, 255, 102, 0.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 102, 0.22) 1px, transparent 1px);
+}
+.pre-duel-cinematic-overlay.theme-matrix .duel-sys-alert {
+  color: #00ff66;
+  text-shadow: 0 0 14px #00ff66;
+}
+.pre-duel-cinematic-overlay.theme-matrix .duel-sector-title {
+  color: #33ff77;
+  text-shadow: 0 0 30px #00ff66;
+}
+.pre-duel-cinematic-overlay.theme-matrix .duel-theme-badge {
+  border-color: #00ff66;
+  color: #00ff66;
+  background: rgba(2, 16, 6, 0.9);
+  box-shadow: 0 0 15px rgba(0, 255, 102, 0.5);
+}
+.pre-duel-cinematic-overlay.theme-matrix .duel-prepare-glitch {
+  color: #00ff66;
+  text-shadow: 0 0 20px #00ff66;
+}
+.pre-duel-cinematic-overlay.theme-matrix .duel-start-climax {
+  color: #ffffff;
+  text-shadow: 0 0 30px #00ff66, 0 0 60px #33ff77;
+}
+
 .duel-cinematic-content {
   position: relative;
   z-index: 10;

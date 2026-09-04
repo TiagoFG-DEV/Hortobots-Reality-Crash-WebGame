@@ -14,6 +14,7 @@ import { VersusNetwork, AccountAPI } from './versus-network.js';
 import { TerminalAudioManager, getAudio } from './terminal-audio.js';
 import { versus3DEngine } from './versus-3d.js';
 import { getRobotAttackSymbolSVG, getAttackTacticalConcept } from './robot-attack-symbols.js';
+import { getRandomVersusTheme } from './versus-themes.js';
 
 // ── Singletons ───────────────────────────────────────────────────────
 const engine    = new VersusEngine();
@@ -854,17 +855,27 @@ $('versusConfirmTeamBtn')?.addEventListener('click', async () => {
   const playerName = (account?.nickname || account?.name || 'PILOTO').toUpperCase();
   const enemyName = currentMode === 'bot' ? 'SIMULADOR IA DA TORRE' : (engine.enemyName || 'OPONENTE RANKED').toUpperCase();
 
-  // Músicas de Duelo Versus: Sorteia aleatoriamente entre as 3 faixas oficiais do circuito
-  const battleBgmKey = getAudio().getRandomVersusDuelKey();
+  // Músicas & Temas de Duelo Versus: Sorteia aleatoriamente entre os 4 temas oficiais da Arena
+  const currentArenaTheme = getRandomVersusTheme();
+  const battleBgmKey = currentArenaTheme.bgmKey;
 
-  // 1. Cinemática Grandiosa 3D Pré-Duelo do Modo História
+  // Aplica o tema na arena 2D (canvas) e 3D (three.js)
+  if (board) {
+    board.setArenaTheme(currentArenaTheme);
+  }
+  if (versus3DEngine) {
+    versus3DEngine.applyTheme(currentArenaTheme);
+  }
+
+  // 1. Cinemática Grandiosa 3D Pré-Duelo com suporte ao tema da arena
   if (window.gameInstance && typeof window.gameInstance.runGrandDuelCinematic === 'function') {
     await window.gameInstance.runGrandDuelCinematic(
-      'ARENA VIRTUAL // CIRCUITO RANKED',
-      currentMode === 'bot' ? 'SIMULADOR DE COMBATE IA' : 'DUELO COMPETITIVO PVP',
+      'ARENA VIRTUAL',
+      currentArenaTheme.name,
       `PILOTO [ ${playerName} ]`,
       `[ ${enemyName} ]`,
-      battleBgmKey
+      battleBgmKey,
+      currentArenaTheme
     );
   }
 

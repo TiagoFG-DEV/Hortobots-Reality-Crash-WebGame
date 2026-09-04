@@ -14,16 +14,18 @@ export class TerminalAudioManager {
 
     // MÚSICAS ORIGINAIS DO JOGO (PRESERVADAS RIGOROSAMENTE CONFORME DIRETRIZES DO USUÁRIO)
     this.tracks = {
-      // Menu Principal e Hubs do MODO HISTÓRIA (Obrigatório: Lobby Theme.mp3)
-      title: '/audio/Lobby Theme.mp3',
+      // 1. TELA DE TÍTULO OFICIAL DO JOGO (Relax and Choose Your Champion.mp3)
+      title: '/audio/Relax and Choose Your Champion.mp3',
+      champion: '/audio/Relax and Choose Your Champion.mp3',
+      violetTape: '/audio/Relax and Choose Your Champion.mp3',
+
+      // 2. MENUS E HUBS DO MODO HISTÓRIA (Obrigatório: Lobby Theme.mp3)
       lobby: '/audio/Lobby Theme.mp3',
       elevator: '/audio/Lobby Theme.mp3',
       storyLobby: '/audio/Lobby Theme.mp3',
-      champion: '/audio/Relax and Choose Your Champion.mp3',
       menuAlt: '/audio/Lobby Theme.mp3',
-      violetTape: '/audio/Relax and Choose Your Champion.mp3',
 
-      // Menus e Telas do MODO VERSUS (Obrigatório: Lizardilhas POP Theme.mp3)
+      // 3. MENUS E TELAS DO MODO VERSUS (Obrigatório: Lizardilhas POP Theme.mp3)
       versusLobby: '/audio/Lizardilhas POP Theme.mp3',
       versusDraft: '/audio/Lizardilhas POP Theme.mp3',
       popTheme: '/audio/Lizardilhas POP Theme.mp3',
@@ -39,10 +41,11 @@ export class TerminalAudioManager {
       titanBattle: '/audio/TechnoTitans In Action.mp3',
       bossBattle: '/audio/Crown of the Violet Tyrant.mp3',
 
-      // Trilha de Duelos PVP entre Jogadores (Roleta Aleatória)
-      energeticBattle: '/audio/Energetic Battle Tendence.mp3',
+      // As 4 Trilhas de Batalha do Modo Versus
       lizardsPulse: "/audio/Lizard's Pulse.mp3",
       lizardsOmega: "/audio/Lizard's Omega Powered.mp3",
+      energeticBattle: '/audio/Energetic Battle Tendence.mp3',
+      bitLizard: "/audio/Bit Lizard's Event.mp3",
 
       // Faixas Narrativas / Especiais
       credits: '/audio/The Final Credits.mp3',
@@ -53,11 +56,12 @@ export class TerminalAudioManager {
       relaxLizard: '/audio/Relax, Lizardilhas.mp3'
     };
 
-    // Coleção de Trilhas de Duelo PVP entre Jogadores
+    // Coleção das 4 Trilhas de Duelo PVP / Versus
     this.versusDuelTracks = [
-      'energeticBattle',
       'lizardsPulse',
-      'lizardsOmega'
+      'lizardsOmega',
+      'energeticBattle',
+      'bitLizard'
     ];
 
     // Coleção Oficial das Músicas de Batalha da Campanha

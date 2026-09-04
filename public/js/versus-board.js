@@ -3,12 +3,17 @@
 // Estética: Retro Terminal CRT, avatares gráficos, anéis orbitais,
 // ausência de linhas retas (ondas senoidais orgânicas) e combate cadenciado (~2.5s)
 // ═══════════════════════════════════════════════════════════════════
+import { VERSUS_ARENA_THEMES, VersusParallaxRenderer } from './versus-themes.js';
 
 export class VersusBoard {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.animId = null;
+
+    // Tema dinâmico ativo da arena e renderizador de parallax
+    this.currentTheme = VERSUS_ARENA_THEMES[0];
+    this.parallaxRenderer = new VersusParallaxRenderer();
 
     this.cols = 5;
     this.rows = 5;
@@ -41,6 +46,10 @@ export class VersusBoard {
 
     this._bindEvents();
     window.addEventListener('resize', this._onResizeBound = () => this.resize());
+  }
+
+  setArenaTheme(theme) {
+    this.currentTheme = theme || VERSUS_ARENA_THEMES[0];
   }
 
   resize() {
@@ -421,17 +430,24 @@ export class VersusBoard {
   // ─── Background: Retro Cyber Oscilloscope Aesthetic ───────────────
   _drawBackground() {
     const ctx = this.ctx;
+    const theme = this.currentTheme || VERSUS_ARENA_THEMES[0];
+    const colors = theme.colors;
 
     // Translucent cyber matrix gradient (allows the 3D Three.js arena to shine through)
     const grad = ctx.createRadialGradient(this.W / 2, this.H / 2, 20, this.W / 2, this.H / 2, this.W * 0.7);
-    grad.addColorStop(0, 'rgba(10, 16, 36, 0.25)');
-    grad.addColorStop(0.6, 'rgba(6, 10, 24, 0.45)');
-    grad.addColorStop(1, 'rgba(2, 4, 12, 0.65)');
+    grad.addColorStop(0, colors.bgCenter);
+    grad.addColorStop(0.6, colors.bgMid);
+    grad.addColorStop(1, colors.bgOuter);
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, this.W, this.H);
 
+    // Formas de fundo Parallax procedurais específicas do tema (Hexágonos, Estrelas/Corações, Matrix Rain ou Grid)
+    if (this.parallaxRenderer) {
+      this.parallaxRenderer.draw(ctx, theme, this.W, this.H, this.time);
+    }
+
     // CRT Scanline curves (subtle lens curve effect)
-    ctx.strokeStyle = 'rgba(0, 229, 255, 0.03)';
+    ctx.strokeStyle = colors.scanlines;
     ctx.lineWidth = 1;
     const scanStep = 8;
     for (let y = scanStep; y < this.H; y += scanStep) {
@@ -445,9 +461,9 @@ export class VersusBoard {
     // Dynamic waving center separator (sine wave instead of straight line)
     const midX = this.W / 2;
     ctx.save();
-    ctx.strokeStyle = 'rgba(255, 51, 100, 0.35)';
+    ctx.strokeStyle = colors.centerDivider;
     ctx.lineWidth = 2.5;
-    ctx.shadowColor = '#ff3366';
+    ctx.shadowColor = colors.centerDividerShadow;
     ctx.shadowBlur = 8;
     ctx.beginPath();
     for (let y = 0; y <= this.H; y += 4) {
@@ -465,9 +481,10 @@ export class VersusBoard {
   // Draw phosphor corner brackets ╭ ╮ ╰ ╯
   _drawTerminalBrackets() {
     const ctx = this.ctx;
+    const theme = this.currentTheme || VERSUS_ARENA_THEMES[0];
     const pad = 8;
     const arm = 22;
-    ctx.strokeStyle = 'rgba(0, 255, 136, 0.4)';
+    ctx.strokeStyle = theme.colors.brackets;
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
 
@@ -500,24 +517,24 @@ export class VersusBoard {
     ctx.stroke();
 
     // Terminal Status Tag
-    ctx.font = '9px monospace';
-    ctx.fillStyle = 'rgba(0, 255, 136, 0.5)';
+    ctx.font = 'bold 9px "Share Tech Mono", monospace';
+    ctx.fillStyle = theme.colors.statusTagColor;
     ctx.textAlign = 'left';
-    ctx.fillText('// ARENA: CRT-PHOSPHOR //', pad + 6, pad + 16);
+    ctx.fillText(`// ARENA: ${theme.name} //`, pad + 6, pad + 16);
   }
 
   // ─── Organic Curved Grid (Spacious Curved Lanes) ─────────────────
   _drawCurvedOrganicGrid() {
     const ctx = this.ctx;
     const t = this.time;
+    const theme = this.currentTheme || VERSUS_ARENA_THEMES[0];
 
     const colDividers = [this.W * 0.22, this.W * 0.41, this.W * 0.59, this.W * 0.78];
     const rowDividers = [this.H * 0.37, this.H * 0.63];
 
     // Vertical undulating columns
     colDividers.forEach((baseX, c) => {
-      const pulse = Math.sin(t * 0.03 + c) * 0.15 + 0.18;
-      ctx.strokeStyle = `rgba(0, 229, 255, ${pulse * 0.6})`;
+      ctx.strokeStyle = theme.colors.gridLines;
       ctx.lineWidth = 1.2;
       ctx.beginPath();
       for (let y = 0; y <= this.H; y += 6) {
@@ -530,8 +547,7 @@ export class VersusBoard {
 
     // Horizontal undulating rows
     rowDividers.forEach((baseY, r) => {
-      const pulse = Math.cos(t * 0.03 + r) * 0.15 + 0.18;
-      ctx.strokeStyle = `rgba(0, 229, 255, ${pulse * 0.6})`;
+      ctx.strokeStyle = theme.colors.gridLines;
       ctx.lineWidth = 1.2;
       ctx.beginPath();
       for (let x = 0; x <= this.W; x += 6) {

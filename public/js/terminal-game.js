@@ -1201,7 +1201,7 @@ export class TerminalGameApp {
     this.fledTitanKey = null;
     this.inventory = {};
 
-    this.audio.playBGM('title');
+    this.audio.playBGM('storyLobby');
 
     // Introdução do Roteiro
     const introDiag = this.getDialogue('intro', 'QUEZADILHAS', '[QUEZAS]', 'BLAAARG! Finalmente consegui infiltrar a rede central da Grande Inteligência!\nEla tomou o controle de tudo... Mas os meus robôs de combate ainda estão presos nos setores da Torre. Preciso libertar cada um deles!');
@@ -3715,7 +3715,7 @@ export class TerminalGameApp {
   // ==========================================
   // GRANDE CINEMÁTICA PRÉ-DUELO (10 SEGUNDOS)
   // ==========================================
-  async runGrandDuelCinematic(floorName, themeName, playerName, enemyName, bgmKey) {
+  async runGrandDuelCinematic(floorName, themeName, playerName, enemyName, bgmKey, themeObj = null) {
     const overlay = document.getElementById('preDuelCinematicOverlay');
     const phaseSector = document.getElementById('duelPhaseSector');
     const phaseVS = document.getElementById('duelPhaseVS');
@@ -3730,6 +3730,14 @@ export class TerminalGameApp {
     const bigDigit = document.getElementById('duelBigDigitDisplay');
 
     if (!overlay) return;
+
+    // Remove classes anteriores de tema e aplica o novo tema correspondente
+    overlay.classList.remove('theme-default', 'theme-metallic', 'theme-kawaii', 'theme-matrix');
+    if (themeObj && themeObj.colors && themeObj.colors.introThemeClass) {
+      overlay.classList.add(themeObj.colors.introThemeClass);
+    } else {
+      overlay.classList.add('theme-default');
+    }
 
     this.audio.playBGM(bgmKey);
     overlay.classList.remove('hidden');

@@ -71,17 +71,17 @@ export class Versus3DEngine {
     const ambLight = new THREE.AmbientLight(0xffffff, 1.1);
     this.scene.add(ambLight);
 
-    const dirLight = new THREE.DirectionalLight(0x00ff88, 1.8);
-    dirLight.position.set(0, 20, 10);
-    this.scene.add(dirLight);
+    this.dirLight = new THREE.DirectionalLight(0x00ff88, 1.8);
+    this.dirLight.position.set(0, 20, 10);
+    this.scene.add(this.dirLight);
 
-    const cyanPoint = new THREE.PointLight(0x00e5ff, 2.5, 60);
-    cyanPoint.position.set(-15, 6, 0);
-    this.scene.add(cyanPoint);
+    this.cyanPoint = new THREE.PointLight(0x00e5ff, 2.5, 60);
+    this.cyanPoint.position.set(-15, 6, 0);
+    this.scene.add(this.cyanPoint);
 
-    const redPoint = new THREE.PointLight(0xff3366, 2.5, 60);
-    redPoint.position.set(15, 6, 0);
-    this.scene.add(redPoint);
+    this.redPoint = new THREE.PointLight(0xff3366, 2.5, 60);
+    this.redPoint.position.set(15, 6, 0);
+    this.scene.add(this.redPoint);
 
     // Construção dos Objetos 3D
     this._buildUndulatingGrid();
@@ -94,6 +94,23 @@ export class Versus3DEngine {
 
     // Redimensionamento Dinâmico
     window.addEventListener('resize', this._onResizeBound = () => this._onResize());
+  }
+
+  applyTheme(theme) {
+    if (!theme || !this.scene) return;
+    const c = theme.colors;
+    if (this.gridMesh && this.gridMesh.material && c.threeGridColor !== undefined) {
+      this.gridMesh.material.color.setHex(c.threeGridColor);
+    }
+    if (this.cyanPoint && c.threePointA !== undefined) {
+      this.cyanPoint.color.setHex(c.threePointA);
+    }
+    if (this.redPoint && c.threePointB !== undefined) {
+      this.redPoint.color.setHex(c.threePointB);
+    }
+    if (this.dirLight && c.threeGridColor !== undefined) {
+      this.dirLight.color.setHex(c.threeGridColor);
+    }
   }
 
   // ── Grid 3D Ondulante (Oceano de Dados Cyber Matrix) ─────────────

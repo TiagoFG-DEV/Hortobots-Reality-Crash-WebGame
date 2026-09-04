@@ -164,9 +164,12 @@ export class BeatPulseManager {
     vignette.classList.add('pulse-flash');
   }
 
-  // Verifica se o jogador está estritamente em combate (História ou Versus)
+  // Verifica se o jogador está estritamente em combate ou na grande cinemática pré-duelo
   _isBattleActive() {
     if (typeof document === 'undefined') return false;
+    const preDuel = document.getElementById('preDuelCinematicOverlay');
+    if (preDuel && !preDuel.classList.contains('hidden')) return true;
+
     const storyBattle = document.getElementById('battleScreen');
     const isStoryBattle = storyBattle && !storyBattle.classList.contains('hidden');
 
@@ -178,6 +181,9 @@ export class BeatPulseManager {
 
   _getActiveBattleElement() {
     if (typeof document === 'undefined') return null;
+    const preDuel = document.getElementById('preDuelCinematicOverlay');
+    if (preDuel && !preDuel.classList.contains('hidden')) return preDuel;
+
     const storyBattle = document.getElementById('battleScreen');
     if (storyBattle && !storyBattle.classList.contains('hidden')) return storyBattle;
 
@@ -233,6 +239,8 @@ export class BeatPulseManager {
 
   _resetElementTransforms() {
     if (typeof document === 'undefined') return;
+    const preDuel = document.getElementById('preDuelCinematicOverlay');
+    if (preDuel) preDuel.style.transform = '';
     const story = document.getElementById('battleScreen');
     if (story) story.style.transform = '';
     const versus = document.getElementById('versusArenaScreen');
