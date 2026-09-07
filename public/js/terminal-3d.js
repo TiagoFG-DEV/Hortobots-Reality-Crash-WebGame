@@ -27,6 +27,23 @@ export class Terminal3DEngine {
         this.caraIconTexture = new THREE.TextureLoader().load('/img/cara-icon.png');
       } catch (e) {}
     }
+
+    if (typeof window !== 'undefined' && window.gameSettings) {
+      window.gameSettings.onChange((key) => {
+        if (key === 'graphics') {
+          const dpr = this._getPixelRatio();
+          if (this.titleRenderer) this.titleRenderer.setPixelRatio(dpr);
+          if (this.coreRenderer) this.coreRenderer.setPixelRatio(dpr);
+          if (this.ascentRenderer) this.ascentRenderer.setPixelRatio(dpr);
+        }
+      });
+    }
+  }
+
+  _getPixelRatio() {
+    const q = (typeof window !== 'undefined' && window.gameSettings) ? window.gameSettings.get('graphics') : 'high';
+    const maxDpr = q === 'low' ? 1.0 : q === 'medium' ? 1.25 : 2.0;
+    return Math.min(window.devicePixelRatio || 1, maxDpr);
   }
 
   // =========================================================================
@@ -81,7 +98,7 @@ export class Terminal3DEngine {
     const camera = new THREE.PerspectiveCamera(65, width / height, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(this._getPixelRatio());
     container.appendChild(renderer.domElement);
 
     // 1. Coluna Central de Energia (Cilindro Tronco com Wireframe)
@@ -587,7 +604,7 @@ export class Terminal3DEngine {
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(this._getPixelRatio());
     renderer.domElement.style.display = 'block';
     renderer.domElement.style.width = '100%';
     renderer.domElement.style.height = '100%';
@@ -930,7 +947,7 @@ export class Terminal3DEngine {
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(this._getPixelRatio());
     renderer.domElement.style.display = 'block';
     renderer.domElement.style.width = '100%';
     renderer.domElement.style.height = '100%';
@@ -1097,7 +1114,7 @@ export class Terminal3DEngine {
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(this._getPixelRatio());
     container.appendChild(renderer.domElement);
 
     // Iluminação 3D Metálica

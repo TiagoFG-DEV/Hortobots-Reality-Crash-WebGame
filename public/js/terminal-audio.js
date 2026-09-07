@@ -91,8 +91,10 @@ export class TerminalAudioManager {
 
     // Gerenciador de Beat Pulse e Camera Shake de Batalha
     this.beatPulseManager = new BeatPulseManager(this);
+    this.sfxVolume = 0.9;
     if (typeof window !== 'undefined') {
       window.terminalAudioManager = this;
+      window.gameAudio = this;
       window.getBeatPulseManager = () => this.beatPulseManager;
     }
 
@@ -367,7 +369,11 @@ export class TerminalAudioManager {
   }
 
   toggleMute() {
-    this.isMuted = !this.isMuted;
+    return this.setMasterMute(!this.isMuted);
+  }
+
+  setMasterMute(muted) {
+    this.isMuted = !!muted;
     if (this.isMuted) {
       this.bgmAudio.pause();
     } else {
@@ -376,9 +382,21 @@ export class TerminalAudioManager {
     return this.isMuted;
   }
 
+  setBGMVolume(val) {
+    const num = Math.max(0, Math.min(1, parseFloat(val) || 0));
+    this.targetVolume = num;
+    if (!this.fadeInterval && !this.isMuted) {
+      this.bgmAudio.volume = num;
+    }
+  }
+
+  setSFXVolume(val) {
+    this.sfxVolume = Math.max(0, Math.min(1, parseFloat(val) || 0));
+  }
+
   // REPRODUTOR DE SFX RETRO COM SÍNTESE PROCEDURAL LOCAL (ZERO DEPENDÊNCIAS DE REDE)
   playRetroSample(key, fallbackFn) {
-    if (this.isMuted) return;
+    if (this.isMuted || this.sfxVolume <= 0.001) return;
     // Executa síntese procedural retro via Web Audio com latência zero e 100% offline
     if (fallbackFn) {
       fallbackFn();
@@ -515,7 +533,8 @@ export class TerminalAudioManager {
       osc.type = type;
       osc.frequency.setValueAtTime(freq, this.audioCtx.currentTime);
 
-      gain.gain.setValueAtTime(0.12, this.audioCtx.currentTime);
+      const vol = (this.sfxVolume !== undefined ? this.sfxVolume : 1) * 0.12;
+      gain.gain.setValueAtTime(vol, this.audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + duration);
 
       osc.connect(gain);

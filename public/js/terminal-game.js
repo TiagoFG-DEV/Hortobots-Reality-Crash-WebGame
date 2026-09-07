@@ -667,25 +667,8 @@ export class TerminalGameApp {
   // INICIALIZAÇÃO & BINDINGS DE UI
   // ==========================================
   initUI() {
-    // Botão de Áudio
-    const audioBtn = document.getElementById('termAudioToggle');
-    if (audioBtn) {
-      audioBtn.onclick = () => {
-        const muted = this.audio.toggleMute();
-        audioBtn.innerText = muted ? '[ SOM: MUTE ]' : '[ SOM: ON ]';
-        audioBtn.className = muted ? 'term-btn alert' : 'term-btn gold';
-      };
-    }
-
-    // Botão de Pulso de Câmera na Batida da Música (Batalha Modo História)
-    const storyPulseBtn = document.getElementById('storyBeatPulseToggle');
-    if (storyPulseBtn) {
-      storyPulseBtn.onclick = () => {
-        if (this.audio && this.audio.beatPulseManager) {
-          this.audio.beatPulseManager.cycleIntensity();
-        }
-      };
-    }
+    // Botão de Configurações (Engrenagem no Cabeçalho) e Modal
+    this.initSettingsModal();
 
     // ── Fitas Cassete do Menu de Título Estilo FNAF ────────────────
     const tapeSlots = document.querySelectorAll('.fnaf-tape-slot');
@@ -876,11 +859,154 @@ export class TerminalGameApp {
   }
 
   // ==========================================
-  // UTILITÁRIO: SCREEN SHAKE (delegado ao minigame engine)
+  // UTILITÁRIO: SCREEN SHAKE (desativado para performance e estabilidade)
   // ==========================================
   triggerScreenShake() {
-    if (this.minigames && typeof this.minigames.triggerScreenShake === 'function') {
-      this.minigames.triggerScreenShake();
+    // Screen shake totalmente desativado conforme solicitado para leveza e estabilidade
+  }
+
+  // ==========================================
+  // CONFIGURAÇÕES GLOBAIS DO SISTEMA (MODAL & HEADER)
+  // ==========================================
+  initSettingsModal() {
+    const settingsBtn = document.getElementById('termSettingsBtn');
+    const modal = document.getElementById('gameSettingsModal');
+    const closeBtn = document.getElementById('gameSettingsCloseBtn');
+    const saveCloseBtn = document.getElementById('settingsSaveCloseBtn');
+    if (!settingsBtn || !modal) return;
+
+    const openSettings = () => {
+      this.audio.playKeyClack();
+      modal.classList.remove('hidden');
+      this.syncSettingsUI();
+    };
+
+    const closeSettings = () => {
+      this.audio.playKeyClack();
+      modal.classList.add('hidden');
+    };
+
+    settingsBtn.onclick = openSettings;
+    if (closeBtn) closeBtn.onclick = closeSettings;
+    if (saveCloseBtn) saveCloseBtn.onclick = closeSettings;
+
+    // Perfil Gráfico: botões Low, Medium, High
+    const graphicBtns = modal.querySelectorAll('.settings-pill-btn[data-graphic]');
+    graphicBtns.forEach(btn => {
+      btn.onclick = () => {
+        const quality = btn.getAttribute('data-graphic');
+        if (window.gameSettings) {
+          window.gameSettings.set('graphics', quality);
+        }
+        this.audio.playKeyClack();
+        graphicBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      };
+    });
+
+    // Toggles de CRT Scanlines e Glow
+    const scanlinesCheck = document.getElementById('settingsToggleScanlines');
+    if (scanlinesCheck) {
+      scanlinesCheck.onchange = (e) => {
+        if (window.gameSettings) {
+          window.gameSettings.set('scanlines', e.target.checked);
+        }
+        this.audio.playKeyClack();
+      };
+    }
+
+    const glowCheck = document.getElementById('settingsToggleGlow');
+    if (glowCheck) {
+      glowCheck.onchange = (e) => {
+        if (window.gameSettings) {
+          window.gameSettings.set('glow', e.target.checked);
+        }
+        this.audio.playKeyClack();
+      };
+    }
+
+    // Toggle de Mute no Modal
+    const muteBtn = document.getElementById('settingsMuteToggleBtn');
+    if (muteBtn) {
+      muteBtn.onclick = () => {
+        const isMuted = this.audio.toggleMute();
+        if (window.gameSettings) {
+          window.gameSettings.set('masterMute', isMuted);
+        }
+        muteBtn.innerText = isMuted ? '[ SOM: MUTADO ]' : '[ SOM: ATIVO ]';
+        muteBtn.className = isMuted ? 'term-btn alert settings-mute-btn' : 'term-btn gold settings-mute-btn';
+      };
+    }
+
+    // Slider BGM
+    const bgmSlider = document.getElementById('settingsBgmSlider');
+    const bgmVal = document.getElementById('settingsBgmVal');
+    if (bgmSlider) {
+      bgmSlider.oninput = (e) => {
+        const val = parseInt(e.target.value, 10);
+        if (bgmVal) bgmVal.innerText = `${val}%`;
+        if (window.gameSettings) {
+          window.gameSettings.set('bgmVolume', val);
+        }
+        this.audio.setBGMVolume(val / 100);
+      };
+    }
+
+    // Slider SFX
+    const sfxSlider = document.getElementById('settingsSfxSlider');
+    const sfxVal = document.getElementById('settingsSfxVal');
+    if (sfxSlider) {
+      sfxSlider.oninput = (e) => {
+        const val = parseInt(e.target.value, 10);
+        if (sfxVal) sfxVal.innerText = `${val}%`;
+        if (window.gameSettings) {
+          window.gameSettings.set('sfxVolume', val);
+        }
+        this.audio.setSFXVolume(val / 100);
+      };
+    }
+
+    // Sincroniza estado inicial
+    this.syncSettingsUI();
+  }
+
+  syncSettingsUI() {
+    if (!window.gameSettings) return;
+    const s = window.gameSettings.settings;
+
+    // Perfil Gráfico
+    const graphicBtns = document.querySelectorAll('.settings-pill-btn[data-graphic]');
+    graphicBtns.forEach(b => {
+      b.classList.toggle('active', b.getAttribute('data-graphic') === s.graphics);
+    });
+
+    // Checkboxes
+    const scanlinesCheck = document.getElementById('settingsToggleScanlines');
+    if (scanlinesCheck) scanlinesCheck.checked = !!s.scanlines;
+
+    const glowCheck = document.getElementById('settingsToggleGlow');
+    if (glowCheck) glowCheck.checked = !!s.glow;
+
+    // Mute
+    const muteBtn = document.getElementById('settingsMuteToggleBtn');
+    if (muteBtn) {
+      muteBtn.innerText = s.masterMute ? '[ SOM: MUTADO ]' : '[ SOM: ATIVO ]';
+      muteBtn.className = s.masterMute ? 'term-btn alert settings-mute-btn' : 'term-btn gold settings-mute-btn';
+    }
+
+    // Sliders
+    const bgmSlider = document.getElementById('settingsBgmSlider');
+    const bgmVal = document.getElementById('settingsBgmVal');
+    if (bgmSlider) {
+      bgmSlider.value = s.bgmVolume;
+      if (bgmVal) bgmVal.innerText = `${s.bgmVolume}%`;
+    }
+
+    const sfxSlider = document.getElementById('settingsSfxSlider');
+    const sfxVal = document.getElementById('settingsSfxVal');
+    if (sfxSlider) {
+      sfxSlider.value = s.sfxVolume;
+      if (sfxVal) sfxVal.innerText = `${s.sfxVolume}%`;
     }
   }
 
@@ -2944,10 +3070,51 @@ export class TerminalGameApp {
         <span style="font-size: 0.85rem; color: var(--term-accent);">QTD: ${count}</span>
       `;
       btn.onclick = () => {
-        this.renderBattleItemTargetPicker(item, key);
+        this.startStoryItemTargetSelection(item, key);
       };
       list.appendChild(btn);
     });
+  }
+
+  // ==========================================
+  // SELEÇÃO DE ALVO DE ITEM DIRETO NO TABULEIRO (EVIDÊNCIA & CLIQUE NO ROBÔ)
+  // ==========================================
+  startStoryItemTargetSelection(item, key) {
+    const subContainer = document.getElementById('battleSubMenuDeck');
+    if (subContainer) subContainer.classList.add('hidden');
+
+    const currentBot = this.activeBattlers[this.currentTurnIndex];
+    if (!currentBot) return;
+
+    if (this.storyBoard) {
+      this.audio.playKeyClack();
+      this.storyBoard.startAllyTargetSelection(currentBot, item, async (targetAlly) => {
+        if (subContainer) subContainer.classList.add('hidden');
+
+        // 1. Linha holográfica colorida até o aliado alvo
+        await this.storyBoard.animateTargetLockLine(currentBot, targetAlly, 380);
+
+        // 2. Cinemática de ação
+        await this.showTurnActionCinematic(currentBot.name, `USOU ${item.name} EM ${targetAlly.name}`, true);
+
+        // 3. Aplica o efeito do item
+        const msg = item.apply(targetAlly);
+        this.inventory[key]--;
+        if (this.inventory[key] <= 0) delete this.inventory[key];
+
+        this.audio.playHealSound();
+        this.combatLogs.push(`> ITEM USADO: ${msg}`);
+        this.renderBattleArena();
+        await new Promise(r => setTimeout(r, 600));
+        this.advanceTurn();
+      });
+
+      this.storyBoard.onCancelSelection = () => {
+        this.renderItemSubMenu();
+      };
+    } else {
+      this.renderBattleItemTargetPicker(item, key);
+    }
   }
 
   renderBattleItemTargetPicker(item, key) {

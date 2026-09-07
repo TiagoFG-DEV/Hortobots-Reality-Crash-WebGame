@@ -32,6 +32,17 @@
       <div class="term-brand">
         <strong>[HORTOBOTS]</strong> // QUEZAS-DOS <span class="term-dim">// v1.0</span>
       </div>
+      <!-- BARRA DE STATUS DA CONTA NA TELA DE TÍTULO -->
+      <div class="title-account-bar" id="titleAccountBar">
+        <div class="title-account-info">
+          <span class="title-account-status-led" id="titleAccountStatusLed"></span>
+          <span class="title-account-text" id="titleAccountText">[MODO CONVIDADO]</span>
+        </div>
+        <button class="term-btn gold title-account-auth-btn" id="titleAccountAuthBtn" type="button">
+          [ LOGAR ]
+        </button>
+
+      </div>
       <div class="term-controls">
         <button class="term-btn home-nav-btn hidden" id="termHomeBtn" title="Voltar à Tela de Título (Salvar Partida)">
           <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"
@@ -42,7 +53,14 @@
         </button>
         <div class="biome-status-badge" id="termBiomeBadge">[ SETOR: BASE ]</div>
         <div class="party-status-badge" id="termPartyBadge">[VAZIO]</div>
-        <button class="term-btn gold" id="termAudioToggle">[ SOM: ON ]</button>
+        <button class="term-btn gold settings-nav-btn" id="termSettingsBtn" type="button"
+          title="Configurações do Sistema (Gráficos, Áudio, Efeitos)">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"
+            style="vertical-align: -2px; margin-right: 4px;">
+            <path
+              d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+          </svg>
+        </button>
       </div>
     </header>
 
@@ -84,21 +102,13 @@
           <span class="lore-msg">> PROTOCOLO MNEMOSYNE DETECTADO // SER DIGITAL DESCONTROLADO NA TORRE CENTRAL</span>
         </div>
 
-        <!-- BARRA DE STATUS DA CONTA NA TELA DE TÍTULO -->
-        <div class="title-account-bar" id="titleAccountBar">
-          <div class="title-account-info">
-            <span class="title-account-status-led" id="titleAccountStatusLed"></span>
-            <span class="title-account-text" id="titleAccountText">PILOTO: NÃO AUTENTICADO [MODO CONVIDADO]</span>
-          </div>
-          <button class="term-btn gold title-account-auth-btn" id="titleAccountAuthBtn" type="button">
-            [ ENTRAR / CRIAR CONTA ]
-          </button>
-        </div>
+
 
         <!-- MENU DE FITAS INTERATIVAS ESTILO FNAF -->
         <div class="title-fnaf-menu" id="titleCassetteMenu">
           <!-- TAPE 00: CONTA DO PILOTO / AUTENTICAÇÃO -->
-          <div class="fnaf-tape-slot tape-account" id="titleAccountTapeBtn" data-action="account" role="button" tabindex="0">
+          <div class="fnaf-tape-slot tape-account" id="titleAccountTapeBtn" data-action="account" role="button"
+            tabindex="0">
             <div class="tape-slot-bracket">[ ACC-00 ]</div>
             <div class="tape-slot-body">
               <span class="tape-cursor">></span>
@@ -345,7 +355,6 @@
         <div class="battle-header-ticker">
           <span class="ticker-badge">// REGISTRO DE COMBATE //</span>
           <div class="battle-compact-log-ticker" id="battleLogTerminal"></div>
-          <button class="beat-pulse-toggle-btn" id="storyBeatPulseToggle" type="button" title="Alternar intensidade do pulso de câmera no ritmo da música">[ PULSO: 100% ]</button>
         </div>
 
         <!-- Tabuleiro Canvas 2D Tático do Modo História -->
@@ -590,8 +599,8 @@
             <div class="versus-input-grid">
               <div class="versus-input-group">
                 <label class="versus-label" for="versusRegNick">NOVO NICKNAME (MÍN. 2 CARACTERES)</label>
-                <input type="text" id="versusRegNick" class="versus-input" placeholder="Seu Nickname..."
-                  minlength="2" maxlength="16" autocomplete="off" />
+                <input type="text" id="versusRegNick" class="versus-input" placeholder="Seu Nickname..." minlength="2"
+                  maxlength="16" autocomplete="off" />
               </div>
               <div class="versus-input-group">
                 <label class="versus-label" for="versusRegPass">CRIAR SENHA (MÍN. 8 DÍGITOS)</label>
@@ -602,7 +611,8 @@
 
             <div class="versus-input-group" style="margin-top: 6px;">
               <label class="versus-label" for="versusRegEmail">E-MAIL DO PILOTO (OBRIGATÓRIO)</label>
-              <input type="email" id="versusRegEmail" class="versus-input" placeholder="seu-email@dominio.com" autocomplete="email" />
+              <input type="email" id="versusRegEmail" class="versus-input" placeholder="seu-email@dominio.com"
+                autocomplete="email" />
             </div>
 
             <div class="versus-checkbox-row" style="margin-top: 6px;">
@@ -926,7 +936,9 @@
         <div class="versus-hud-match-status">
           <div class="versus-round-tag">ROUND <span id="versusRoundNum">1</span></div>
           <div class="versus-initiative-badge" id="versusInitiativeBadge">[ INICIATIVA: SORTEANDO... ]</div>
-          <button class="versus-action-btn small ghost beat-pulse-toggle-btn" id="versusBeatPulseToggle" type="button" style="margin-top:4px;padding:2px 8px;font-size:0.65rem;" title="Alternar intensidade do pulso de câmera no ritmo da música">[ PULSO: 100% ]</button>
+          <button class="versus-action-btn small ghost beat-pulse-toggle-btn" id="versusBeatPulseToggle" type="button"
+            style="margin-top:4px;padding:2px 8px;font-size:0.65rem;"
+            title="Alternar intensidade do pulso de câmera no ritmo da música">[ PULSO: 100% ]</button>
         </div>
 
         <div class="versus-hud-side enemy">
@@ -999,7 +1011,8 @@
               <div class="emergency-alert-stripe"></div>
               <div class="emergency-alert-content">
                 <span class="emergency-tag">[ ! ]</span>
-                <span class="emergency-text" id="versusEmergencyText">ALERTA DE EMERGÊNCIA: SISTEMAS DE ATAQUE SOBRECARREGADOS // POTÊNCIA MÁXIMA (20) DETECTADA</span>
+                <span class="emergency-text" id="versusEmergencyText">ALERTA DE EMERGÊNCIA: SISTEMAS DE ATAQUE
+                  SOBRECARREGADOS // POTÊNCIA MÁXIMA (20) DETECTADA</span>
                 <span class="emergency-tag">[ ! ]</span>
               </div>
               <div class="emergency-alert-stripe"></div>
@@ -1021,11 +1034,15 @@
               <!-- Sessão Narrativa Visual de Acontecimentos e Descrições de Habilidades -->
               <div class="terminal-narrator-panel" id="terminalNarratorPanel">
                 <div class="narrator-icon-frame" id="narratorIconFrame">
-                  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#00ff88" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#00ff88" stroke-width="2">
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 7v5l3 3" />
+                  </svg>
                 </div>
                 <div class="narrator-text-frame">
                   <div class="narrator-primary-title" id="narratorPrimaryTitle">> SISTEMA TÁTICO ONLINE</div>
-                  <div class="narrator-detail-desc" id="narratorDetailDesc">Selecione ou passe o cursor sobre os símbolos nos combatentes para ver a descrição detalhada aqui.</div>
+                  <div class="narrator-detail-desc" id="narratorDetailDesc">Selecione ou passe o cursor sobre os
+                    símbolos nos combatentes para ver a descrição detalhada aqui.</div>
                 </div>
               </div>
 
@@ -1167,7 +1184,8 @@
       <div class="cold-start-tag">// PROTOCOLO DE CONEXÃO //</div>
       <h2 class="cold-start-title">[ DESPERTANDO SERVIDOR ]</h2>
       <p class="cold-start-desc">Aguardando resposta do núcleo Quezas-DOS.<br>
-        <span class="cold-start-dim">Em hospedagens gratuitas (Render), o primeiro despertar leva ~30 a 50 segundos. Aguarde a conexão se estabelecer...</span>
+        <span class="cold-start-dim">Em hospedagens gratuitas (Render), o primeiro despertar leva ~30 a 50 segundos.
+          Aguarde a conexão se estabelecer...</span>
       </p>
       <div class="cold-start-progress-bar">
         <div class="cold-start-progress-fill" id="coldStartProgressFill"></div>
@@ -1179,7 +1197,8 @@
   </div>
 
   <!-- MODAL DE CONFIRMAÇÃO DE CONTA NO MODO HISTÓRIA -->
-  <div id="storyAuthPromptModal" class="story-auth-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="storyAuthModalTitle">
+  <div id="storyAuthPromptModal" class="story-auth-modal-overlay hidden" role="dialog" aria-modal="true"
+    aria-labelledby="storyAuthModalTitle">
     <div class="story-auth-modal-box">
       <div class="story-auth-modal-scanlines"></div>
       <div class="story-auth-modal-header">
@@ -1189,16 +1208,19 @@
       <div class="story-auth-modal-body">
         <div class="story-auth-radar-icon">
           <svg viewBox="0 0 24 24" width="42" height="42" fill="var(--term-gold, #ffd700)">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
           </svg>
         </div>
         <h3 class="story-auth-title" id="storyAuthModalTitle">Seu progresso pode ser salvo em uma conta. Logar?</h3>
         <p class="story-auth-desc">
-          Ao vincular seu progresso a uma conta, suas vitórias, andares alcançados e robôs desbloqueados na Torre Virtual ficam permanentemente salvos na sua conta.
+          Ao vincular seu progresso a uma conta, suas vitórias, andares alcançados e robôs desbloqueados na Torre
+          Virtual ficam permanentemente salvos na sua conta.
         </p>
         <div class="story-auth-warning-card">
           <span class="warning-bracket">[ AVISO ]</span>
-          <span>Caso opte por seguir sem conta, nenhum progresso será salvo. Se a página for recarregada, todo o progresso será perdido.</span>
+          <span>Caso opte por seguir sem conta, nenhum progresso será salvo. Se a página for recarregada, todo o
+            progresso será perdido.</span>
         </div>
       </div>
       <div class="story-auth-btn-row">
@@ -1215,7 +1237,97 @@
     </div>
   </div>
 
+  <!-- MODAL DE CONFIGURAÇÕES GLOBAIS DO SISTEMA (GRÁFICOS, CRT, ÁUDIO) -->
+  <div id="gameSettingsModal" class="settings-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="gameSettingsTitle">
+    <div class="settings-modal-box">
+      <div class="settings-modal-scanlines"></div>
+      <div class="settings-modal-header">
+        <div class="settings-modal-tag" id="gameSettingsTitle">// SISTEMA // CONFIGURAÇÕES DO TERMINAL</div>
+        <button class="settings-close-btn" id="gameSettingsCloseBtn" type="button" title="Fechar">&times;</button>
+      </div>
+
+      <div class="settings-modal-body">
+        <!-- SEÇÃO 1: PERFIL GRÁFICO E PERFORMANCE -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h7l-2 3v1h8v-1l-2-3h7c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
+            <span>DESEMPENHO &amp; QUALIDADE GRÁFICA</span>
+          </div>
+          <p class="settings-section-desc">
+            Ajuste a intensidade de pós-processamento, sombras e fidelidade. O jogo preserva 100% da jogabilidade em todos os perfis.
+          </p>
+          <div class="settings-btn-group" id="settingsGraphicsGroup">
+            <button type="button" class="settings-pill-btn" data-graphic="low">
+              <span class="pill-title">[ BAIXO ]</span>
+              <span class="pill-desc">Máxima fluidez em PCs fracos</span>
+            </button>
+            <button type="button" class="settings-pill-btn" data-graphic="medium">
+              <span class="pill-title">[ MÉDIO ]</span>
+              <span class="pill-desc">Equilíbrio de efeitos e taxa de quadros</span>
+            </button>
+            <button type="button" class="settings-pill-btn active" data-graphic="high">
+              <span class="pill-title">[ ALTO ]</span>
+              <span class="pill-desc">Fidelidade total com brilho fosfórico</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- SEÇÃO 2: EFEITOS VISUAIS RETRO CRT -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            <span>EFEITOS VISUAIS ANALÓGICOS</span>
+          </div>
+          <div class="settings-toggle-row">
+            <label class="settings-toggle-label" for="settingsToggleScanlines">
+              <span class="toggle-name">Scanlines de Tubo CRT</span>
+              <span class="toggle-sub">Linhas de varredura analógica retrô</span>
+            </label>
+            <input type="checkbox" id="settingsToggleScanlines" class="settings-checkbox" checked />
+          </div>
+          <div class="settings-toggle-row">
+            <label class="settings-toggle-label" for="settingsToggleGlow">
+              <span class="toggle-name">Brilho Fosfórico (Neon Glow)</span>
+              <span class="toggle-sub">Aura verde e sombras luminosas no terminal</span>
+            </label>
+            <input type="checkbox" id="settingsToggleGlow" class="settings-checkbox" checked />
+          </div>
+        </div>
+
+        <!-- SEÇÃO 3: ÁUDIO &amp; VOLUMES -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+            <span>ÁUDIO &amp; TRILHA SONORA</span>
+          </div>
+          <div class="settings-audio-mute-row">
+            <button type="button" class="term-btn gold settings-mute-btn" id="settingsMuteToggleBtn">[ SOM: ATIVO ]</button>
+          </div>
+          <div class="settings-slider-row">
+            <div class="slider-header">
+              <span>VOLUME DA MÚSICA (BGM)</span>
+              <span class="slider-val-badge" id="settingsBgmVal">80%</span>
+            </div>
+            <input type="range" id="settingsBgmSlider" class="settings-slider" min="0" max="100" value="80" />
+          </div>
+          <div class="settings-slider-row">
+            <div class="slider-header">
+              <span>VOLUME DOS EFEITOS SONOROS (SFX)</span>
+              <span class="slider-val-badge" id="settingsSfxVal">90%</span>
+            </div>
+            <input type="range" id="settingsSfxSlider" class="settings-slider" min="0" max="100" value="90" />
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-modal-footer">
+        <button class="term-btn gold" id="settingsSaveCloseBtn" type="button">[ CONCLUÍDO ]</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts do Jogo -->
+  <script type="module" src="/js/game-settings.js"></script>
   <script type="module" src="/js/terminal-alert.js"></script>
   <script type="module" src="/js/terminal-game.js"></script>
   <script type="module" src="/js/versus-ui.js"></script>

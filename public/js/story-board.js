@@ -13,8 +13,12 @@ export class StoryBoard {
     this.cols = 5;
     this.rows = 4;
 
-    this.W = canvas.width || 920;
-    this.H = canvas.height || 420;
+    this.W = 960;
+    this.H = 460;
+    if (this.canvas) {
+      this.canvas.width = 960;
+      this.canvas.height = 460;
+    }
 
     // Entidades
     this.allies = [];
@@ -30,18 +34,20 @@ export class StoryBoard {
     this.shakeIntensity = 0;
     this.time = 0;
 
-    // Seleção de Alvo Interativa
-    this.targetSelectionMode = null;
+    // Seleção de Alvo Interativa Direta no Tabuleiro
+    this.targetSelectionMode = null; // { type: 'attack'|'ally', attacker, item, onSelect }
     this.hoveredEnemy = null;
+    this.hoveredAlly = null;
     this.activeTargetLine = null; // { fromX, fromY, toX, toY, color, progress }
 
-    // Mapeamento de Cores dos Robôs Aliados
+    // Mapeamento de Cores Oficiais dos Robôs
     this.robotColors = {
       'dinobyte': '#00ff88',
       'cowputer': '#ffd700',
       'penlinux': '#00e5ff',
       'tigervex': '#ff4455',
       'pavabyte': '#ffaa00',
+      'quezas': '#ffd700',
       'default': '#00ff88'
     };
 
@@ -52,17 +58,34 @@ export class StoryBoard {
     window.addEventListener('resize', () => this.resize());
   }
 
-  resize() {
-    const parent = this.canvas.parentElement;
-    const w = parent ? parent.clientWidth : (this.canvas.clientWidth || 920);
-    const h = parent ? parent.clientHeight : (this.canvas.clientHeight || 420);
+  _normalizeBotId(id, name = '') {
+    const raw = (id || name || '').toLowerCase();
+    if (raw.includes('dino') || raw === 'db') return 'DB';
+    if (raw.includes('pen') || raw === 'pl') return 'PL';
+    if (raw.includes('cow') || raw.includes('moo') || raw === 'cp') return 'CP';
+    if (raw.includes('pava') || raw === 'pb') return 'PB';
+    if (raw.includes('tiger') || raw === 'tv') return 'TV';
+    if (raw.includes('quez') || raw.includes('tyrant') || raw === 'qz') return 'QZ';
+    return (id || name || 'BOT').substring(0, 2).toUpperCase();
+  }
 
-    if (w > 0 && h > 0 && (this.W !== w || this.H !== h)) {
-      this.W = w;
-      this.H = h;
-      this.canvas.width = w;
-      this.canvas.height = h;
+  resize() {
+    this.W = 960;
+    this.H = 460;
+    if (this.canvas && (this.canvas.width !== 960 || this.canvas.height !== 460)) {
+      this.canvas.width = 960;
+      this.canvas.height = 460;
     }
+  }
+
+  _getMousePos(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    const sx = rect.width > 0 ? (this.W / rect.width) : 1;
+    const sy = rect.height > 0 ? (this.H / rect.height) : 1;
+    return {
+      x: (e.clientX - rect.left) * sx,
+      y: (e.clientY - rect.top) * sy
+    };
   }
 
   setBattlers(allies = [], enemies = [], actingIndex = 0) {
@@ -70,32 +93,42 @@ export class StoryBoard {
     this.enemies = enemies;
     this.actingAllyIndex = actingIndex;
 
-    // Calcula coordenadas para os aliados (Coluna 0, esquerda)
     const allyCount = this.allies.length;
     this.allies.forEach((bot, i) => {
       bot.col = 0;
       bot.side = 'PLAYER';
-      bot.homeX = this.W * 0.12;
+      bot.homeX = this.W * 0.14;
       bot.homeY = this.H * ((i + 1) / (allyCount + 1));
       if (bot.currentX === undefined) bot.currentX = bot.homeX;
       if (bot.currentY === undefined) bot.currentY = bot.homeY;
       if (bot.displayHp === undefined) bot.displayHp = bot.currentHp;
       if (bot.ghostHp === undefined) bot.ghostHp = bot.currentHp;
-      bot.color = this.robotColors[bot.id] || this.robotColors.default;
+      bot.code = this._normalizeBotId(bot.id, bot.name);
+      const palette = {
+        'DB': '#00ff88',
+        'PL': '#00e5ff',
+        'CP': '#ffd700',
+        'PB': '#ffaa00',
+        'TV': '#ff4455',
+        'QZ': '#ffd700'
+      };
+      bot.color = palette[bot.code] || this.robotColors[bot.id] || '#00ff88';
+      if (bot.pulsePhase === undefined) bot.pulsePhase = Math.random() * Math.PI * 2;
     });
 
-    // Calcula coordenadas para os inimigos (Coluna 4, direita)
     const enemyCount = this.enemies.length;
     this.enemies.forEach((enemy, i) => {
       enemy.col = 4;
       enemy.side = 'ENEMY';
-      enemy.homeX = this.W * 0.88;
+      enemy.homeX = this.W * 0.86;
       enemy.homeY = this.H * ((i + 1) / (enemyCount + 1));
       if (enemy.currentX === undefined) enemy.currentX = enemy.homeX;
       if (enemy.currentY === undefined) enemy.currentY = enemy.homeY;
       if (enemy.displayHp === undefined) enemy.displayHp = enemy.currentHp;
       if (enemy.ghostHp === undefined) enemy.ghostHp = enemy.currentHp;
+      enemy.code = this._normalizeBotId(enemy.id, enemy.name);
       enemy.color = enemy.isBoss ? '#ffd700' : '#ff3344';
+      if (enemy.pulsePhase === undefined) enemy.pulsePhase = Math.random() * Math.PI * 2;
     });
   }
 
@@ -104,88 +137,147 @@ export class StoryBoard {
       if (!this.targetSelectionMode) {
         this.canvas.style.cursor = 'default';
         this.hoveredEnemy = null;
+        this.hoveredAlly = null;
         return;
       }
 
-      const rect = this.canvas.getBoundingClientRect();
-      const sx = this.W / rect.width;
-      const sy = this.H / rect.height;
-      const mx = (e.clientX - rect.left) * sx;
-      const my = (e.clientY - rect.top) * sy;
+      const { x: mx, y: my } = this._getMousePos(e);
 
-      const candidates = this.enemies.filter(e => e && e.currentHp > 0);
-      let found = null;
-
-      for (const cand of candidates) {
-        const cx = cand.currentX || cand.homeX;
-        const cy = cand.currentY || cand.homeY;
-        const dist = Math.hypot(mx - cx, my - cy);
-
-        // Raio generoso de clique no inimigo
-        if (dist <= 65) {
-          found = cand;
-          break;
+      if (this.targetSelectionMode.type === 'ally') {
+        const isRevive = !!(this.targetSelectionMode.item && this.targetSelectionMode.item.revive);
+        const candidates = this.allies.filter(a => a && (isRevive ? a.currentHp <= 0 : a.currentHp > 0));
+        let found = null;
+        for (const cand of candidates) {
+          const cx = cand.currentX !== undefined ? cand.currentX : cand.homeX;
+          const cy = cand.currentY !== undefined ? cand.currentY : cand.homeY;
+          const dist = Math.hypot(mx - cx, my - cy);
+          if (dist <= 65) {
+            found = cand;
+            break;
+          }
         }
+        this.hoveredAlly = found;
+        this.hoveredEnemy = null;
+        this.canvas.style.cursor = found ? 'pointer' : 'crosshair';
+      } else {
+        const candidates = this.enemies.filter(e => e && e.currentHp > 0);
+        let found = null;
+        for (const cand of candidates) {
+          const cx = cand.currentX !== undefined ? cand.currentX : cand.homeX;
+          const cy = cand.currentY !== undefined ? cand.currentY : cand.homeY;
+          const dist = Math.hypot(mx - cx, my - cy);
+          if (dist <= 65) {
+            found = cand;
+            break;
+          }
+        }
+        this.hoveredEnemy = found;
+        this.hoveredAlly = null;
+        this.canvas.style.cursor = found ? 'pointer' : 'crosshair';
       }
-
-      this.hoveredEnemy = found;
-      this.canvas.style.cursor = found ? 'pointer' : 'crosshair';
     });
 
     this.canvas.addEventListener('click', (e) => {
       if (!this.targetSelectionMode) return;
+      const { x: mx, y: my } = this._getMousePos(e);
 
-      const rect = this.canvas.getBoundingClientRect();
-      const sx = this.W / rect.width;
-      const sy = this.H / rect.height;
-      const mx = (e.clientX - rect.left) * sx;
-      const my = (e.clientY - rect.top) * sy;
-
-      const candidates = this.enemies.filter(en => en && en.currentHp > 0);
-
-      for (const cand of candidates) {
-        const cx = cand.currentX || cand.homeX;
-        const cy = cand.currentY || cand.homeY;
-        const dist = Math.hypot(mx - cx, my - cy);
-
-        if (dist <= 65) {
-          const onSelect = this.targetSelectionMode.onSelect;
-          this.targetSelectionMode = null;
-          this.hoveredEnemy = null;
-          this.canvas.style.cursor = 'default';
-
-          const overlay = document.getElementById('storyTargetOverlay');
-          if (overlay) overlay.classList.add('hidden');
-
-          if (typeof onSelect === 'function') {
-            onSelect(cand);
+      if (this.targetSelectionMode.type === 'ally') {
+        const isRevive = !!(this.targetSelectionMode.item && this.targetSelectionMode.item.revive);
+        const candidates = this.allies.filter(a => a && (isRevive ? a.currentHp <= 0 : a.currentHp > 0));
+        for (const cand of candidates) {
+          const cx = cand.currentX !== undefined ? cand.currentX : cand.homeX;
+          const cy = cand.currentY !== undefined ? cand.currentY : cand.homeY;
+          const dist = Math.hypot(mx - cx, my - cy);
+          if (dist <= 65) {
+            const onSelect = this.targetSelectionMode.onSelect;
+            this.targetSelectionMode = null;
+            this.hoveredAlly = null;
+            this.canvas.style.cursor = 'default';
+            const overlay = document.getElementById('storyTargetOverlay');
+            if (overlay) overlay.classList.add('hidden');
+            if (typeof onSelect === 'function') {
+              onSelect(cand);
+            }
+            break;
           }
-          break;
+        }
+      } else {
+        const candidates = this.enemies.filter(en => en && en.currentHp > 0);
+        for (const cand of candidates) {
+          const cx = cand.currentX !== undefined ? cand.currentX : cand.homeX;
+          const cy = cand.currentY !== undefined ? cand.currentY : cand.homeY;
+          const dist = Math.hypot(mx - cx, my - cy);
+          if (dist <= 65) {
+            const onSelect = this.targetSelectionMode.onSelect;
+            this.targetSelectionMode = null;
+            this.hoveredEnemy = null;
+            this.canvas.style.cursor = 'default';
+            const overlay = document.getElementById('storyTargetOverlay');
+            if (overlay) overlay.classList.add('hidden');
+            if (typeof onSelect === 'function') {
+              onSelect(cand);
+            }
+            break;
+          }
         }
       }
     });
+
+    const cancelBtn = document.getElementById('storyTargetCancelBtn');
+    if (cancelBtn) {
+      cancelBtn.onclick = () => this.cancelTargetSelection();
+    }
   }
 
-  // ─── Ativação da Mira Interativa (Escurece a tela e destaca alvos) ───
+  // ─── Ativação da Mira de Ataque Interativa ───
   startTargetSelection(attacker, onSelect) {
-    this.targetSelectionMode = { attacker, onSelect };
+    this.targetSelectionMode = { type: 'attack', attacker, onSelect };
     this.hoveredEnemy = null;
+    this.hoveredAlly = null;
 
     const overlay = document.getElementById('storyTargetOverlay');
     if (overlay) overlay.classList.remove('hidden');
 
     const titleEl = document.getElementById('storyTargetTitle');
     if (titleEl) {
-      titleEl.textContent = `[ MIRA: ${attacker.name.toUpperCase()} ]`;
+      titleEl.textContent = `[ MIRA DE ATAQUE: ${attacker.name.toUpperCase()} ]`;
+    }
+    const hintEl = overlay ? overlay.querySelector('.story-target-hint') : null;
+    if (hintEl) {
+      hintEl.textContent = '[ CLIQUE DIRETAMENTE NO INIMIGO EM EVIDÊNCIA NO TABULEIRO ]';
+    }
+  }
+
+  // ─── Ativação da Seleção de Aliado para Uso de Itens ───
+  startAllyTargetSelection(activeBot, item, onSelect) {
+    this.targetSelectionMode = { type: 'ally', attacker: activeBot, item, onSelect };
+    this.hoveredEnemy = null;
+    this.hoveredAlly = null;
+
+    const overlay = document.getElementById('storyTargetOverlay');
+    if (overlay) overlay.classList.remove('hidden');
+
+    const titleEl = document.getElementById('storyTargetTitle');
+    if (titleEl) {
+      titleEl.textContent = `[ USAR ITEM: ${(item.name || 'ITEM').toUpperCase()} ]`;
+    }
+    const hintEl = overlay ? overlay.querySelector('.story-target-hint') : null;
+    if (hintEl) {
+      hintEl.textContent = '[ CLIQUE DIRETAMENTE NO ROBÔ ALIADO EM EVIDÊNCIA NO TABULEIRO ]';
     }
   }
 
   cancelTargetSelection() {
+    const wasActive = !!this.targetSelectionMode;
     this.targetSelectionMode = null;
     this.hoveredEnemy = null;
+    this.hoveredAlly = null;
     this.canvas.style.cursor = 'default';
     const overlay = document.getElementById('storyTargetOverlay');
     if (overlay) overlay.classList.add('hidden');
+    if (wasActive && typeof this.onCancelSelection === 'function') {
+      this.onCancelSelection();
+    }
   }
 
   // ─── Linha Tracejada Suave da Cor do Robô ─────────────────────────
@@ -514,13 +606,7 @@ export class StoryBoard {
     const ctx = this.ctx;
     ctx.save();
 
-    // Screen shake offset
-    if (this.shakeTimer > 0) {
-      const ox = (Math.random() - 0.5) * this.shakeIntensity;
-      const oy = (Math.random() - 0.5) * this.shakeIntensity;
-      ctx.translate(ox, oy);
-    }
-
+    // Remoção total do screen shake para desempenho a 60fps sem oscilações
     ctx.clearRect(0, 0, this.W, this.H);
 
     // 1. Fundo CRT & Grade Tática viva
@@ -528,7 +614,7 @@ export class StoryBoard {
 
     // 2. Escurecimento seletivo se estiver no modo de mira
     if (this.targetSelectionMode) {
-      ctx.fillStyle = 'rgba(1, 6, 3, 0.75)';
+      ctx.fillStyle = 'rgba(1, 6, 3, 0.78)';
       ctx.fillRect(0, 0, this.W, this.H);
     }
 
@@ -626,7 +712,6 @@ export class StoryBoard {
     ctx.setLineDash([8, 6]);
     ctx.lineDashOffset = -this.time * 0.8;
 
-    // Desenha até a fração de progresso
     ctx.beginPath();
     const steps = 30;
     const maxSteps = Math.floor(steps * progress);
@@ -642,231 +727,430 @@ export class StoryBoard {
   }
 
   _drawAllies() {
-    const ctx = this.ctx;
-    const t = this.time;
-
     this.allies.forEach((bot, idx) => {
       const isDead = bot.currentHp <= 0;
       const isActing = idx === this.actingAllyIndex && !isDead;
-      const x = bot.currentX || bot.homeX;
-      const y = bot.currentY || bot.homeY;
-      const color = bot.color || '#00ff88';
+      const x = bot.currentX !== undefined ? bot.currentX : bot.homeX;
+      const y = bot.currentY !== undefined ? bot.currentY : bot.homeY;
+      const isSelectable = this.targetSelectionMode && this.targetSelectionMode.type === 'ally' &&
+        (this.targetSelectionMode.item?.revive ? isDead : !isDead);
+      const isHovered = this.hoveredAlly === bot;
 
-      ctx.save();
-      ctx.translate(x, y);
-
-      if (isDead) {
-        ctx.globalAlpha = 0.35;
-      }
-
-      // Se for a vez do robô, anel orbital pulsante
-      if (isActing) {
-        const pulseR = 36 + Math.sin(t * 0.08) * 4;
-        ctx.strokeStyle = '#ffd700';
-        ctx.shadowColor = '#ffd700';
-        ctx.shadowBlur = 15;
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.arc(0, 0, pulseR, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // Tag [ EM AÇÃO ]
-        ctx.font = '900 10px "Share Tech Mono", monospace';
-        ctx.fillStyle = '#ffd700';
-        ctx.textAlign = 'center';
-        ctx.fillText('[ SUA VEZ ]', 0, -42);
-      }
-
-      // Base circular do robô com gradiente
-      const radGrad = ctx.createRadialGradient(0, 0, 8, 0, 0, 30);
-      radGrad.addColorStop(0, 'rgba(0, 255, 136, 0.35)');
-      radGrad.addColorStop(1, 'rgba(0, 20, 10, 0.85)');
-      ctx.fillStyle = radGrad;
-      ctx.beginPath();
-      ctx.arc(0, 0, 28, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Borda do robô
-      ctx.strokeStyle = color;
-      ctx.shadowColor = color;
-      ctx.shadowBlur = 10;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(0, 0, 28, 0, Math.PI * 2);
-      ctx.stroke();
-
-      // Avatar / Símbolo do robô
-      ctx.font = '900 13px "Share Tech Mono", monospace';
-      ctx.fillStyle = '#ffffff';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      const shortCode = (bot.avatar || bot.name.substring(0, 4)).toUpperCase();
-      ctx.fillText(shortCode, 0, 0);
-
-      // Nome do robô abaixo
-      ctx.font = '700 11px "Share Tech Mono", monospace';
-      ctx.fillStyle = '#ffffff';
-      ctx.textBaseline = 'top';
-      ctx.fillText(bot.name, 0, 34);
-
-      // Barra de HP Suave com Barra Fantasma de Dano
-      const maxHp = bot.maxHp || 100;
-      const curHpPct = Math.max(0, Math.min(1.0, (bot.displayHp !== undefined ? bot.displayHp : bot.currentHp) / maxHp));
-      const ghostHpPct = Math.max(0, Math.min(1.0, (bot.ghostHp !== undefined ? bot.ghostHp : bot.currentHp) / maxHp));
-      const barW = 64;
-      const barH = 6;
-
-      // Fundo do trilho
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
-      ctx.fillRect(-barW / 2, 48, barW, barH);
-
-      // Barra Fantasma (Dano recente em vermelho/laranja antes de ser absorvido)
-      if (ghostHpPct > curHpPct) {
-        ctx.fillStyle = '#ff3344';
-        ctx.fillRect(-barW / 2, 48, barW * ghostHpPct, barH);
-      }
-
-      // Barra de HP Atual suave
-      const hpColor = curHpPct > 0.5 ? '#00ff88' : curHpPct > 0.25 ? '#ffd700' : '#ff3344';
-      ctx.fillStyle = hpColor;
-      ctx.fillRect(-barW / 2, 48, barW * curHpPct, barH);
-
-      ctx.strokeStyle = 'rgba(0, 255, 136, 0.4)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(-barW / 2, 48, barW, barH);
-
-      // Texto de HP numérico
-      ctx.font = '900 13px "Share Tech Mono", monospace';
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 3;
-      const showVal = Math.round(bot.displayHp !== undefined ? bot.displayHp : bot.currentHp);
-      ctx.strokeText(`${showVal}/${maxHp} HP`, 0, 62);
-      ctx.fillStyle = hpColor;
-      ctx.fillText(`${showVal}/${maxHp} HP`, 0, 62);
-
-      ctx.restore();
+      this._drawSingleRobot(bot, x, y, true, isActing, isSelectable, isHovered);
     });
   }
 
   _drawEnemies() {
+    this.enemies.forEach((enemy) => {
+      const isDead = enemy.currentHp <= 0;
+      const x = enemy.currentX !== undefined ? enemy.currentX : enemy.homeX;
+      const y = enemy.currentY !== undefined ? enemy.currentY : enemy.homeY;
+      const isSelectable = this.targetSelectionMode && this.targetSelectionMode.type === 'attack' && !isDead;
+      const isHovered = this.hoveredEnemy === enemy;
+
+      this._drawSingleRobot(enemy, x, y, false, false, isSelectable, isHovered);
+    });
+  }
+
+  _drawSingleRobot(robot, x, y, isAllied, isActing, isSelectable, isHovered) {
     const ctx = this.ctx;
     const t = this.time;
 
-    this.enemies.forEach((enemy) => {
-      const isDead = enemy.currentHp <= 0;
-      const x = enemy.currentX || enemy.homeX;
-      const y = enemy.currentY || enemy.homeY;
-      const isHovered = this.hoveredEnemy === enemy;
-      const isSelectable = this.targetSelectionMode && !isDead;
-
+    if (robot.currentHp <= 0) {
+      // Robô abatido com halo de corrupção
       ctx.save();
-      ctx.translate(x, y);
-
-      if (isDead) {
-        ctx.globalAlpha = 0.25;
-      }
-
-      // Se estiver no modo de mira e vivo: EVIDÊNCIA MÁXIMA!
-      if (isSelectable) {
-        // Brilho pulsante em evidência por cima do escuro
-        const pulseR = 38 + Math.sin(t * 0.12) * 6;
-        ctx.strokeStyle = isHovered ? '#00ff88' : '#ff3344';
-        ctx.shadowColor = isHovered ? '#00ff88' : '#ff3344';
-        ctx.shadowBlur = isHovered ? 25 : 16;
-        ctx.lineWidth = isHovered ? 3.5 : 2.5;
-        ctx.beginPath();
-        ctx.arc(0, 0, pulseR, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // Mira holográfica se estiver sob o cursor
-        if (isHovered) {
-          ctx.setLineDash([4, 4]);
-          ctx.beginPath();
-          ctx.arc(0, 0, pulseR + 10, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.setLineDash([]);
-
-          ctx.font = '900 11px "Share Tech Mono", monospace';
-          ctx.fillStyle = '#00ff88';
-          ctx.textAlign = 'center';
-          ctx.fillText('[ CLIQUE PARA ATACAR ]', 0, -48);
-        } else {
-          ctx.font = '700 10px "Share Tech Mono", monospace';
-          ctx.fillStyle = '#ffd700';
-          ctx.textAlign = 'center';
-          ctx.fillText('[ ALVO DISPONÍVEL ]', 0, -44);
-        }
-      }
-
-      // Base circular do inimigo
-      const enemyGrad = ctx.createRadialGradient(0, 0, 8, 0, 0, 32);
-      enemyGrad.addColorStop(0, enemy.isBoss ? 'rgba(255, 215, 0, 0.35)' : 'rgba(255, 51, 68, 0.35)');
-      enemyGrad.addColorStop(1, 'rgba(25, 4, 6, 0.9)');
-      ctx.fillStyle = enemyGrad;
+      ctx.globalAlpha = 0.25;
+      ctx.fillStyle = robot.color || '#ff3344';
       ctx.beginPath();
-      ctx.arc(0, 0, 30, 0, Math.PI * 2);
+      ctx.arc(x, y, 18, 0, Math.PI * 2);
       ctx.fill();
+      ctx.fillStyle = '#ff3344';
+      ctx.font = 'bold 10px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('[DOWN]', x, y + 4);
+      ctx.restore();
+      return;
+    }
 
-      // Borda do inimigo
-      const mainBorderColor = enemy.isBoss ? '#ffd700' : (isHovered ? '#00ff88' : '#ff3344');
-      ctx.strokeStyle = mainBorderColor;
-      ctx.shadowColor = mainBorderColor;
-      ctx.shadowBlur = 12;
-      ctx.lineWidth = 2.2;
+    // 1. Dynamic Breathing Radius
+    const baseRadius = 24;
+    const breath = Math.sin(t * 0.07 + (robot.pulsePhase || 0)) * 2;
+    const r = baseRadius + breath;
+
+    // 2. Rotating 3D Orbital Rings (Exatamente igual ao Modo Versus)
+    this._drawOrbitalRings(x, y, r, robot.color, robot.pulsePhase || 0);
+
+    // 3. Aura de Ação / Turno Atual do Aliado
+    if (isActing) {
+      ctx.save();
+      ctx.strokeStyle = '#ffd700';
+      ctx.shadowColor = '#ffd700';
+      ctx.shadowBlur = 20;
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([6, 4]);
+      ctx.lineDashOffset = t * 0.8;
       ctx.beginPath();
-      ctx.arc(0, 0, 30, 0, Math.PI * 2);
+      ctx.arc(x, y, r + 9, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Símbolo do inimigo
-      ctx.font = '900 13px "Share Tech Mono", monospace';
-      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 9px "Share Tech Mono", monospace';
+      ctx.fillStyle = '#ffd700';
       ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      const enemyCode = (enemy.avatar || enemy.name.substring(0, 4)).toUpperCase();
-      ctx.fillText(enemyCode, 0, 0);
-
-      // Nome do inimigo
-      ctx.font = '700 11px "Share Tech Mono", monospace';
-      ctx.fillStyle = enemy.isBoss ? '#ffd700' : '#ff8899';
-      ctx.textBaseline = 'top';
-      ctx.fillText(enemy.name, 0, 36);
-
-      // Barra de HP Suave com Barra Fantasma de Dano
-      const enemyMaxHp = enemy.maxHp || 100;
-      const curEnemyHpPct = Math.max(0, Math.min(1.0, (enemy.displayHp !== undefined ? enemy.displayHp : enemy.currentHp) / enemyMaxHp));
-      const ghostEnemyHpPct = Math.max(0, Math.min(1.0, (enemy.ghostHp !== undefined ? enemy.ghostHp : enemy.currentHp) / enemyMaxHp));
-      const eBarW = 66;
-      const eBarH = 6;
-
-      // Fundo do trilho
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
-      ctx.fillRect(-eBarW / 2, 50, eBarW, eBarH);
-
-      // Barra Fantasma (Dano recente)
-      if (ghostEnemyHpPct > curEnemyHpPct) {
-        ctx.fillStyle = '#ffaa00';
-        ctx.fillRect(-eBarW / 2, 50, eBarW * ghostEnemyHpPct, eBarH);
-      }
-
-      // Barra de HP Atual suave
-      const enemyHpColor = curEnemyHpPct > 0.5 ? '#ff4444' : curEnemyHpPct > 0.25 ? '#ffd700' : '#ff2222';
-      ctx.fillStyle = enemyHpColor;
-      ctx.fillRect(-eBarW / 2, 50, eBarW * curEnemyHpPct, eBarH);
-
-      ctx.strokeStyle = 'rgba(255, 51, 68, 0.4)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(-eBarW / 2, 50, eBarW, eBarH);
-
-      ctx.font = '900 13px "Share Tech Mono", monospace';
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 3;
-      const showEnemyVal = Math.round(enemy.displayHp !== undefined ? enemy.displayHp : enemy.currentHp);
-      ctx.strokeText(`${showEnemyVal}/${enemyMaxHp} HP`, 0, 64);
-      ctx.fillStyle = enemyHpColor;
-      ctx.fillText(`${showEnemyVal}/${enemyMaxHp} HP`, 0, 64);
-
+      ctx.fillText('[ SUA VEZ ]', x, y - r - 14);
       ctx.restore();
-    });
+    }
+
+    // 4. Modo de Evidência / Seleção de Alvo Direta no Tabuleiro
+    if (isSelectable) {
+      const candColor = isAllied ? '#00ff88' : '#ff3344';
+
+      ctx.save();
+      ctx.strokeStyle = candColor;
+      ctx.shadowColor = candColor;
+      ctx.shadowBlur = isHovered ? 45 : (26 + Math.sin(t * 0.15) * 8);
+      ctx.lineWidth = isHovered ? 3.8 : 2.4;
+      ctx.setLineDash([7, 5]);
+      ctx.lineDashOffset = t * (isHovered ? 2.2 : 1.2);
+
+      // Anel pulsante
+      ctx.beginPath();
+      ctx.arc(x, y, r + (isHovered ? 18 : 14), 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Holographic corner brackets ╭ ╮ ╰ ╯
+      const bArm = isHovered ? 14 : 10;
+      const bDist = r + (isHovered ? 22 : 17);
+      ctx.lineWidth = isHovered ? 2.6 : 1.8;
+
+      // Top-Left
+      ctx.beginPath();
+      ctx.moveTo(x - bDist, y - bDist + bArm);
+      ctx.lineTo(x - bDist, y - bDist);
+      ctx.lineTo(x - bDist + bArm, y - bDist);
+      ctx.stroke();
+
+      // Top-Right
+      ctx.beginPath();
+      ctx.moveTo(x + bDist - bArm, y - bDist);
+      ctx.lineTo(x + bDist, y - bDist);
+      ctx.lineTo(x + bDist, y - bDist + bArm);
+      ctx.stroke();
+
+      // Bottom-Left
+      ctx.beginPath();
+      ctx.moveTo(x - bDist, y + bDist - bArm);
+      ctx.lineTo(x - bDist, y + bDist);
+      ctx.lineTo(x - bDist + bArm, y + bDist);
+      ctx.stroke();
+
+      // Bottom-Right
+      ctx.beginPath();
+      ctx.moveTo(x + bDist - bArm, y + bDist);
+      ctx.lineTo(x + bDist, y + bDist);
+      ctx.lineTo(x + bDist, y + bDist - bArm);
+      ctx.stroke();
+
+      // Hover Text
+      ctx.font = isHovered ? '900 11px monospace' : '900 9px monospace';
+      ctx.fillStyle = isHovered ? '#ffffff' : candColor;
+      ctx.textAlign = 'center';
+      const actionTxt = isHovered
+        ? (isAllied ? '[ CLIQUE P/ USAR ITEM ]' : '[ CLIQUE PARA ATACAR ]')
+        : (isAllied ? '[ ALVO DISPONÍVEL ]' : '[ MIRAR ]');
+      ctx.fillText(actionTxt, x, y - r - 14);
+
+      if (isHovered) {
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(x - 8, y); ctx.lineTo(x + 8, y);
+        ctx.moveTo(x, y - 8); ctx.lineTo(x, y + 8);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // 5. Robot Body Gradient & Metallic Core
+    ctx.save();
+    ctx.shadowColor = robot.color;
+    ctx.shadowBlur = 18;
+
+    const bodyGrad = ctx.createRadialGradient(x - 5, y - 5, 2, x, y, r);
+    bodyGrad.addColorStop(0, this._lighten(robot.color, 0.7));
+    bodyGrad.addColorStop(0.5, robot.color);
+    bodyGrad.addColorStop(1, this._darken(robot.color, 0.4));
+    ctx.fillStyle = bodyGrad;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Inner Phosphor Lens Ring
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(x, y, r * 0.75, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    // 6. Graphic Avatar Glyph (Retro Cyber Vector Style idêntico ao Versus)
+    const code = robot.code || this._normalizeBotId(robot.id, robot.name);
+    this._drawAvatarGlyph(code, x, y, r, robot.color);
+
+    // 7. Mini HUD (HP Bar, Ghost Damage, Energy Pips e Nome)
+    this._drawRobotMiniHUD(robot, x, y, r, isAllied);
+  }
+
+  _drawOrbitalRings(x, y, r, color, phase) {
+    const ctx = this.ctx;
+    const t = this.time * 0.04 + phase;
+
+    ctx.save();
+    // Ring 1 (Tilted +25 deg)
+    ctx.translate(x, y);
+    ctx.rotate(0.4);
+    ctx.strokeStyle = `${color}44`;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r + 7, (r + 7) * 0.45, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Orbiting particle 1
+    const px1 = Math.cos(t) * (r + 7);
+    const py1 = Math.sin(t) * (r + 7) * 0.45;
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    ctx.arc(px1, py1, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Ring 2 (Tilted -35 deg, counter-rotating)
+    ctx.rotate(-0.8);
+    ctx.strokeStyle = `${color}33`;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r + 9, (r + 9) * 0.4, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Orbiting particle 2
+    const px2 = Math.cos(-t * 1.3) * (r + 9);
+    const py2 = Math.sin(-t * 1.3) * (r + 9) * 0.4;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(px2, py2, 2.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  _drawAvatarGlyph(id, x, y, r, color) {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1.8;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    switch (id) {
+      case 'DB': {
+        // Dino-Byte: Thermal Fang & Crest Glyph
+        ctx.beginPath();
+        ctx.moveTo(x - 8, y + 6);
+        ctx.lineTo(x - 4, y - 8);
+        ctx.lineTo(x + 2, y - 3);
+        ctx.lineTo(x + 8, y - 9);
+        ctx.lineTo(x + 7, y + 6);
+        ctx.lineTo(x, y + 2);
+        ctx.closePath();
+        ctx.stroke();
+        break;
+      }
+      case 'PL': {
+        // Penlinux: Arctic Visor & Crystal Glyph
+        ctx.beginPath();
+        ctx.moveTo(x - 9, y - 2);
+        ctx.lineTo(x + 9, y - 2);
+        ctx.stroke();
+        // Crystal diamond in center
+        ctx.beginPath();
+        ctx.moveTo(x, y - 8);
+        ctx.lineTo(x + 6, y);
+        ctx.lineTo(x, y + 8);
+        ctx.lineTo(x - 6, y);
+        ctx.closePath();
+        ctx.stroke();
+        break;
+      }
+      case 'CP': {
+        // Cowputer-Moo: Circuit Horns & Star Badge
+        ctx.beginPath();
+        ctx.moveTo(x - 10, y - 7);
+        ctx.quadraticCurveTo(x - 5, y - 1, x, y + 2);
+        ctx.quadraticCurveTo(x + 5, y - 1, x + 10, y - 7);
+        ctx.stroke();
+        // Star cross
+        ctx.beginPath();
+        ctx.moveTo(x, y - 5); ctx.lineTo(x, y + 7);
+        ctx.moveTo(x - 6, y + 1); ctx.lineTo(x + 6, y + 1);
+        ctx.stroke();
+        break;
+      }
+      case 'PB': {
+        // Pavabyte: Optical Feather Fan & Prism Ring
+        ctx.beginPath();
+        ctx.arc(x, y, 7, 0, Math.PI * 2);
+        ctx.stroke();
+        // 3 Feathers radiating up
+        for (let a = -0.5; a <= 0.5; a += 0.5) {
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(x + Math.sin(a) * 11, y - Math.cos(a) * 11);
+          ctx.stroke();
+        }
+        break;
+      }
+      case 'TV': {
+        // Tigervex: Laser Tiger Fangs & Electric Stripes
+        ctx.beginPath();
+        ctx.moveTo(x - 8, y - 6); ctx.lineTo(x - 4, y + 7);
+        ctx.moveTo(x + 8, y - 6); ctx.lineTo(x + 4, y + 7);
+        ctx.moveTo(x - 6, y);     ctx.lineTo(x + 6, y);
+        ctx.stroke();
+        break;
+      }
+      case 'QZ': {
+        // Quezas / Tyrant: Horned Crown Glyph
+        ctx.beginPath();
+        ctx.moveTo(x - 9, y + 5);
+        ctx.lineTo(x - 7, y - 6);
+        ctx.lineTo(x - 3, y - 1);
+        ctx.lineTo(x, y - 8);
+        ctx.lineTo(x + 3, y - 1);
+        ctx.lineTo(x + 7, y - 6);
+        ctx.lineTo(x + 9, y + 5);
+        ctx.closePath();
+        ctx.stroke();
+        break;
+      }
+      default: {
+        ctx.font = 'bold 10px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(id, x, y);
+      }
+    }
+
+    // Small ID label beneath the glyph
+    ctx.font = 'bold 8px monospace';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.textAlign = 'center';
+    ctx.fillText(id, x, y + 14);
+
+    ctx.restore();
+  }
+
+  _drawRobotMiniHUD(robot, x, y, r, isAllied) {
+    const ctx = this.ctx;
+    const barW = 54;
+    const barH = 6;
+    const barX = x - barW / 2;
+    const barY = y + r + 8;
+    const maxHp = robot.maxHp || 100;
+    const curHp = Math.max(0, robot.displayHp !== undefined ? robot.displayHp : robot.currentHp);
+    const ghostHp = Math.max(0, robot.ghostHp !== undefined ? robot.ghostHp : robot.currentHp);
+    const curPct = Math.max(0, Math.min(1.0, curHp / maxHp));
+    const ghostPct = Math.max(0, Math.min(1.0, ghostHp / maxHp));
+
+    // HP background track with rounded pill
+    ctx.save();
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+    ctx.beginPath();
+    ctx.roundRect(barX, barY, barW, barH, 3);
+    ctx.fill();
+
+    // Ghost damage bar
+    if (ghostPct > curPct) {
+      ctx.fillStyle = '#ffaa00';
+      ctx.beginPath();
+      ctx.roundRect(barX, barY, barW * ghostPct, barH, 3);
+      ctx.fill();
+    }
+
+    // HP Fill
+    const hpColor = isAllied
+      ? (curPct > 0.5 ? '#00ff88' : curPct > 0.25 ? '#ffd700' : '#ff3344')
+      : (curPct > 0.5 ? '#ff4444' : curPct > 0.25 ? '#ffd700' : '#ff2222');
+
+    ctx.fillStyle = hpColor;
+    ctx.shadowColor = hpColor;
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.roundRect(barX, barY, barW * curPct, barH, 3);
+    ctx.fill();
+
+    // Border
+    ctx.strokeStyle = isAllied ? 'rgba(0, 255, 136, 0.4)' : 'rgba(255, 51, 68, 0.4)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(barX, barY, barW, barH, 3);
+    ctx.stroke();
+
+    // Numeric HP Text
+    ctx.font = '900 11px "Share Tech Mono", monospace';
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2.5;
+    ctx.textAlign = 'center';
+    const showVal = Math.round(curHp);
+    ctx.strokeText(`${showVal}/${maxHp} HP`, x, barY - 2);
+    ctx.fillStyle = hpColor;
+    ctx.fillText(`${showVal}/${maxHp} HP`, x, barY - 2);
+
+    // Energy pips (se robô aliado tiver energia)
+    if (isAllied && robot.currentEnergy !== undefined) {
+      const maxPips = 5;
+      for (let i = 0; i < maxPips; i++) {
+        const px = barX + i * (barW / maxPips) + 3;
+        const py = barY + barH + 5;
+        const isLit = i < (robot.currentEnergy || 0);
+        ctx.fillStyle = isLit ? '#ffd700' : 'rgba(255, 215, 0, 0.2)';
+        if (isLit) {
+          ctx.shadowColor = '#ffd700';
+          ctx.shadowBlur = 5;
+        } else {
+          ctx.shadowBlur = 0;
+        }
+        ctx.beginPath();
+        ctx.arc(px, py, 1.8, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Nome do Robô
+    ctx.font = '700 10px "Share Tech Mono", monospace';
+    ctx.fillStyle = isAllied ? '#ffffff' : (robot.isBoss ? '#ffd700' : '#ff8899');
+    ctx.textAlign = 'center';
+    ctx.fillText(robot.name || 'ROBOT', x, barY + barH + (isAllied ? 16 : 10));
+
+    ctx.restore();
+  }
+
+  _lighten(hex, amount) {
+    if (!hex || hex[0] !== '#') return hex || '#00ff88';
+    const r = parseInt(hex.slice(1, 3), 16) || 0;
+    const g = parseInt(hex.slice(3, 5), 16) || 0;
+    const b = parseInt(hex.slice(5, 7), 16) || 0;
+    const l = (c) => Math.min(255, Math.floor(c + (255 - c) * amount));
+    return `rgb(${l(r)}, ${l(g)}, ${l(b)})`;
+  }
+
+  _darken(hex, amount) {
+    if (!hex || hex[0] !== '#') return hex || '#003311';
+    const r = parseInt(hex.slice(1, 3), 16) || 0;
+    const g = parseInt(hex.slice(3, 5), 16) || 0;
+    const b = parseInt(hex.slice(5, 7), 16) || 0;
+    const d = (c) => Math.max(0, Math.floor(c * (1 - amount)));
+    return `rgb(${d(r)}, ${d(g)}, ${d(b)})`;
   }
 
   _drawVFX() {

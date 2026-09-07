@@ -2167,17 +2167,24 @@ html, body {
 .story-canvas-wrapper {
   flex: 1;
   position: relative;
-  min-height: 360px;
+  min-height: 280px;
   border: 2px solid rgba(0, 255, 136, 0.4);
   border-radius: 6px;
   overflow: hidden;
   background: #000;
   box-shadow: 0 0 25px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(0, 255, 136, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #storyBoardCanvas {
-  width: 100%;
-  height: 100%;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  aspect-ratio: 960 / 460;
+  object-fit: contain;
   display: block;
 }
 
@@ -6607,8 +6614,12 @@ html, body {
 }
 
 .story-canvas-wrapper canvas {
-  width: 100% !important;
-  height: 100% !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  aspect-ratio: 960 / 460;
+  object-fit: contain;
   display: block;
 }
 
@@ -8420,6 +8431,319 @@ html, body {
   .story-auth-btn-row #storyAuthModalGuestBtn {
     flex: 1 1 100%;
   }
+}
+
+/* ===================================================
+   BOTÃO DE CONFIGURAÇÕES NO CABEÇALHO
+   =================================================== */
+.settings-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+
+.settings-nav-btn svg {
+  transition: transform 0.4s ease;
+}
+
+.settings-nav-btn:hover svg {
+  transform: rotate(45deg);
+}
+
+/* ===================================================
+   MODAL CENTRAL DE CONFIGURAÇÕES (CRT THEMED)
+   =================================================== */
+.settings-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(1, 4, 2, 0.9);
+  backdrop-filter: blur(8px);
+  animation: modalOverlayFadeIn 0.25s ease-out;
+}
+
+.settings-modal-overlay.hidden {
+  display: none !important;
+}
+
+.settings-modal-box {
+  position: relative;
+  width: 92%;
+  max-width: 580px;
+  max-height: 90vh;
+  background: #030a05;
+  border: 2px solid var(--term-gold, #ffd700);
+  border-radius: 6px;
+  box-shadow: 0 0 40px rgba(255, 215, 0, 0.35), inset 0 0 25px rgba(0, 255, 102, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalBoxPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.settings-modal-scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15),
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: 1;
+}
+
+.settings-modal-header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px dashed rgba(0, 255, 102, 0.35);
+  background: rgba(0, 20, 10, 0.6);
+}
+
+.settings-modal-tag {
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  font-size: 0.85rem;
+  color: var(--term-gold, #ffd700);
+  letter-spacing: 1.5px;
+  font-weight: 700;
+}
+
+.settings-close-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+  transition: color 0.2s;
+}
+
+.settings-close-btn:hover {
+  color: #ff3344;
+}
+
+.settings-modal-body {
+  position: relative;
+  z-index: 2;
+  padding: 16px 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-bottom: 1px solid rgba(0, 255, 102, 0.12);
+  padding-bottom: 16px;
+}
+
+.settings-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.settings-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: var(--term-accent, #00ff88);
+  letter-spacing: 1px;
+}
+
+.settings-section-desc {
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  font-size: 0.82rem;
+  color: #a0d8b4;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Grupo de Botões de Perfil Gráfico */
+.settings-btn-group {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.settings-pill-btn {
+  background: rgba(0, 25, 12, 0.7);
+  border: 1px solid rgba(0, 255, 102, 0.3);
+  border-radius: 4px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.settings-pill-btn:hover {
+  border-color: var(--term-accent, #00ff88);
+  background: rgba(0, 45, 20, 0.8);
+  transform: translateY(-1px);
+}
+
+.settings-pill-btn.active {
+  border-color: var(--term-gold, #ffd700);
+  background: rgba(255, 215, 0, 0.12);
+  box-shadow: 0 0 16px rgba(255, 215, 0, 0.35);
+}
+
+.settings-pill-btn .pill-title {
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  font-size: 0.88rem;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+.settings-pill-btn.active .pill-title {
+  color: var(--term-gold, #ffd700);
+}
+
+.settings-pill-btn .pill-desc {
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  font-size: 0.72rem;
+  color: #88c0a0;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Toggles de Efeitos Visuais */
+.settings-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(0, 20, 10, 0.5);
+  border: 1px solid rgba(0, 255, 102, 0.2);
+  border-radius: 4px;
+}
+
+.settings-toggle-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: pointer;
+}
+
+.settings-toggle-label .toggle-name {
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.settings-toggle-label .toggle-sub {
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  font-size: 0.75rem;
+  color: var(--term-dim, #7da08d);
+}
+
+.settings-checkbox {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--term-gold, #ffd700);
+  cursor: pointer;
+}
+
+/* Controles de Áudio */
+.settings-audio-mute-row {
+  display: flex;
+  margin-bottom: 6px;
+}
+
+.settings-mute-btn {
+  width: 100%;
+  padding: 10px !important;
+  font-size: 0.9rem !important;
+  letter-spacing: 1px;
+}
+
+.settings-slider-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: rgba(0, 20, 10, 0.4);
+  padding: 10px 12px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 255, 102, 0.15);
+}
+
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  font-size: 0.82rem;
+  color: #fff;
+}
+
+.slider-val-badge {
+  color: var(--term-gold, #ffd700);
+  font-weight: 700;
+}
+
+.settings-slider {
+  width: 100%;
+  accent-color: var(--term-accent, #00ff88);
+  cursor: pointer;
+}
+
+.settings-modal-footer {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 12px 20px;
+  border-top: 1px dashed rgba(0, 255, 102, 0.3);
+  background: rgba(0, 15, 8, 0.7);
+}
+
+/* Otimizações de Perfis Gráficos Globais */
+body.graphics-low {
+  --term-glow-strength: 0.2;
+}
+
+body.graphics-low .crt-scanlines {
+  opacity: 0.4;
+}
+
+body.graphics-low * {
+  text-shadow: none !important;
+}
+
+body.graphics-low .fnaf-tape-slot,
+body.graphics-low .term-action-card-btn,
+body.graphics-low .story-auth-modal-box {
+  box-shadow: none !important;
+}
+
+body.graphics-medium .crt-scanlines {
+  opacity: 0.7;
 }
 
 

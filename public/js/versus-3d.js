@@ -28,6 +28,22 @@ export class Versus3DEngine {
     this.previewRenderer = null;
     this.previewMeshGroup = null;
     this.previewAnimId = null;
+
+    if (typeof window !== 'undefined' && window.gameSettings) {
+      window.gameSettings.onChange((key) => {
+        if (key === 'graphics') {
+          const dpr = this._getPixelRatio();
+          if (this.renderer) this.renderer.setPixelRatio(dpr);
+          if (this.previewRenderer) this.previewRenderer.setPixelRatio(dpr);
+        }
+      });
+    }
+  }
+
+  _getPixelRatio() {
+    const q = (typeof window !== 'undefined' && window.gameSettings) ? window.gameSettings.get('graphics') : 'high';
+    const maxDpr = q === 'low' ? 1.0 : q === 'medium' ? 1.25 : 2.0;
+    return Math.min(window.devicePixelRatio || 1, maxDpr);
   }
 
   // ═════════════════════════════════════════════════════════════════
@@ -61,7 +77,7 @@ export class Versus3DEngine {
     // Renderer WebGL de Alta Performance com Transparência
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     this.renderer.setSize(width, height);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.setPixelRatio(this._getPixelRatio());
     this.renderer.domElement.style.display = 'block';
     this.renderer.domElement.style.width = '100%';
     this.renderer.domElement.style.height = '100%';
@@ -653,7 +669,7 @@ export class Versus3DEngine {
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(this._getPixelRatio());
     container.appendChild(renderer.domElement);
 
     const group = new THREE.Group();
