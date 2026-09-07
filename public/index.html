@@ -5,6 +5,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HORTOBOTS // QUEZAS-DOS - A TORRE VIRTUAL</title>
+  <link rel="icon" type="image/png" href="/img/cara-icon.png">
+  <link rel="shortcut icon" type="image/png" href="/img/cara-icon.png">
+  <link rel="apple-touch-icon" href="/img/cara-icon.png">
   <link rel="stylesheet" href="/css/terminal.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
@@ -16,10 +19,25 @@
   <div class="crt-glass-glare"></div>
 
   <div class="crt-monitor-container">
+    <!-- TELA 0: PRÉ-TÍTULO (ENTRADA COM ESPAÇO PARA DESBLOQUEIO DE ÁUDIO NO NAVEGADOR) -->
+    <div id="pressSpaceScreen" class="press-space-screen">
+      <div class="press-space-crt-ambient"></div>
+      <div class="press-space-content">
+        <div class="press-space-key-visual" id="pressSpaceKeyVisual">
+          <img src="/img/spacebar-pixel.gif" alt="Barra de Espaço Pixel Art" class="press-space-gif">
+        </div>
+        <div class="press-space-text">Clique espaço para continuar</div>
+        <div class="press-space-sub">[ OU CLIQUE EM QUALQUER LUGAR DA TELA ]</div>
+        <div class="press-space-badge">
+          <span class="pulse-dot"></span> SISTEMA PRONTO // AGUARDANDO INPUT DE ÁUDIO
+        </div>
+      </div>
+    </div>
+
     <!-- Header Minimalista e Padronizado -->
     <header class="term-sys-header">
       <div class="term-brand">
-        <strong>[HORTOBOTS]</strong> // QUEZAS-DOS <span class="term-dim">// v1.5b</span>
+        <strong>[HORTOBOTS]</strong> // QUEZAS-DOS <span class="term-dim">// v1.0</span>
       </div>
       <div class="term-controls">
         <button class="term-btn home-nav-btn hidden" id="termHomeBtn" title="Voltar à Tela de Título (Salvar Partida)">
@@ -42,6 +60,9 @@
 
       <!-- Fundo 3D: Torre Realista Girando Suavemente com Iluminação Sombria -->
       <div id="title3DCanvasContainer" class="title-3d-canvas-container"></div>
+
+      <!-- Sombra Gradual do Rodapé: Cobre o Fundo 3D e Torre no último quarto da tela -->
+      <div class="title-bottom-shadow"></div>
 
       <!-- Overlay de Estática Analógica CRT (Disparado na transição de fitas) -->
       <div id="titleStaticGlitchOverlay" class="title-static-glitch-overlay hidden">
@@ -120,7 +141,7 @@
         <!-- RODAPÉ CRT INFORMATIVO -->
         <div class="title-crt-footer">
           <span>// SEGURANÇA: VIRTUAL_SURVEILLANCE_ACTIVE</span>
-          <span>ESTAÇÃO TERMINAL: ESCALADA DA TORRE // v1.5b</span>
+          <span>ESTAÇÃO TERMINAL: ESCALADA DA TORRE // v1.0</span>
           <span>AUTENTICAÇÃO: OK</span>
         </div>
       </div>
@@ -553,21 +574,26 @@
             <div class="versus-auth-section-title">> REGISTRO DE NOVO PILOTO</div>
             <div class="versus-input-grid">
               <div class="versus-input-group">
-                <label class="versus-label" for="versusRegNick">NOVO NICKNAME</label>
-                <input type="text" id="versusRegNick" class="versus-input" placeholder="Escolha seu Nick..."
-                  maxlength="16" autocomplete="off" />
+                <label class="versus-label" for="versusRegNick">NOVO NICKNAME (MÍN. 2 CARACTERES)</label>
+                <input type="text" id="versusRegNick" class="versus-input" placeholder="Seu Nickname..."
+                  minlength="2" maxlength="16" autocomplete="off" />
               </div>
               <div class="versus-input-group">
-                <label class="versus-label" for="versusRegPass">CRIAR SENHA</label>
-                <input type="password" id="versusRegPass" class="versus-input" placeholder="Senha segura..."
-                  maxlength="32" />
+                <label class="versus-label" for="versusRegPass">CRIAR SENHA (MÍN. 8 DÍGITOS)</label>
+                <input type="password" id="versusRegPass" class="versus-input" placeholder="Mínimo 8 caracteres..."
+                  minlength="8" maxlength="32" />
               </div>
             </div>
 
-            <div class="versus-checkbox-row" style="margin-top: 4px;">
+            <div class="versus-input-group" style="margin-top: 6px;">
+              <label class="versus-label" for="versusRegEmail">E-MAIL DO PILOTO (OBRIGATÓRIO)</label>
+              <input type="email" id="versusRegEmail" class="versus-input" placeholder="seu-email@dominio.com" autocomplete="email" />
+            </div>
+
+            <div class="versus-checkbox-row" style="margin-top: 6px;">
               <label class="versus-checkbox-label">
                 <input type="checkbox" id="versusRegGoogleLinkCheck" />
-                <span>Vincular perfil a uma Conta Google</span>
+                <span>Vincular perfil à Conta Google</span>
               </label>
             </div>
 
@@ -576,10 +602,11 @@
               <input type="email" id="versusRegGoogleEmail" class="versus-input" placeholder="seu-email@gmail.com" />
             </div>
 
-            <div class="versus-btn-row" style="margin-top: 6px;">
+            <div class="versus-btn-row" style="margin-top: 8px;">
               <button class="versus-action-btn cyan" id="versusAuthRegBtn" type="button">CONFIRMAR CADASTRO</button>
             </div>
           </div>
+
 
           <!-- SEPARADOR / NAVEGAÇÃO -->
           <div class="versus-auth-divider">
@@ -752,10 +779,11 @@
               qualquer piloto disponível.</p>
 
             <div id="versusQueueInitialBox">
-              <div class="versus-queue-rp-badge">SEU RANKING: <strong id="versusQueuePlayerRP">100 RP</strong></div>
+              <div class="versus-queue-rp-badge">SEU RANKING: <strong id="versusQueuePlayerRP">0 RP</strong></div>
               <button class="versus-action-btn ranked pulse-btn" id="versusStartQueueBtn" type="button">[ BUSCAR DUELO!
                 ]</button>
             </div>
+
 
             <!-- HUD DE BUSCA ATIVA / RADAR -->
             <div id="versusQueueActiveBox" class="versus-queue-active-box hidden">
@@ -1116,9 +1144,30 @@
     </div>
   </div>
 
-  <!-- Script Principal do Jogo -->
+  <!-- OVERLAY CINEMÁTICO CRT: Conexão / Cold-Start Loading (Despertando servidor no Render) -->
+  <div id="coldStartLoadingOverlay" class="cold-start-overlay hidden">
+    <div class="cold-start-backdrop"></div>
+    <div class="cold-start-card">
+      <div class="cold-start-scanlines"></div>
+      <div class="cold-start-tag">// PROTOCOLO DE CONEXÃO //</div>
+      <h2 class="cold-start-title">[ DESPERTANDO SERVIDOR ]</h2>
+      <p class="cold-start-desc">Aguardando resposta do núcleo Quezas-DOS.<br>
+        <span class="cold-start-dim">Em hospedagens gratuitas (Render), o primeiro despertar leva ~30 a 50 segundos. Aguarde a conexão se estabelecer...</span>
+      </p>
+      <div class="cold-start-progress-bar">
+        <div class="cold-start-progress-fill" id="coldStartProgressFill"></div>
+      </div>
+      <div class="cold-start-terminal-log" id="coldStartLog">
+        <span class="log-line">> Estabelecendo sinal com a nuvem...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts do Jogo -->
+  <script type="module" src="/js/terminal-alert.js"></script>
   <script type="module" src="/js/terminal-game.js"></script>
   <script type="module" src="/js/versus-ui.js"></script>
+
 </body>
 
 </html>

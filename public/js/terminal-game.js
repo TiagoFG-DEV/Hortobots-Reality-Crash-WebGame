@@ -559,7 +559,7 @@ export class TerminalGameApp {
 
     this.initUI();
     this.checkSavedCheckpoint();
-    this.showTitle();
+    this.initPressSpaceScreen();
   }
 
   // ==========================================
@@ -675,15 +675,6 @@ export class TerminalGameApp {
         }
       };
     }
-
-    // Início de BGM do Título na primeira interação
-    const startTitleMusic = () => {
-      if (!this.audio.currentTrack) {
-        this.audio.playBGM('title', 800);
-      }
-    };
-    window.addEventListener('click', startTitleMusic, { once: true });
-    window.addEventListener('keydown', startTitleMusic, { once: true });
 
     // ── Fitas Cassete do Menu de Título Estilo FNAF ────────────────
     const tapeSlots = document.querySelectorAll('.fnaf-tape-slot');
@@ -881,8 +872,85 @@ export class TerminalGameApp {
     }
   }
 
+  // ─── TELA 0: PRÉ-TÍTULO (Pressione Espaço para Continuar e Desbloquear Áudio) ───
+  initPressSpaceScreen() {
+    const pressScreen = document.getElementById('pressSpaceScreen');
+    const titleScreen = document.getElementById('titleScreen');
+    const keyVisual = document.getElementById('pressSpaceKeyVisual');
+
+    // Inicialmente esconde a tela de título por baixo (aguardando input do usuário)
+    if (titleScreen) {
+      titleScreen.classList.add('hidden');
+      titleScreen.style.opacity = '0';
+    }
+
+    if (!pressScreen) {
+      this.showTitle();
+      return;
+    }
+
+    let hasTriggered = false;
+
+    const proceedToTitle = (e) => {
+      // Se for evento de teclado, aceita tecla Espaço ou Enter
+      if (e && e.type === 'keydown') {
+        if (e.code !== 'Space' && e.key !== ' ' && e.keyCode !== 32 && e.key !== 'Enter' && e.keyCode !== 13) {
+          return;
+        }
+        e.preventDefault();
+      }
+
+      if (hasTriggered) return;
+      hasTriggered = true;
+
+      // Animação visual imediata da tecla sendo pressionada
+      if (keyVisual) {
+        keyVisual.classList.add('pressed');
+      }
+
+      // Efeito sonoro mecânico de clique de switch de terminal
+      if (this.audio && typeof this.audio.playKeyClack === 'function') {
+        this.audio.playKeyClack();
+      }
+
+      // Inicia o fade OUT bem lento da tela pré-título
+      pressScreen.classList.add('fade-out-slow');
+
+      // Revela a tela de título e inicializa todos os subsistemas
+      this.showTitle();
+
+      const blackOverlay = document.getElementById('titleBlackTransition');
+      if (blackOverlay) {
+        blackOverlay.classList.add('fade-out');
+      }
+
+      if (titleScreen) {
+        titleScreen.classList.remove('hidden');
+        titleScreen.classList.add('fade-in-slow');
+        titleScreen.style.opacity = '1';
+      }
+
+      // Remove listeners
+      window.removeEventListener('keydown', proceedToTitle);
+      pressScreen.removeEventListener('click', proceedToTitle);
+
+      // Após a conclusão da transição lenta (~1.9s), remove a tela pré-título
+      setTimeout(() => {
+        pressScreen.classList.add('hidden');
+      }, 1950);
+    };
+
+    window.addEventListener('keydown', proceedToTitle);
+    pressScreen.addEventListener('click', proceedToTitle);
+  }
+
   showTitle() {
     this.showScreen('titleScreen');
+
+    const titleScreen = document.getElementById('titleScreen');
+    if (titleScreen) {
+      titleScreen.style.opacity = '1';
+    }
 
     // Transição suave de Fade-out de tela preta por cima da tela de título
     const blackOverlay = document.getElementById('titleBlackTransition');
@@ -893,7 +961,9 @@ export class TerminalGameApp {
       }, 100);
     }
 
-    this.audio.playBGM('title', 900);
+    // Inicia a sequência de título: G.I. Entrance adapted → Lobby Theme (loop)
+    // Se o Lobby Theme já estiver tocando (retorno do menu Versus), não interrompe.
+    this.audio.playTitleSequence(900);
     this.checkSavedCheckpoint();
 
     // Inicializa o fundo 3D com a Torre Realista girando suavemente
@@ -3804,7 +3874,67 @@ export class TerminalGameApp {
   }
 }
 
+// ── Verificação de Cold-Start do Render (Servidor em Sleep) ──────────
+async function handleColdStartCheck() {
+  const overlay = document.getElementById('coldStartLoadingOverlay');
+  const logEl = document.getElementById('coldStartLog');
+  if (!overlay) return;
+
+  let isOnline = false;
+  let attempts = 0;
+
+  // 1. Tenta ping rápido de 800ms (se já estiver acordado ou localhost, não exibe loading)
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 800);
+    const res = await fetch('/api/server-info', { signal: ctrl.signal });
+    clearTimeout(timer);
+    if (res.ok) {
+      isOnline = true;
+    }
+  } catch (_) {}
+
+  if (isOnline) {
+    overlay.classList.add('hidden');
+    return;
+  }
+
+  // 2. Servidor dormindo: exibe o overlay temático e inicia polling de despertar
+  overlay.classList.remove('hidden');
+
+  const updateLog = (msg) => {
+    if (logEl) logEl.innerHTML = `<span class="log-line">> ${msg}</span>`;
+  };
+
+  while (!isOnline) {
+    attempts++;
+    updateLog(`Tentativa ${attempts}: Despertando servidor no Render (~30s a 50s)...`);
+
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 4000);
+      const res = await fetch('/api/server-info', { signal: ctrl.signal });
+      clearTimeout(timer);
+      if (res.ok) {
+        isOnline = true;
+        updateLog('<strong style="color:#00ff66;">[NÚCLEO ONLINE!]</strong> Conexão estabelecida.');
+        await new Promise(r => setTimeout(r, 600));
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+          overlay.classList.add('hidden');
+          overlay.style.opacity = '';
+        }, 500);
+        break;
+      }
+    } catch (_) {}
+
+    await new Promise(r => setTimeout(r, 2500));
+  }
+}
+
 // Inicializa o app ao carregar
 window.addEventListener('DOMContentLoaded', () => {
   window.gameApp = new TerminalGameApp();
+  handleColdStartCheck();
 });
+

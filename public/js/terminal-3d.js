@@ -19,6 +19,14 @@ export class Terminal3DEngine {
     this.titleRenderer = null;
     this.titleAnimId = null;
     this.titleTowerGroup = null;
+
+    // Preload do ícone oficial para a textura da Moeda 3D (Lado CARA)
+    this.caraIconTexture = null;
+    if (typeof THREE !== 'undefined') {
+      try {
+        this.caraIconTexture = new THREE.TextureLoader().load('/img/cara-icon.png');
+      } catch (e) {}
+    }
   }
 
   // =========================================================================
@@ -1276,7 +1284,13 @@ export class Terminal3DEngine {
       return new THREE.CanvasTexture(cvs);
     };
 
-    const caraTexture = createFaceCanvas('CARA');
+    // 1. Textura da Face CARA carregada a partir do ícone oficial cara-icon.png
+    const textureLoader = new THREE.TextureLoader();
+    const caraTexture = this.caraIconTexture || textureLoader.load('/img/cara-icon.png');
+    caraTexture.generateMipmaps = true;
+    caraTexture.minFilter = THREE.LinearMipmapLinearFilter;
+    caraTexture.magFilter = THREE.LinearFilter;
+
     const coroaTexture = createFaceCanvas('COROA');
 
     // 2. Materiais Metálicos
@@ -1288,11 +1302,12 @@ export class Terminal3DEngine {
       flatShading: true
     });
 
-    // Top Face (+Y) = CARA (index 1)
+    // Top Face (+Y) = CARA (index 1) com a textura oficial cara-icon.png
     const faceCaraMat = new THREE.MeshStandardMaterial({
       map: caraTexture,
-      metalness: 0.88,
-      roughness: 0.28
+      color: 0xffffff,
+      metalness: 0.55,
+      roughness: 0.32
     });
 
     // Bottom Face (-Y) = COROA (index 2)

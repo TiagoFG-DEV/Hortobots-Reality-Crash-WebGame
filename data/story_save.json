@@ -1,7 +1,7 @@
 {
-  "floorIndex": 2,
-  "lastCheckpointFloorIndex": 0,
-  "floorName": "Andar 2.2: Clareira dos Dados",
+  "floorIndex": 3,
+  "lastCheckpointFloorIndex": 3,
+  "floorName": "Andar 2.3: Bosque Profundo",
   "party": [
     {
       "id": "dinobyte",
@@ -12,7 +12,7 @@
       "description": "Dinossauro térmico com garras incandescentes e blindagem de dados.",
       "catchphrase": "Sente o poder do lagarto!",
       "baseHp": 50,
-      "attackPower": 10,
+      "attackPower": 13,
       "xpBaseToNext": 75,
       "xpGrowthPerLevel": 35,
       "growthStats": {
@@ -25,7 +25,7 @@
           "id": "jurassic_bite",
           "name": "Mordida Jurássica",
           "cost": 2,
-          "basePower": 8,
+          "basePower": 9,
           "minigame": "dino_targets",
           "unlockLevel": 1,
           "desc": "Chuva de meteoros térmicos. Desvie dos projéteis e colete nós de ignição."
@@ -34,7 +34,7 @@
           "id": "flame_claw",
           "name": "Garras Flamejantes",
           "cost": 4,
-          "basePower": 13,
+          "basePower": 14,
           "minigame": "dino_arrows",
           "unlockLevel": 4,
           "desc": "Barragem de garras laser. Posicione o núcleo nas brechas seguras."
@@ -43,7 +43,7 @@
           "id": "draconic_firewall",
           "name": "Firewall Dracônico",
           "cost": 6,
-          "basePower": 19,
+          "basePower": 20,
           "minigame": "dino_timing",
           "unlockLevel": 6,
           "desc": "Vórtice espiral de labaredas. Mantenha o núcleo em órbita desviando do fogo."
@@ -58,11 +58,11 @@
         "minigame": "chained_finisher",
         "desc": "O golpe supremo que desencadeia a barragem tríplice de 10 segundos!"
       },
-      "level": 2,
-      "xp": 95,
-      "xpToNext": 110,
-      "maxHp": 58,
-      "currentHp": 42,
+      "level": 3,
+      "xp": 85,
+      "xpToNext": 145,
+      "maxHp": 66,
+      "currentHp": 40,
       "energyPerRound": 2,
       "maxEnergy": 10,
       "currentEnergy": 2,
@@ -75,11 +75,12 @@
     "dinobyte"
   ],
   "inventory": {
-    "nano_patch": 2
+    "nano_patch": 3
   },
   "clearedFloors": [
     1,
-    2.1
+    2.1,
+    2.2
   ],
   "unlockedLoreIds": [
     "lore_01",
@@ -87,6 +88,6 @@
     "lore_03"
   ],
   "fledTitanKey": null,
-  "savedAt": 1788464765542,
+  "savedAt": 1788735289222,
   "saved": true
 }

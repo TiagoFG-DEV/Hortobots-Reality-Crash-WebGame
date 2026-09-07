@@ -78,7 +78,7 @@ function showTitle() {
 function updateProfileHeader(acc) {
   if (!acc) return;
   const nick = acc.nickname || acc.name || 'PILOTO';
-  const rp = acc.rankingPoints !== undefined ? Math.max(0, acc.rankingPoints) : 100;
+  const rp = acc.rankingPoints !== undefined ? Math.min(999, Math.max(0, acc.rankingPoints)) : 0;
   const wins = acc.wins || 0;
   const matches = acc.totalMatches || 0;
   const badge = acc.avatarBadge || '[QZ-01]';
@@ -157,7 +157,7 @@ $('versusBotBtn')?.addEventListener('click', () => {
   currentMode = 'bot';
   engine.mode = 'bot';
   if (!account) {
-    account = { nickname: 'PILOTO', name: 'PILOTO', wins: 0, losses: 0, totalMatches: 0, rankingPoints: 100 };
+    account = { nickname: 'PILOTO', name: 'PILOTO', wins: 0, losses: 0, totalMatches: 0, rankingPoints: 0 };
   }
   engine.playerName = account.nickname || account.name || 'PILOTO';
   enterUnifiedArena('bot');
@@ -246,11 +246,23 @@ $('versusAuthRegBtn')?.addEventListener('click', async () => {
   clearAuthStatus();
   const nick = ($('versusRegNick')?.value || '').trim();
   const pass = ($('versusRegPass')?.value || '').trim();
+  const email = ($('versusRegEmail')?.value || '').trim();
   const linkGoogle = $('versusRegGoogleLinkCheck')?.checked || false;
   const googleEmail = linkGoogle ? ($('versusRegGoogleEmail')?.value || '').trim() : null;
 
-  if (!nick || !pass) {
-    showAuthStatus('[AVISO] Escolha um Nickname e Senha para criar seu perfil.');
+  if (!nick || nick.length < 2) {
+    showAuthStatus('[AVISO] O Nickname deve conter no mínimo 2 caracteres.');
+    return;
+  }
+
+  if (!pass || pass.length < 8) {
+    showAuthStatus('[AVISO] A senha deve conter no mínimo 8 dígitos.');
+    return;
+  }
+
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!email || !emailRegex.test(email)) {
+    showAuthStatus('[AVISO] Informe um e-mail válido (ex: piloto@dominio.com).');
     return;
   }
 
@@ -258,10 +270,10 @@ $('versusAuthRegBtn')?.addEventListener('click', async () => {
   if (btn) btn.textContent = '[ CRIANDO CONTA... ]';
 
   try {
-    const res = await AccountAPI.register(nick, pass, googleEmail, linkGoogle);
+    const res = await AccountAPI.register(nick, pass, email, googleEmail, linkGoogle);
     account = res.account || res;
     if (account) account.nickname = account.nickname || account.name;
-    showAuthStatus(`[SUCESSO] Piloto ${account.nickname} registrado! Ranking inicial: 100 RP`, false);
+    showAuthStatus(`[SUCESSO] Piloto ${account.nickname} registrado! Ranking inicial: 0 RP`, false);
     updateProfileHeader(account);
     setTimeout(() => {
       showScreen('versusModeSelectScreen');
@@ -460,7 +472,7 @@ function resetCompetitiveRoomUI() {
   $('versusQueueInitialBox')?.classList.remove('hidden');
   $('versusQueueActiveBox')?.classList.add('hidden');
   const rpEl = $('versusQueuePlayerRP');
-  if (rpEl) rpEl.textContent = `${account?.rankingPoints ?? 100} RP`;
+  if (rpEl) rpEl.textContent = `${account?.rankingPoints ?? 0} RP`;
 
   const statusBox = $('versusCompetitiveStatusBox');
   if (statusBox) statusBox.classList.add('hidden');
@@ -493,7 +505,7 @@ $('versusJoinRoomActionBtn')?.addEventListener('click', () => {
 // Fila de Matchmaking: Iniciar Busca de Duelo
 $('versusStartQueueBtn')?.addEventListener('click', () => {
   if (!account || (!account.nickname && !account.name)) return;
-  const rp = Number(account.rankingPoints) || 100;
+  const rp = Number(account.rankingPoints) || 0;
   network.joinQueue(rp);
   $('versusQueueInitialBox')?.classList.add('hidden');
   $('versusQueueActiveBox')?.classList.remove('hidden');
@@ -687,7 +699,10 @@ network.addEventListener('match_found', (e) => {
 // ════════════════════════════════════════════════════════════════════
 async function enterUnifiedArena(mode) {
   showScreen('versusArenaScreen');
-  getAudio().playBGM('versusDraft', 600);
+  // Mantém Lizardilhas POP Theme durante a fase de draft (mesma chave do menu versus)
+  const audio = getAudio();
+  if (audio.currentTrack !== 'versusLobby') audio.playBGM('versusLobby', 600);
+
 
   // Carrega configuração de energia de habilidades (1 a 5 níveis)
   await engine.loadEnergyConfig();
@@ -2129,14 +2144,16 @@ async function endMatch(winner) {
 
   if (playerWon) {
     versus3DEngine.trigger3DSupportHelix('PLAYER', 2, 0xffd700);
-    audio.fadeOutBGM(400).then(() => audio.playBGM('versusVictory', 700));
+    // Vitória: G.I. Entrance adapted → Lizardilhas POP Theme em loop
+    audio.playVictorySequencePvP(700);
     audio.playVictoryFanfare();
     showPhaseBanner('VITÓRIA TÁTICA!', 'EQUIPE VITORIOSA // ACESSO AO RANKING CONCEDIDO', 'normal', 2500);
 
     if (overlay) overlay.classList.remove('hidden');
   } else {
     // Cinemática 3D de Derrota da Torre (Sobrecarga Crítica // Sistema em Colapso)
-    audio.fadeOutBGM(400).then(() => audio.playBGM('lastGoodbye', 700));
+    // Derrota: Relax, Lizardilhas — toca até retornar ao menu versus
+    audio.playDefeatSequencePvP(700);
     const defeatOverlay = $('defeatCinematicOverlay');
     if (defeatOverlay) {
       defeatOverlay.classList.remove('hidden');

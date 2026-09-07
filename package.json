@@ -1,11 +1,12 @@
 {
   "name": "hortobots-digital-tower",
-  "version": "1.5.0-beta",
-  "description": "RPG de turno da Torre Digital de Quezadilhas - Hortobots v1.5b",
+  "version": "1.0.0",
+  "description": "RPG de turno da Torre Digital de Quezadilhas - Hortobots v1.0",
   "type": "module",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "pvp": "node --env-file=.env.pvp server.js",
     "web": "node server.js",
     "cli": "node cli.js",
     "test": "node debug-versus.js"
@@ -20,8 +21,10 @@
   "author": "Hortobots",
   "license": "MIT",
   "dependencies": {
+    "@supabase/supabase-js": "^2.115.0",
     "express": "^5.2.1",
     "meyda": "^5.6.3",
+    "pg": "^8.23.0",
     "ws": "^8.21.3"
   }
 }

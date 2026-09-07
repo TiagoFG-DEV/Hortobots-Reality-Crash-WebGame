@@ -2,8 +2,31 @@
 // versus-network.js — WebSocket Client + API REST de Contas
 // ═══════════════════════════════════════════════════════════════════
 
-const WS_URL = `ws://${location.hostname}:3334`;
+// WS_URL é resolvido dinamicamente a partir de /api/server-info
+// para que o cliente saiba a porta correta independente de qual servidor está rodando
+let _wsUrl = null;
+
+async function getWsUrl() {
+  if (_wsUrl) return _wsUrl;
+  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  try {
+    const res = await fetch('/api/server-info');
+    if (res.ok) {
+      const info = await res.json();
+      if (info.wsPort && String(info.wsPort) !== String(info.port) && location.hostname === 'localhost') {
+        _wsUrl = `${protocol}//${location.hostname}:${info.wsPort}`;
+      } else {
+        _wsUrl = `${protocol}//${location.host}`;
+      }
+    }
+  } catch (_) { /* silencia: usa fallback */ }
+  if (!_wsUrl) _wsUrl = `${protocol}//${location.host}`;
+  return _wsUrl;
+}
+
+
 const API_BASE = '/api';
+
 
 // ── REST: Account API ────────────────────────────────────────────────
 export const AccountAPI = {
@@ -27,16 +50,17 @@ export const AccountAPI = {
     return data;
   },
 
-  async register(nickname, password, googleEmail = null, googleLinked = false) {
+  async register(nickname, password, email = '', googleEmail = null, googleLinked = false) {
     const res = await fetch(`${API_BASE}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nickname, password, googleEmail, googleLinked }),
+      body: JSON.stringify({ nickname, password, email, googleEmail, googleLinked }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || 'Falha ao cadastrar piloto');
     return data;
   },
+
 
   async googleAuth(googleEmail, nickname = null) {
     const res = await fetch(`${API_BASE}/auth/google`, {
@@ -107,14 +131,16 @@ export class VersusNetwork extends EventTarget {
   }
 
   // ── Connect ─────────────────────────────────────────────────────
-  connect(name) {
+  async connect(name) {
     this.name = name.toUpperCase().slice(0, 16);
     this._manualClose = false;
     this.status = 'connecting';
     this._emit('status', { status: 'connecting' });
 
+    const wsUrl = await getWsUrl();
+
     try {
-      this.ws = new WebSocket(WS_URL);
+      this.ws = new WebSocket(wsUrl);
     } catch (e) {
       this._emit('error', { msg: 'Não foi possível conectar ao servidor WebSocket' });
       return;
@@ -159,12 +185,13 @@ export class VersusNetwork extends EventTarget {
   }
 
   // ── Queue ────────────────────────────────────────────────────────
-  joinQueue(rankingPoints = 100) {
+  joinQueue(rankingPoints = 0) {
     if (this.status !== 'idle') return;
-    this._send({ type: 'join_queue', name: this.name, rankingPoints: Number(rankingPoints) || 100 });
+    this._send({ type: 'join_queue', name: this.name, rankingPoints: Math.min(999, Math.max(0, Number(rankingPoints) || 0)) });
     this.status = 'queued';
     this._emit('status', { status: 'queued' });
   }
+
 
   leaveQueue() {
     this._send({ type: 'leave_queue' });

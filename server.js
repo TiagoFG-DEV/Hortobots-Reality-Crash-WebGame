@@ -1,24 +1,26 @@
-// ═══════════════════════════════════════════════════════════════════
-// server.js — Servidor + WebSocket Multiplayer + API de Contas JSON
-// ═══════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// server.js â€” Servidor + WebSocket Multiplayer + API de Contas JSON
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
+import { initSupabase, getAccount, getAccountByEmail, createAccount, updateAccount, saveMatchResult, getLeaderboard, applyDraftPenalty as supabasePenalty } from './data/supabase.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3333;
-const WS_PORT = process.env.WS_PORT || 3334;
+const PORT = process.env.PORT || 3000;
+const WS_PORT = process.env.WS_PORT || 3001;
+const PVP_MODE = process.env.PVP_MODE === 'true';
 
-// ── JSON body parser ────────────────────────────────────────────────
+// â”€â”€ JSON body parser â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.use(express.json());
 
-// ── Static files ────────────────────────────────────────────────────
+// â”€â”€ Static files â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Servir /audio tanto de public/audio quanto de public/css/sounds
@@ -42,9 +44,9 @@ app.use('/refs',    express.static(refsPath));
 app.use('/images',  express.static(path.join(refsPath, 'images')));
 app.use('/sprites', express.static(path.join(refsPath, 'projects_and_3d', 'IVYL 4500', 'IVYL 4500', 'Ivyl3000', 'Sprites')));
 
-// ════════════════════════════════════════════════════════════════════
-// ACCOUNTS — JSON persistence
-// ════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ACCOUNTS â€” JSON persistence
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const ACCOUNTS_FILE = path.join(__dirname, 'data', 'accounts.json');
 
 function readAccounts() {
@@ -60,19 +62,34 @@ function writeAccounts(data) {
   fs.writeFileSync(ACCOUNTS_FILE, JSON.stringify(data, null, 2), 'utf8');
 }
 
-// ════════════════════════════════════════════════════════════════════
-// ACCOUNTS & AUTH — JSON persistence (data/accounts.json)
-// ════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ACCOUNTS & AUTH â€” JSON persistence (data/accounts.json)
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+function isValidEmail(email) {
+  if (!email || typeof email !== 'string') return false;
+  const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return re.test(email.trim());
+}
+
 function sanitizeNick(raw) {
   return (raw || '').trim().replace(/[^a-zA-Z0-9_]/g, '').toUpperCase().slice(0, 16);
 }
 
-// POST /api/auth/register — Cadastro de Conta
+// POST /api/auth/register â€” Cadastro de Conta
 app.post('/api/auth/register', (req, res) => {
-  const { nickname, password, googleEmail, googleLinked } = req.body;
+  const { nickname, password, email, googleEmail, googleLinked } = req.body;
   const cleanNick = sanitizeNick(nickname);
   if (!cleanNick || cleanNick.length < 2) {
-    return res.status(400).json({ error: 'Nome de usuário inválido (mínimo 2 caracteres alfanuméricos).' });
+    return res.status(400).json({ error: 'O NickName deve conter no mínimo 2 caracteres alfanuméricos.' });
+  }
+
+  if (!password || String(password).length < 8) {
+    return res.status(400).json({ error: 'A senha de acesso deve conter no mínimo 8 dígitos.' });
+  }
+
+  const primaryEmail = (email || googleEmail || '').trim().toLowerCase();
+  if (!isValidEmail(primaryEmail)) {
+    return res.status(400).json({ error: 'E-mail inválido. Informe um endereço de e-mail válido para vincular à conta.' });
   }
 
   const accounts = readAccounts();
@@ -81,12 +98,18 @@ app.post('/api/auth/register', (req, res) => {
     return res.status(409).json({ error: 'Esse NickName já está em uso por outro piloto.' });
   }
 
+  const emailInUse = Object.keys(accounts).find(k => (accounts[k].email === primaryEmail || accounts[k].googleEmail === primaryEmail));
+  if (emailInUse) {
+    return res.status(409).json({ error: 'Esse e-mail já está vinculado a outro piloto cadastrado.' });
+  }
+
   const newAccount = {
     name: cleanNick,
-    password: password ? String(password) : '',
+    password: String(password),
+    email: primaryEmail,
     googleLinked: !!googleLinked,
-    googleEmail: googleEmail ? String(googleEmail).trim().toLowerCase() : '',
-    rankingPoints: 100, // Pontuação inicial padrão
+    googleEmail: googleLinked ? primaryEmail : '',
+    rankingPoints: 0, // Toda conta inicia obrigatoriamente com 0 RP
     wins: 0,
     losses: 0,
     totalMatches: 0,
@@ -102,7 +125,6 @@ app.post('/api/auth/register', (req, res) => {
   res.status(201).json(newAccount);
 });
 
-// POST /api/auth/login — Login com Nickname e Senha
 app.post('/api/auth/login', (req, res) => {
   const { nickname, password } = req.body;
   const cleanNick = sanitizeNick(nickname);
@@ -113,7 +135,7 @@ app.post('/api/auth/login', (req, res) => {
   const accounts = readAccounts();
   const existingKey = Object.keys(accounts).find(k => k.toUpperCase() === cleanNick);
   if (!existingKey) {
-    return res.status(404).json({ error: 'Piloto não encontrado. Crie sua conta abaixo.' });
+    return res.status(404).json({ error: 'Piloto nÃ£o encontrado. Crie sua conta abaixo.' });
   }
 
   const acc = accounts[existingKey];
@@ -123,31 +145,32 @@ app.post('/api/auth/login', (req, res) => {
   }
 
   acc.lastSeen = Date.now();
-  if (acc.rankingPoints === undefined) acc.rankingPoints = 100;
+  if (acc.rankingPoints === undefined) acc.rankingPoints = 0;
   writeAccounts(accounts);
   res.json(acc);
 });
 
-// POST /api/auth/google — Login / Vínculo com Conta Google
+// POST /api/auth/google â€” Login / VÃ­nculo com Conta Google
 app.post('/api/auth/google', (req, res) => {
   const { googleEmail, googleName, desiredNick } = req.body;
   const cleanEmail = (googleEmail || '').trim().toLowerCase();
-  if (!cleanEmail) {
-    return res.status(400).json({ error: 'E-mail Google não informado.' });
+  if (!isValidEmail(cleanEmail)) {
+    return res.status(400).json({ error: 'E-mail Google inválido.' });
   }
 
   const accounts = readAccounts();
   // 1. Procura se alguma conta já está vinculada a esse email Google
-  const linkedKey = Object.keys(accounts).find(k => accounts[k].googleEmail === cleanEmail);
+  const linkedKey = Object.keys(accounts).find(k => accounts[k].googleEmail === cleanEmail || accounts[k].email === cleanEmail);
   if (linkedKey) {
     const acc = accounts[linkedKey];
     acc.lastSeen = Date.now();
-    if (acc.rankingPoints === undefined) acc.rankingPoints = 100;
+    if (acc.rankingPoints === undefined) acc.rankingPoints = 0;
+    acc.rankingPoints = Math.min(999, Math.max(0, acc.rankingPoints));
     writeAccounts(accounts);
     return res.json({ account: acc, isNew: false, message: `Login com Google realizado para ${acc.name}!` });
   }
 
-  // 2. Se não estiver vinculado, cria uma nova conta vinculando automaticamente ao Google
+  // 2. Cria nova conta
   let candidateNick = sanitizeNick(desiredNick || googleName || cleanEmail.split('@')[0]);
   if (!candidateNick || candidateNick.length < 2) candidateNick = `PILOT_${Date.now().toString().slice(-4)}`;
 
@@ -160,9 +183,10 @@ app.post('/api/auth/google', (req, res) => {
   const newAcc = {
     name: finalNick,
     password: '',
+    email: cleanEmail,
     googleLinked: true,
     googleEmail: cleanEmail,
-    rankingPoints: 100,
+    rankingPoints: 0, // Inicia em 0 RP
     wins: 0,
     losses: 0,
     totalMatches: 0,
@@ -178,14 +202,13 @@ app.post('/api/auth/google', (req, res) => {
   res.status(201).json({ account: newAcc, isNew: true, message: `Conta criada e vinculada ao Google: ${finalNick}!` });
 });
 
-// PUT /api/auth/profile — Editar Perfil
 app.put('/api/auth/profile', (req, res) => {
   const { nickname, customBio, avatarBadge, newPassword } = req.body;
   const cleanNick = sanitizeNick(nickname);
   const accounts = readAccounts();
   const existingKey = Object.keys(accounts).find(k => k.toUpperCase() === cleanNick);
   if (!existingKey) {
-    return res.status(404).json({ error: 'Conta não encontrada.' });
+    return res.status(404).json({ error: 'Conta nÃ£o encontrada.' });
   }
 
   const acc = accounts[existingKey];
@@ -198,7 +221,7 @@ app.put('/api/auth/profile', (req, res) => {
   res.json(acc);
 });
 
-// POST /api/accounts/match-result — Salvar resultado e atualizar Ranking
+// POST /api/accounts/match-result â€” Salvar resultado e atualizar Ranking
 app.post('/api/accounts/match-result', (req, res) => {
   const { winnerName, loserName, hpPercentRemaining = 50, turns = 3, medals = 10 } = req.body;
   const accounts = readAccounts();
@@ -209,26 +232,26 @@ app.post('/api/accounts/match-result', (req, res) => {
   let pointsGained = 0;
   let pointsLost = 0;
 
-  // Atualização do Vencedor (ganha até +30 pontos de ranking)
+  // AtualizaÃ§Ã£o do Vencedor (ganha atÃ© +30 pontos de ranking)
   if (wKey && accounts[wKey]) {
     const w = accounts[wKey];
     w.wins = (w.wins || 0) + 1;
     w.totalMatches = (w.totalMatches || 0) + 1;
     w.totalMedals = (w.totalMedals || 0) + (medals || 10);
-    // Pontuação condizente com performance: base 18 + até 12 proporcional ao HP restante = até 30
+    // PontuaÃ§Ã£o condizente com performance: base 18 + atÃ© 12 proporcional ao HP restante = atÃ© 30
     pointsGained = Math.min(30, Math.max(15, Math.round(18 + (Math.min(100, Math.max(0, hpPercentRemaining)) / 100) * 12)));
-    w.rankingPoints = Math.max(0, (w.rankingPoints ?? 100) + pointsGained);
+    w.rankingPoints = Math.min(999, Math.max(0, (w.rankingPoints ?? 0) + pointsGained));
     w.lastSeen = Date.now();
   }
 
-  // Atualização do Perdedor (perde até -20 pontos de ranking, mínimo ZERO)
+  // AtualizaÃ§Ã£o do Perdedor (perde atÃ© -20 pontos de ranking, mÃ­nimo ZERO)
   if (lKey && accounts[lKey]) {
     const l = accounts[lKey];
     l.losses = (l.losses || 0) + 1;
     l.totalMatches = (l.totalMatches || 0) + 1;
     // Perda entre 10 e 20 pontos
     pointsLost = Math.min(20, Math.max(10, Math.round(16 - (turns > 4 ? 3 : 0))));
-    l.rankingPoints = Math.max(0, (l.rankingPoints ?? 100) - pointsLost); // MÍNIMO 0
+    l.rankingPoints = Math.min(999, Math.max(0, (l.rankingPoints ?? 0) - pointsLost)); // MÃNIMO 0
     l.lastSeen = Date.now();
   }
 
@@ -241,7 +264,7 @@ app.post('/api/accounts/match-result', (req, res) => {
   });
 });
 
-// GET /api/accounts/:name — busca dados da conta (compatibilidade)
+// GET /api/accounts/:name â€” busca dados da conta (compatibilidade)
 app.get('/api/accounts/:name', (req, res) => {
   const name = sanitizeNick(req.params.name);
   if (!name) return res.status(400).json({ error: 'Invalid name' });
@@ -250,28 +273,28 @@ app.get('/api/accounts/:name', (req, res) => {
   const existingKey = Object.keys(accounts).find(k => k.toUpperCase() === name);
   if (existingKey) {
     const acc = accounts[existingKey];
-    if (acc.rankingPoints === undefined) acc.rankingPoints = 100;
+    if (acc.rankingPoints === undefined) acc.rankingPoints = 0;
     return res.json(acc);
   }
 
-  res.status(404).json({ error: 'Conta não encontrada' });
+  res.status(404).json({ error: 'Conta nÃ£o encontrada' });
 });
 
-// GET /api/leaderboard — ranking ordenado por Ranking Points (RP) e vitórias
+// GET /api/leaderboard â€” ranking ordenado por Ranking Points (RP) e vitÃ³rias
 app.get('/api/leaderboard', (req, res) => {
   const accounts = readAccounts();
   const sorted = Object.values(accounts)
-    .sort((a, b) => ((b.rankingPoints ?? 100) - (a.rankingPoints ?? 100)) || (b.wins - a.wins))
+    .sort((a, b) => ((b.rankingPoints ?? 0) - (a.rankingPoints ?? 0)) || (b.wins - a.wins))
     .slice(0, 15);
   res.json(sorted);
 });
 
-// ════════════════════════════════════════════════════════════════════
-// MODO HISTÓRIA — Persistência em Arquivo .JSON (story_save.json)
-// ════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// MODO HISTÃ“RIA â€” PersistÃªncia em Arquivo .JSON (story_save.json)
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const STORY_SAVE_FILE = path.join(__dirname, 'data', 'story_save.json');
 
-// GET /api/story-save — Retorna a partida salva em JSON
+// GET /api/story-save â€” Retorna a partida salva em JSON
 app.get('/api/story-save', (req, res) => {
   try {
     if (fs.existsSync(STORY_SAVE_FILE)) {
@@ -284,12 +307,22 @@ app.get('/api/story-save', (req, res) => {
   }
 });
 
-// POST /api/story-save — Salva o estado da partida em arquivo .json
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// WEBSOCKET SERVER â€” Multiplayer Matchmaking
+// WS rodando no mesmo servidor HTTP que o Express (compatÃ­vel com Railway)
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// O WS Ã© anexado ao mesmo servidor HTTP que o Express.
+// Quando PORT === WS_PORT (Railway, Render, etc.) isso Ã© automÃ¡tico.
+// httpServer separado sÃ³ Ã© criado quando WS_PORT Ã© diferente de PORT.
+let _expressServer = null; // preenchido no app.listen
+const wss = new WebSocketServer({ noServer: true }); // inicializa sem server, vincula apÃ³s express.listen
+
+// POST /api/story-save â€” Salva o estado da partida em arquivo .json
 app.post('/api/story-save', (req, res) => {
   try {
     const data = req.body;
     if (!data || typeof data !== 'object') {
-      return res.status(400).json({ error: 'Payload de salvamento inválido' });
+      return res.status(400).json({ error: 'Payload de salvamento invÃ¡lido' });
     }
     data.savedAt = Date.now();
     data.saved = true;
@@ -300,7 +333,17 @@ app.post('/api/story-save', (req, res) => {
   }
 });
 
-// ── SPA Fallback ─────────────────────────────────────────────────────
+// -- Server Info --
+app.get('/api/server-info', (req, res) => {
+  res.json({
+    pvpMode: PVP_MODE,
+    port: PORT,
+    wsPort: WS_PORT,
+    version: '1.0.0'
+  });
+});
+
+// -- SPA Fallback --
 app.use((req, res) => {
   if (!req.path.startsWith('/api')) {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -309,28 +352,26 @@ app.use((req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════════════════════════
-// WEBSOCKET SERVER — Multiplayer Matchmaking
-// ════════════════════════════════════════════════════════════════════
-const httpServer = createServer();
-const wss = new WebSocketServer({ server: httpServer });
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// WEBSOCKET SERVER â€” Multiplayer Matchmaking
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-// ── State ─────────────────────────────────────────────────────────
+// â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 /** @type {Map<string, {ws, name, team, matchId, side}>} */
 const clients = new Map();
 
 /** Fila de jogadores esperando um match */
 const matchQueue = [];
 
-/** Partidas ativas: matchId → {playerA, playerB, state} */
+/** Partidas ativas: matchId â†’ {playerA, playerB, state} */
 const activeMatches = new Map();
 
-/** Salas privadas fechadas: roomCode → { code, host, guest, ready: { host: false, guest: false } } */
+/** Salas privadas fechadas: roomCode â†’ { code, host, guest, ready: { host: false, guest: false } } */
 const activeRooms = new Map();
 
 let matchCounter = 0;
 
-// ── Helpers ──────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function send(ws, obj) {
   if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(obj));
 }
@@ -347,7 +388,150 @@ function generateMatchId() {
   return `match_${++matchCounter}_${Date.now()}`;
 }
 
-// ── Matchmaking ──────────────────────────────────────────────────
+// â”€â”€ PvP Match Timers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+// Aplica penalidade de -10 RP para jogador que nÃ£o deu PREPARADO no draft
+async function applyDraftPenalty(clientObj) {
+  if (!clientObj || !clientObj.name) return;
+  try {
+    await supabasePenalty(clientObj.name);
+    console.log(`[PENALTY] -10 RP aplicado no Supabase para ${clientObj.name} por AFK no draft.`);
+  } catch (err) {
+    console.error('[PENALTY] Erro:', err.message);
+  }
+}
+
+// Inicia o timer de draft (60s) após match_found
+function startDraftTimer(matchId) {
+  const match = activeMatches.get(matchId);
+  if (!match) return;
+
+  match.draftTimer = setTimeout(() => {
+    const m = activeMatches.get(matchId);
+    if (!m || m.phase !== 'draft') return;
+
+    // Grace period: 5s ocultos, depois encerra
+
+    m.draftGrace = setTimeout(() => {
+      const mm = activeMatches.get(matchId);
+      if (!mm || mm.phase !== 'draft') return;
+
+      const notReadyA = !mm.draftReady.A;
+      const notReadyB = !mm.draftReady.B;
+
+      // Penalidade para quem nÃ£o confirmou
+      if (notReadyA) applyDraftPenalty(mm.playerA);
+      if (notReadyB) applyDraftPenalty(mm.playerB);
+
+      // Notifica ambos e remove o match
+      [mm.playerA, mm.playerB].forEach((p, idx) => {
+        const penalized = idx === 0 ? notReadyA : notReadyB;
+        if (p && p.ws) {
+          send(p.ws, {
+            type: 'draft_timeout',
+            penalized,
+            rpLost: penalized ? 10 : 0,
+            msg: penalized
+              ? 'VocÃª nÃ£o confirmou sua escalacÃ£o a tempo. -10 RP de penalidade.'
+              : 'Seu oponente nÃ£o confirmou a escalacÃ£o. Partida cancelada.'
+          });
+          p.matchId = null;
+          p.side = null;
+        }
+      });
+
+      clearAllMatchTimers(matchId);
+      activeMatches.delete(matchId);
+      console.log(`[DRAFT_TIMEOUT] Match ${matchId} cancelado por timeout de draft.`);
+    }, 5000);
+  }, 60000);
+
+  console.log(`[DRAFT_TIMER] Match ${matchId}: timer de draft de 60s iniciado.`);
+}
+
+// Timer por round (30s) â€” servidor envia auto-submit para quem nÃ£o agiu
+function startRoundTimer(matchId) {
+  const match = activeMatches.get(matchId);
+  if (!match) return;
+
+  clearTimeout(match.roundTimer);
+  match.roundTimer = setTimeout(() => {
+    const m = activeMatches.get(matchId);
+    if (!m || m.phase !== 'combat') return;
+
+    // Auto-submit 'rest' para quem nÃ£o submeteu ainda
+    ['A', 'B'].forEach(side => {
+      if (!m.turnReady[side]) {
+        const player = side === 'A' ? m.playerA : m.playerB;
+        const opponent = side === 'A' ? m.playerB : m.playerA;
+        m.turnActions[side] = [{ action: 'rest', auto: true }];
+        m.turnReady[side] = true;
+        if (player && player.ws) {
+          send(player.ws, { type: 'round_auto_submit', side, round: m.round });
+        }
+        if (opponent && opponent.ws) {
+          send(opponent.ws, { type: 'opponent_turn', actions: m.turnActions[side], round: m.round, auto: true });
+        }
+        console.log(`[ROUND_TIMER] Auto-submit 'rest' para ${side} no match ${matchId}.`);
+      }
+    });
+
+    // Se ambos submeteram, avanÃ§a o round
+    if (m.turnReady.A && m.turnReady.B) {
+      m.round++;
+      m.turnReady = { A: false, B: false };
+      m.turnActions = { A: null, B: null };
+      broadcast(matchId, { type: 'round_complete', round: m.round });
+    }
+  }, 30000);
+}
+
+// Match timer global (7 minutos)
+function startMatchTimer(matchId) {
+  const match = activeMatches.get(matchId);
+  if (!match) return;
+
+  match.matchStartTime = Date.now();
+  const MATCH_DURATION = 7 * 60 * 1000; // 7 minutos em ms
+
+  // Tick a cada 5s para atualizar HUD dos clientes
+  match.matchTimerTick = setInterval(() => {
+    const m = activeMatches.get(matchId);
+    if (!m) return;
+    const elapsed = Date.now() - m.matchStartTime;
+    const remaining = Math.max(0, MATCH_DURATION - elapsed);
+    broadcast(matchId, { type: 'match_timer_update', remaining, total: MATCH_DURATION });
+
+    if (remaining <= 0) {
+      clearInterval(m.matchTimerTick);
+      m.matchTimerTick = null;
+      // Encerra partida por tempo
+      broadcast(matchId, {
+        type: 'match_timeout',
+        medals: m.medals,
+        msg: 'Tempo esgotado! VitÃ³ria por medalhas.'
+      });
+      clearAllMatchTimers(matchId);
+      activeMatches.delete(matchId);
+      console.log(`[MATCH_TIMEOUT] Match ${matchId} encerrado por tempo. Medalhas: A=${m.medals.A} B=${m.medals.B}`);
+    }
+  }, 5000);
+
+  console.log(`[MATCH_TIMER] Match ${matchId}: timer global de 7min iniciado.`);
+}
+
+// Limpa todos os timers de um match
+function clearAllMatchTimers(matchId) {
+  const m = activeMatches.get(matchId);
+  if (!m) return;
+  if (m.draftTimer)    { clearTimeout(m.draftTimer);    m.draftTimer = null; }
+  if (m.draftGrace)   { clearTimeout(m.draftGrace);    m.draftGrace = null; }
+  if (m.roundTimer)   { clearTimeout(m.roundTimer);    m.roundTimer = null; }
+  if (m.matchTimerTick){ clearInterval(m.matchTimerTick); m.matchTimerTick = null; }
+  if (m.coinFlipTimer){ clearTimeout(m.coinFlipTimer); m.coinFlipTimer = null; }
+}
+
+// â”€â”€ Matchmaking â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function tryMatchmake() {
   if (matchQueue.length < 2) return;
 
@@ -360,13 +544,13 @@ function tryMatchmake() {
     }
   }
 
-  // Ordena por tempo de espera (quem aguarda há mais tempo é priorizado)
+  // Ordena por tempo de espera (quem aguarda hÃ¡ mais tempo Ã© priorizado)
   matchQueue.sort((a, b) => a.queuedAt - b.queuedAt);
 
   for (let i = 0; i < matchQueue.length; i++) {
     const p1 = matchQueue[i];
     const waitedSec1 = (now - p1.queuedAt) / 1000;
-    // Janela adaptativa: 50 base + 30 a cada 3s. A partir de 12s, aceita qualquer oponente disponível.
+    // Janela adaptativa: 50 base + 30 a cada 3s. A partir de 12s, aceita qualquer oponente disponÃ­vel.
     const window1 = waitedSec1 >= 12 ? Infinity : 50 + Math.floor(waitedSec1 / 3) * 30;
 
     let bestCandidateIdx = -1;
@@ -431,20 +615,20 @@ function tryMatchmake() {
         enemyPoints: a.rankingPoints
       });
 
-      console.log(`[MATCH] Pareamento ranqueado: ${a.name} (${p1.rankingPoints} RP) vs ${b.name} (${p2.rankingPoints} RP) [Diff: ${minDiff}] — ${matchId}`);
-      i--; // Reajusta índice após a remoção
+      console.log(`[MATCH] Pareamento ranqueado: ${a.name} (${p1.rankingPoints} RP) vs ${b.name} (${p2.rankingPoints} RP) [Diff: ${minDiff}] â€” ${matchId}`);
+      i--; // Reajusta Ã­ndice apÃ³s a remoÃ§Ã£o
     }
   }
 }
 
-// Tick periódico de 1 segundo para expandir a janela de MMR para jogadores em espera
+// Tick periÃ³dico de 1 segundo para expandir a janela de MMR para jogadores em espera
 setInterval(() => {
   if (matchQueue.length >= 2) {
     tryMatchmake();
   }
 }, 1000);
 
-// ── Connection Handler ────────────────────────────────────────────
+// â”€â”€ Connection Handler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 wss.on('connection', (ws) => {
   const clientId = `client_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
   const client = { ws, id: clientId, name: null, matchId: null, side: null, team: null };
@@ -458,16 +642,16 @@ wss.on('connection', (ws) => {
 
     switch (msg.type) {
 
-      // ── IDENTIFY ──────────────────────────────────────────────
+      // â”€â”€ IDENTIFY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       case 'identify': {
         client.name = sanitizeNick(msg.name || 'ANON');
-        client.rankingPoints = Number(msg.rankingPoints) || 100;
+        client.rankingPoints = Math.min(999, Math.max(0, Number(msg.rankingPoints) || 0));
         client.avatarBadge = msg.avatarBadge || 'quezas';
         send(ws, { type: 'identified', name: client.name, clientId, rankingPoints: client.rankingPoints });
         break;
       }
 
-      // ── CRIAR SALA FECHADA (POR CÓDIGO) ──────────────────────
+      // â”€â”€ CRIAR SALA FECHADA (POR CÃ“DIGO) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       case 'create_room': {
         const roomCode = `HORT-${Math.floor(100 + Math.random() * 900)}`;
         const room = {
@@ -484,16 +668,16 @@ wss.on('connection', (ws) => {
         break;
       }
 
-      // ── ENTRAR EM SALA POR CÓDIGO (CLIQUE EM DUELAR) ────────
+      // â”€â”€ ENTRAR EM SALA POR CÃ“DIGO (CLIQUE EM DUELAR) â”€â”€â”€â”€â”€â”€â”€â”€
       case 'join_room': {
         const targetCode = (msg.roomCode || '').trim().toUpperCase();
         const room = activeRooms.get(targetCode);
         if (!room) {
-          send(ws, { type: 'room_error', msg: 'Codigo não encontrado' });
+          send(ws, { type: 'room_error', msg: 'Codigo nÃ£o encontrado' });
           break;
         }
         if (room.guest && room.guest.id !== clientId) {
-          send(ws, { type: 'room_error', msg: 'Esta sala já está lotada (2/2 jogadores).' });
+          send(ws, { type: 'room_error', msg: 'Esta sala jÃ¡ estÃ¡ lotada (2/2 jogadores).' });
           break;
         }
 
@@ -508,7 +692,7 @@ wss.on('connection', (ws) => {
 
         console.log(`[ROOM] ${client.name} entrou na sala ${targetCode} de ${room.host.name} (AutoReady: ${!!msg.autoReady})`);
 
-        // Se o anfitrião já estiver PRONTO e o convidado clicou em DUELAR:
+        // Se o anfitriÃ£o jÃ¡ estiver PRONTO e o convidado clicou em DUELAR:
         if (room.ready.host && room.ready.guest) {
           const matchId = generateMatchId();
           const state = {
@@ -535,7 +719,7 @@ wss.on('connection', (ws) => {
             matchId,
             side: 'A',
             enemyName: room.guest.name,
-            enemyPoints: room.guest.rankingPoints || 100,
+            enemyPoints: room.guest.rankingPoints ?? 0,
             roomCode: room.code
           });
           send(room.guest.ws, {
@@ -543,7 +727,7 @@ wss.on('connection', (ws) => {
             matchId,
             side: 'B',
             enemyName: room.host.name,
-            enemyPoints: room.host.rankingPoints || 100,
+            enemyPoints: room.host.rankingPoints ?? 0,
             roomCode: room.code
           });
 
@@ -552,13 +736,13 @@ wss.on('connection', (ws) => {
           break;
         }
 
-        // Se o anfitrião NÃO está pronto: exibe ESPERANDO POR DUELISTA
+        // Se o anfitriÃ£o NÃƒO estÃ¡ pronto: exibe ESPERANDO POR DUELISTA
         send(room.host.ws, {
           type: 'room_joined',
           roomCode: targetCode,
           isHost: true,
           opponentName: client.name || 'OPONENTE',
-          opponentPoints: client.rankingPoints || 100,
+          opponentPoints: client.rankingPoints ?? 0,
           guestReady: !!room.ready.guest
         });
 
@@ -566,8 +750,8 @@ wss.on('connection', (ws) => {
           type: 'room_joined',
           roomCode: targetCode,
           isHost: false,
-          opponentName: room.host.name || 'ANFITRIÃO',
-          opponentPoints: room.host.rankingPoints || 100,
+          opponentName: room.host.name || 'ANFITRIÃƒO',
+          opponentPoints: room.host.rankingPoints ?? 0,
           hostReady: !!room.ready.host,
           status: 'waiting_host',
           msg: 'ESPERANDO POR DUELISTA'
@@ -575,11 +759,11 @@ wss.on('connection', (ws) => {
         break;
       }
 
-      // ── CONFIRMAR PRONTIDÃO NA SALA ─────────────────────────
+      // â”€â”€ CONFIRMAR PRONTIDÃƒO NA SALA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       case 'room_ready': {
         const room = activeRooms.get(client.roomCode);
         if (!room) {
-          send(ws, { type: 'room_error', msg: 'Sala não localizada.' });
+          send(ws, { type: 'room_error', msg: 'Sala nÃ£o localizada.' });
           break;
         }
         const role = client.isHost ? 'host' : 'guest';
@@ -591,7 +775,7 @@ wss.on('connection', (ws) => {
         }
         send(client.ws, { type: 'self_room_ready', role });
 
-        // Quando ambos confirmam PRONTO (ou host confirma com guest já aguardando), inicia a partida
+        // Quando ambos confirmam PRONTO (ou host confirma com guest jÃ¡ aguardando), inicia a partida
         if (room.host && room.guest && room.ready.host && room.ready.guest) {
           const matchId = generateMatchId();
           const state = {
@@ -618,7 +802,7 @@ wss.on('connection', (ws) => {
             matchId,
             side: 'A',
             enemyName: room.guest.name,
-            enemyPoints: room.guest.rankingPoints || 100,
+            enemyPoints: room.guest.rankingPoints ?? 0,
             roomCode: room.code
           });
           send(room.guest.ws, {
@@ -626,7 +810,7 @@ wss.on('connection', (ws) => {
             matchId,
             side: 'B',
             enemyName: room.host.name,
-            enemyPoints: room.host.rankingPoints || 100,
+            enemyPoints: room.host.rankingPoints ?? 0,
             roomCode: room.code
           });
 
@@ -636,7 +820,7 @@ wss.on('connection', (ws) => {
         break;
       }
 
-      // ── SAIR DA SALA ─────────────────────────────────────────
+      // â”€â”€ SAIR DA SALA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       case 'leave_room': {
         if (client.roomCode) {
           const room = activeRooms.get(client.roomCode);
@@ -645,7 +829,7 @@ wss.on('connection', (ws) => {
             if (other && other.ws) {
               send(other.ws, {
                 type: 'opponent_left_room',
-                msg: client.isHost ? 'O anfitrião encerrou a sala.' : 'O oponente saiu da sala.'
+                msg: client.isHost ? 'O anfitriÃ£o encerrou a sala.' : 'O oponente saiu da sala.'
               });
             }
             activeRooms.delete(client.roomCode);
@@ -657,17 +841,17 @@ wss.on('connection', (ws) => {
         break;
       }
 
-      // ── JOIN QUEUE (BUSCAR DUELO!) ───────────────────────────
+      // â”€â”€ JOIN QUEUE (BUSCAR DUELO!) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       case 'join_queue': {
         const alreadyInQueue = matchQueue.some(item => item.client.id === clientId);
         if (alreadyInQueue || client.matchId) {
-          send(ws, { type: 'error', msg: 'Você já está na fila ou em partida.' });
+          send(ws, { type: 'error', msg: 'VocÃª jÃ¡ estÃ¡ na fila ou em partida.' });
           break;
         }
 
         client.name = (msg.name || client.name || 'ANON').toUpperCase().slice(0, 16);
         client.team = msg.team || [];
-        client.rankingPoints = Number(msg.rankingPoints) || client.rankingPoints || 100;
+        client.rankingPoints = Math.min(999, Math.max(0, Number(msg.rankingPoints) ?? client.rankingPoints ?? 0));
 
         const queueItem = {
           client,
@@ -687,7 +871,7 @@ wss.on('connection', (ws) => {
         break;
       }
 
-      // ── LEAVE QUEUE ───────────────────────────────────────────
+      // â”€â”€ LEAVE QUEUE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       case 'leave_queue': {
         const idx = matchQueue.findIndex(item => item.client.id === clientId);
         if (idx >= 0) matchQueue.splice(idx, 1);
@@ -696,7 +880,7 @@ wss.on('connection', (ws) => {
         break;
       }
 
-      // ── DRAFT READY (team confirmed) ──────────────────────────
+      // â”€â”€ DRAFT READY (team confirmed) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       case 'draft_ready': {
         const { matchId, team } = msg;
         const match = activeMatches.get(matchId);
@@ -711,7 +895,7 @@ wss.on('connection', (ws) => {
         const opponent = side === 'A' ? match.playerB : match.playerA;
         send(opponent.ws, { type: 'opponent_draft_ready', enemyTeam: team });
 
-        // If both ready → start combat
+        // If both ready â†’ start combat
         if (match.draftReady.A && match.draftReady.B) {
           match.phase = 'combat';
           send(match.playerA.ws, {
@@ -734,7 +918,7 @@ wss.on('connection', (ws) => {
         break;
       }
 
-      // ── SUBMIT TURN ───────────────────────────────────────────
+      // â”€â”€ SUBMIT TURN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       case 'submit_turn': {
         const { matchId, actions } = msg;
         const match = activeMatches.get(matchId);
@@ -756,7 +940,7 @@ wss.on('connection', (ws) => {
 
         send(ws, { type: 'turn_received', round: match.round });
 
-        // If both submitted → advance round
+        // If both submitted â†’ advance round
         if (match.turnReady.A && match.turnReady.B) {
           match.round++;
           match.turnReady = { A: false, B: false };
@@ -766,7 +950,7 @@ wss.on('connection', (ws) => {
         break;
       }
 
-      // ── MEDAL UPDATE ──────────────────────────────────────────
+      // â”€â”€ MEDAL UPDATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       case 'medal_update': {
         const { matchId, side, medals } = msg;
         const match = activeMatches.get(matchId);
@@ -776,7 +960,7 @@ wss.on('connection', (ws) => {
         break;
       }
 
-      // ── MATCH END ─────────────────────────────────────────────
+      // â”€â”€ MATCH END â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       case 'match_end': {
         const { matchId, winner } = msg;
         const match = activeMatches.get(matchId);
@@ -795,7 +979,7 @@ wss.on('connection', (ws) => {
         break;
       }
 
-      // ── PING ──────────────────────────────────────────────────
+      // â”€â”€ PING â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       case 'ping': {
         send(ws, { type: 'pong', ts: Date.now() });
         break;
@@ -812,7 +996,7 @@ wss.on('connection', (ws) => {
         if (other && other.ws) {
           send(other.ws, {
             type: 'opponent_left_room',
-            msg: client.isHost ? 'O anfitrião encerrou a sala.' : 'O oponente desconectou.'
+            msg: client.isHost ? 'O anfitriÃ£o encerrou a sala.' : 'O oponente desconectou.'
           });
         }
         activeRooms.delete(client.roomCode);
@@ -841,32 +1025,66 @@ wss.on('connection', (ws) => {
   });
 });
 
-// ── Start servers ─────────────────────────────────────────────────
-const expressServer = app.listen(PORT, () => {
-  console.log(`\n${'═'.repeat(55)}`);
-  console.log(` [HORTOBOTS] HTTP  → http://localhost:${PORT}`);
-  console.log(`${'═'.repeat(55)}\n`);
+// ── Iniciar Servidores (Unificado para Nuvem + Suporte a Porta Dedicada) ──────
+const mainHttpServer = createServer(app);
+
+// Anexa upgrades do servidor HTTP principal ao WSS
+mainHttpServer.on('upgrade', (request, socket, head) => {
+  wss.handleUpgrade(request, socket, head, (ws) => {
+    wss.emit('connection', ws, request);
+  });
 });
 
-expressServer.on('error', (err) => {
+initSupabase().catch(console.error);
+mainHttpServer.listen(PORT, () => {
+  const line = '═'.repeat(55);
+  console.log('\n' + line);
+  if (PVP_MODE) {
+    console.log(' [HORTOBOTS] ⚔  MODO PVP ONLINE ATIVO');
+    console.log(' [HORTOBOTS] Cada aba = um jogador único');
+  } else {
+    console.log(' [HORTOBOTS] Modo Padrão (História + PvP)');
+  }
+  console.log(' [HORTOBOTS] HTTP  → http://localhost:' + PORT);
+  console.log(' [HORTOBOTS] WS    → ws://localhost:' + PORT + ' (compartilhado)');
+  console.log(line + '\n');
+});
+
+mainHttpServer.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
-    console.error(`\n[AVISO] A porta HTTP ${PORT} já está sendo usada por outra instância.`);
+    console.error('\n[AVISO] A porta HTTP ' + PORT + ' já está sendo usada por outra instância.');
   } else {
     console.error('[HTTP] Erro:', err.message);
   }
 });
 
-httpServer.listen(WS_PORT, () => {
-  console.log(`${'═'.repeat(55)}`);
-  console.log(` [HORTOBOTS] WS    → ws://localhost:${WS_PORT}`);
-  console.log(` [HORTOBOTS] Contas → data/accounts.json`);
-  console.log(`${'═'.repeat(55)}\n`);
-});
+// Se WS_PORT for diferente de PORT (ex: no script npm run pvp com porta 3334 dedicada), abre porta dedicada também
+let separateWsServer = null;
+if (WS_PORT && String(WS_PORT) !== String(PORT)) {
+  separateWsServer = createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('HORTOBOTS Dedicated WebSocket Server\n');
+  });
 
-httpServer.on('error', (err) => {
-  if (err.code === 'EADDRINUSE') {
-    console.error(`\n[AVISO] A porta WebSocket ${WS_PORT} já está em uso por outro processo.`);
-  } else {
-    console.error('[WS] Erro:', err.message);
-  }
-});
+  separateWsServer.on('upgrade', (request, socket, head) => {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit('connection', ws, request);
+    });
+  });
+
+  separateWsServer.listen(WS_PORT, () => {
+    const line = '═'.repeat(55);
+    console.log(line);
+    console.log(' [HORTOBOTS] WS DEDICADO → ws://localhost:' + WS_PORT);
+    console.log(' [HORTOBOTS] Contas      → data/accounts.json');
+    console.log(line + '\n');
+  });
+
+  separateWsServer.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error('\n[AVISO] A porta WebSocket dedicada ' + WS_PORT + ' já está em uso por outro processo.');
+    } else {
+      console.error('[WS] Erro:', err.message);
+    }
+  });
+}

@@ -52,7 +52,8 @@ export class TerminalAudioManager {
       credits: '/audio/The Final Credits.mp3',
       relaxCredits: '/audio/Relax, Lizardilhas.mp3',
       chapolin: '/audio/CHAPOLIN COLORADO.mp3',
-      giEntrance: '/audio/G.I Entrance.mp3',
+      giEntrance: '/audio/G.I Entrance adapted.mp3',
+      giEntranceAdapted: '/audio/G.I Entrance adapted.mp3',
       lastGoodbye: '/audio/Last Goodbye.mp3',
       relaxLizard: '/audio/Relax, Lizardilhas.mp3'
     };
@@ -142,10 +143,23 @@ export class TerminalAudioManager {
 
     if (this.currentTrack === key && !this.bgmAudio.paused) return;
 
+    // Cancela qualquer transição pendente do G.I. Entrance → Lobby
+    if (this._giEndedHandler) {
+      this.bgmAudio.removeEventListener('ended', this._giEndedHandler);
+      this._giEndedHandler = null;
+    }
+    if (this._lobbyDelayTimer) {
+      clearTimeout(this._lobbyDelayTimer);
+      this._lobbyDelayTimer = null;
+    }
+
     if (this.fadeInterval) {
       clearInterval(this.fadeInterval);
       this.fadeInterval = null;
     }
+
+    // Garante que qualquer faixa normal toca em loop
+    this.bgmAudio.loop = true;
 
     // Transição suave de Fade Out -> Troca de Faixa -> Fade In
     if (!this.bgmAudio.paused && this.bgmAudio.currentTime > 0) {
@@ -162,6 +176,7 @@ export class TerminalAudioManager {
           this.fadeInterval = null;
           this.currentTrack = key;
           this.bgmAudio.src = url;
+          this.bgmAudio.loop = true;
           this.bgmAudio.volume = 0;
           this.bgmAudio.play().then(() => {
             this.fadeInBGM(fadeDurationMs);
@@ -173,6 +188,7 @@ export class TerminalAudioManager {
     } else {
       this.currentTrack = key;
       this.bgmAudio.src = url;
+      this.bgmAudio.loop = true;
       this.bgmAudio.volume = 0;
       this.bgmAudio.play().then(() => {
         this.fadeInBGM(fadeDurationMs);
@@ -181,6 +197,7 @@ export class TerminalAudioManager {
       });
     }
   }
+
 
   fadeInBGM(durationMs = 600) {
     if (this.fadeInterval) clearInterval(this.fadeInterval);
@@ -256,10 +273,92 @@ export class TerminalAudioManager {
     return key;
   }
 
+  // ── Tela de Título: toca Relax and Choose Your Champion em loop (simples) ──
+  // NÃO usa mais sequência de intro — a música de intro foi movida para vitória PvP.
+  // Smart check: se já está tocando o 'title', não reinicia.
+  playTitleSequence(fadeDurationMs = 800) {
+    // Se já está tocando o título, não interrompe
+    if (this.currentTrack === 'title' && !this.bgmAudio.paused) return;
+    // Cancela qualquer transição de sequência pendente de vitória
+    this._cancelSequence();
+    this.playBGM('title', fadeDurationMs);
+  }
+
+  // ── VITÓRIA PvP: G.I. Entrance adapted → Lizardilhas POP Theme em loop ──
+  // 1. Toca G.I. Entrance adapted (sem loop, uma vez)
+  // 2. Após terminar, aguarda 2s e entra Lizardilhas POP Theme em loop
+  playVictorySequencePvP(fadeDurationMs = 800) {
+    if (this.isMuted) return;
+    this.initCtx();
+    this._cancelSequence();
+
+    const GI_URL  = this.tracks['giEntrance'];        // G.I Entrance adapted.mp3
+    const POP_URL = this.tracks['versusLobby'];        // Lizardilhas POP Theme.mp3
+
+    const startGI = () => {
+      this.currentTrack = 'giEntrance';
+      this.bgmAudio.loop  = false;
+      this.bgmAudio.src   = GI_URL;
+      this.bgmAudio.volume = 0;
+      this.bgmAudio.play().then(() => this.fadeInBGM(fadeDurationMs)).catch(() => {});
+
+      this._giEndedHandler = () => {
+        this._giEndedHandler = null;
+        this._lobbyDelayTimer = setTimeout(() => {
+          this._lobbyDelayTimer = null;
+          this.currentTrack = 'versusLobby';
+          this.bgmAudio.loop  = true;
+          this.bgmAudio.src   = POP_URL;
+          this.bgmAudio.volume = 0;
+          this.bgmAudio.play().then(() => this.fadeInBGM(1200)).catch(() => {});
+        }, 2000);
+      };
+      this.bgmAudio.addEventListener('ended', this._giEndedHandler, { once: true });
+    };
+
+    if (!this.bgmAudio.paused && this.bgmAudio.currentTime > 0) {
+      if (this.fadeInterval) { clearInterval(this.fadeInterval); this.fadeInterval = null; }
+      const steps = 15;
+      const stepTime = Math.max(16, Math.floor(fadeDurationMs / steps));
+      let vol = this.bgmAudio.volume;
+      this.fadeInterval = setInterval(() => {
+        vol = Math.max(0, vol - (this.targetVolume / steps));
+        this.bgmAudio.volume = vol;
+        if (vol <= 0.02) {
+          clearInterval(this.fadeInterval);
+          this.fadeInterval = null;
+          startGI();
+        }
+      }, stepTime);
+    } else {
+      startGI();
+    }
+  }
+
+  // ── DERROTA PvP: Relax, Lizardilhas — toca em loop até voltar ao menu versus ──
+  // Ao voltar ao menu versus, playBGM('versusLobby') troca automaticamente.
+  playDefeatSequencePvP(fadeDurationMs = 800) {
+    this._cancelSequence();
+    this.playBGM('relaxLizard', fadeDurationMs); // Relax, Lizardilhas.mp3
+  }
+
+  // ── Cancela qualquer transição de sequência em andamento ──
+  _cancelSequence() {
+    if (this._giEndedHandler) {
+      this.bgmAudio.removeEventListener('ended', this._giEndedHandler);
+      this._giEndedHandler = null;
+    }
+    if (this._lobbyDelayTimer) {
+      clearTimeout(this._lobbyDelayTimer);
+      this._lobbyDelayTimer = null;
+    }
+  }
+
   playMenuBGM(preferAlt = false, fadeDurationMs = 600) {
     const key = preferAlt ? 'violetTape' : 'lobby';
     this.playBGM(key, fadeDurationMs);
   }
+
 
   stopBGM() {
     if (this.fadeInterval) clearInterval(this.fadeInterval);

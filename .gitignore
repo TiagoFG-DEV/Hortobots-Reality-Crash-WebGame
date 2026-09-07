@@ -5,4 +5,8 @@ TERMINAL/ref2/
 Thumbs.db
 *.log
 scratch/
+.env
+.env.pvp
+.agents/
+
 
