@@ -103,6 +103,11 @@ class GameSettingsManager {
       vignetteEl.style.display = isLow ? 'none' : 'block';
     }
 
+    const monitorContainer = document.querySelector('.crt-monitor-container');
+    if (monitorContainer) {
+      monitorContainer.style.filter = isLow ? 'none' : 'url(#crtBarrelDistortion)';
+    }
+
     // 3. Efeitos de Brilho / Glow
     if (!this.settings.glow || isLow) {
       root.style.setProperty('--term-glow-strength', '0.0');

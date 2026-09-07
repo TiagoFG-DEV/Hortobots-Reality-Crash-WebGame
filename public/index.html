@@ -20,6 +20,15 @@
   <div class="crt-vignette"></div>
   <div class="crt-fisheye-overlay"></div>
   <div class="crt-glass-glare"></div>
+  <!-- FILTRO SVG DE DISTORÇÃO ÓPTICA DE OLHO DE PEIXE / CURVATURA REAL DE TV DE TUBO CRT -->
+  <svg style="position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none;" aria-hidden="true">
+    <defs>
+      <filter id="crtBarrelDistortion" x="-4%" y="-4%" width="108%" height="108%" color-interpolation-filters="sRGB">
+        <feImage id="crtBarrelMapImg" href="/img/crt-displacement-map.png" xlink:href="/img/crt-displacement-map.png" result="barrelMap" preserveAspectRatio="none" />
+        <feDisplacementMap in="SourceGraphic" in2="barrelMap" scale="18" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </defs>
+  </svg>
 
   <div class="crt-monitor-container">
     <!-- OVERLAY PRÉ-TÍTULO CIBERNÉTICO 3D (TERMINAL DE DADOS BINÁRIOS & SINCRONIZAÇÃO NEURAL) -->

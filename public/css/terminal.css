@@ -168,7 +168,7 @@ body {
   justify-content: center;
 }
 
-/* CRT MONITOR FRAME & CURVATURA DE TV DE TUBO (OLHO DE PEIXE QUADRADO) */
+/* CRT MONITOR FRAME & CURVATURA DE TV DE TUBO (OLHO DE PEIXE / DISTORÇÃO BARREL) */
 .crt-monitor-container {
   width: 97.6vw;
   height: 97.2vh;
@@ -178,71 +178,78 @@ body {
   background: var(--term-bg);
   padding: 16px 22px;
   overflow: hidden;
-  border-radius: 36px / 28px;
+  border-radius: 46px / 34px;
   box-shadow:
-    inset 0 0 110px rgba(0, 0, 0, 0.95),
-    inset 0 0 25px rgba(0, 255, 102, 0.2),
+    inset 0 0 120px rgba(0, 0, 0, 0.95),
+    inset 0 0 25px rgba(0, 255, 102, 0.15),
     0 0 0 5px #070a08,
-    0 0 0 12px #101412,
-    0 0 35px rgba(0, 0, 0, 0.95);
-  transform: perspective(850px) scale(0.985);
+    0 0 0 14px #101412,
+    0 0 38px rgba(0, 0, 0, 0.95);
+  transform: perspective(950px) scale(0.986);
+  filter: url(#crtBarrelDistortion);
   transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+body.graphics-low .crt-monitor-container {
+  filter: none !important;
+  border-radius: 8px;
+  transform: none;
 }
 
 .crt-scanlines {
   position: fixed;
   inset: 0;
   background: linear-gradient(rgba(18, 16, 16, 0) 50%,
-      rgba(0, 0, 0, 0.32) 50%);
+      rgba(0, 0, 0, 0.28) 50%);
   background-size: 100% 3px;
   pointer-events: none;
   z-index: 100;
-  opacity: 0.7;
+  opacity: 0.65;
 }
 
 .crt-vignette {
   position: fixed;
   inset: 0;
-  background: radial-gradient(ellipse 82% 82% at 50% 50%,
-      rgba(0, 0, 0, 0) 50%,
-      rgba(0, 0, 0, 0.42) 74%,
-      rgba(0, 0, 0, 0.92) 100%);
+  background: radial-gradient(ellipse 88% 85% at 50% 50%,
+      rgba(0, 0, 0, 0) 52%,
+      rgba(0, 0, 0, 0.38) 78%,
+      rgba(0, 0, 0, 0.88) 100%);
   pointer-events: none;
   z-index: 101;
 }
 
-/* EFEITO DE OLHO DE PEIXE QUADRADO / BULBO DE VIDRO CRT */
+/* EFEITO DE BULBO DE VIDRO CRT / CURVATURA ESFÉRICA DE OLHO DE PEIXE */
 .crt-fisheye-overlay {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 102;
-  border-radius: 38px / 28px;
+  border-radius: 46px / 34px;
   box-shadow:
-    inset 0 0 140px rgba(0, 0, 0, 0.82),
-    inset 0 0 60px rgba(0, 0, 0, 0.65),
-    inset 0 3px 8px rgba(255, 255, 255, 0.08),
-    inset 0 -4px 8px rgba(0, 0, 0, 0.8);
-  background: radial-gradient(circle at center,
+    inset 0 0 160px rgba(0, 0, 0, 0.88),
+    inset 0 0 70px rgba(0, 0, 0, 0.72),
+    inset 0 4px 12px rgba(255, 255, 255, 0.06),
+    inset 0 -6px 14px rgba(0, 0, 0, 0.85);
+  background: radial-gradient(circle at 50% 50%,
       rgba(255, 255, 255, 0.015) 0%,
-      rgba(0, 0, 0, 0) 58%,
-      rgba(0, 0, 0, 0.35) 100%);
+      rgba(0, 0, 0, 0) 50%,
+      rgba(0, 0, 0, 0.28) 85%,
+      rgba(0, 0, 0, 0.65) 100%);
 }
 
 .crt-glass-glare {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 42%;
-  background: linear-gradient(180deg,
-      rgba(255, 255, 255, 0.045) 0%,
-      rgba(255, 255, 255, 0.015) 45%,
-      rgba(255, 255, 255, 0) 100%);
+  top: -8%;
+  left: 6%;
+  right: 6%;
+  height: 50%;
+  background: radial-gradient(ellipse 70% 45% at 50% 16%,
+      rgba(255, 255, 255, 0.065) 0%,
+      rgba(255, 255, 255, 0.02) 48%,
+      rgba(255, 255, 255, 0) 78%);
   pointer-events: none;
   z-index: 103;
-  border-top-left-radius: 36px;
-  border-top-right-radius: 36px;
+  border-radius: 50% 50% 45% 45% / 60% 60% 30% 30%;
 }
 
 /* CABEÇALHO */
