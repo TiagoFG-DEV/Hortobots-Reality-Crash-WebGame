@@ -269,7 +269,12 @@ app.put('/api/account', async (req, res) => {
     const updates = {};
     const effectiveNewNick = req.body.newNick || req.body.newNickname;
     if (effectiveNewNick && sanitizeNick(effectiveNewNick) !== cleanNick) {
-      updates.newNickname = sanitizeNick(effectiveNewNick);
+      const candidateNick = sanitizeNick(effectiveNewNick);
+      const existingNick = await getAccount(candidateNick);
+      if (existingNick) {
+        return res.status(409).json({ error: `O NickName "${candidateNick}" já está em uso por outro piloto.` });
+      }
+      updates.newNickname = candidateNick;
     }
     const effectivePass = req.body.newPassword !== undefined ? req.body.newPassword : (req.body.password !== undefined && req.body.newNickname ? undefined : req.body.password);
     if (effectivePass !== undefined && String(effectivePass).trim().length > 0) {
@@ -278,7 +283,16 @@ app.put('/api/account', async (req, res) => {
       }
       updates.password = String(effectivePass);
     }
-    if (req.body.email !== undefined) updates.email = String(req.body.email).trim().toLowerCase();
+    if (req.body.email !== undefined) {
+      const candidateEmail = String(req.body.email).trim().toLowerCase();
+      if (candidateEmail && candidateEmail !== (acc.email || '').toLowerCase()) {
+        const existingEmail = await getAccountByEmail(candidateEmail);
+        if (existingEmail && existingEmail.name.toUpperCase() !== cleanNick) {
+          return res.status(409).json({ error: `O e-mail "${candidateEmail}" já está cadastrado para outro piloto (${existingEmail.name}). Nenhum usuário tem permissão para ter mais de uma conta por e-mail.` });
+        }
+      }
+      updates.email = candidateEmail;
+    }
     if (req.body.birthDate !== undefined) updates.birthDate = String(req.body.birthDate).trim();
     if (req.body.customBio !== undefined) updates.customBio = String(req.body.customBio).slice(0, 80);
     if (req.body.bio !== undefined) updates.customBio = String(req.body.bio).slice(0, 80);

@@ -67,6 +67,9 @@ export async function initSupabase() {
         CREATE INDEX IF NOT EXISTS idx_accounts_email ON accounts(email);
         CREATE INDEX IF NOT EXISTS idx_accounts_google_email ON accounts(google_email);
         CREATE INDEX IF NOT EXISTS idx_accounts_ranking ON accounts(ranking_points DESC);
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_accounts_unique_upper_name ON accounts(UPPER(name));
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_accounts_unique_lower_email ON accounts(LOWER(email)) WHERE email IS NOT NULL AND email != '';
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_accounts_unique_lower_google_email ON accounts(LOWER(google_email)) WHERE google_email IS NOT NULL AND google_email != '';
         ALTER TABLE accounts ADD COLUMN IF NOT EXISTS story_save JSONB DEFAULT NULL;
         ALTER TABLE accounts ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT false;
         ALTER TABLE accounts ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT false;
@@ -143,16 +146,37 @@ export async function getAccountByEmail(email) {
     }
   }
 
-  // Fallback local
+  // Fallback local (insensível a maiúsculas/minúsculas)
   const accounts = readLocalAccounts();
-  const key = Object.keys(accounts).find(k => accounts[k].email === cleanEmail || accounts[k].googleEmail === cleanEmail);
+  const key = Object.keys(accounts).find(k => (
+    (accounts[k].email || '').trim().toLowerCase() === cleanEmail ||
+    (accounts[k].googleEmail || '').trim().toLowerCase() === cleanEmail
+  ));
   return key ? accounts[key] : null;
 }
 
 export async function createAccount(data) {
   const cleanNick = (data.name || data.nickname || '').trim().toUpperCase();
-  const now = Date.now();
+  if (!cleanNick) {
+    throw new Error('O NickName de piloto é obrigatório.');
+  }
   const cleanEmail = (data.email || data.googleEmail || '').trim().toLowerCase();
+
+  // 1. Verificação estrita de duplicidade de Nickname
+  const existingNick = await getAccount(cleanNick);
+  if (existingNick) {
+    throw new Error(`O NickName "${cleanNick}" já está em uso por outro piloto. Escolha um nome exclusivo.`);
+  }
+
+  // 2. Verificação estrita de duplicidade de E-mail
+  if (cleanEmail) {
+    const existingEmail = await getAccountByEmail(cleanEmail);
+    if (existingEmail) {
+      throw new Error(`O e-mail "${cleanEmail}" já está vinculado à conta do piloto "${existingEmail.name}". Nenhum usuário tem permissão para ter mais de uma conta por e-mail.`);
+    }
+  }
+
+  const now = Date.now();
   const birthDate = (data.birthDate || '').trim();
   const emailVerified = data.emailVerified !== undefined ? !!data.emailVerified : false;
   const twoFactorEnabled = data.twoFactorEnabled !== undefined ? !!data.twoFactorEnabled : false;
@@ -198,6 +222,10 @@ export async function createAccount(data) {
       return acc;
     } catch (err) {
       console.error('[SUPABASE] Erro createAccount:', err.message);
+      if (err.code === '23505') {
+        throw new Error('Violação de exclusividade: Já existe uma conta cadastrada com este NickName ou E-mail.');
+      }
+      throw err;
     }
   }
 
@@ -241,19 +269,41 @@ export async function updateAccount(name, updates) {
     if (candidate && candidate !== cleanNick) {
       const existing = await getAccount(candidate);
       if (existing) {
-        throw new Error(`O Nickname "${candidate}" já está em uso por outro piloto.`);
+        throw new Error(`O NickName "${candidate}" já está em uso por outro piloto.`);
       }
       targetNick = candidate;
     }
   }
 
+  let newEmail = current.email;
+  if (updates.email !== undefined) {
+    const candidateEmail = updates.email.trim().toLowerCase();
+    if (candidateEmail && candidateEmail !== (current.email || '').toLowerCase()) {
+      const existingEmailAcc = await getAccountByEmail(candidateEmail);
+      if (existingEmailAcc && existingEmailAcc.name.toUpperCase() !== cleanNick) {
+        throw new Error(`O e-mail "${candidateEmail}" já está cadastrado para outro piloto (${existingEmailAcc.name}). Nenhum usuário tem permissão para ter mais de uma conta por e-mail.`);
+      }
+      newEmail = candidateEmail;
+    }
+  }
+
+  let newGoogleEmail = current.googleEmail;
+  if (updates.googleEmail !== undefined) {
+    const candidateGoogle = updates.googleEmail.trim().toLowerCase();
+    if (candidateGoogle && candidateGoogle !== (current.googleEmail || '').toLowerCase()) {
+      const existingGoogleAcc = await getAccountByEmail(candidateGoogle);
+      if (existingGoogleAcc && existingGoogleAcc.name.toUpperCase() !== cleanNick) {
+        throw new Error(`O e-mail Google "${candidateGoogle}" já está vinculado a outro piloto (${existingGoogleAcc.name}). Nenhum usuário tem permissão para ter mais de uma conta por e-mail.`);
+      }
+      newGoogleEmail = candidateGoogle;
+    }
+  }
+
   const newPass = updates.password !== undefined ? updates.password : current.password;
-  const newEmail = updates.email !== undefined ? updates.email.trim().toLowerCase() : current.email;
   const newBirth = updates.birthDate !== undefined ? updates.birthDate.trim() : current.birthDate;
   const newBio = updates.customBio !== undefined ? updates.customBio : current.customBio;
   const newBadge = updates.avatarBadge !== undefined ? updates.avatarBadge : current.avatarBadge;
   const newGoogleLinked = updates.googleLinked !== undefined ? !!updates.googleLinked : current.googleLinked;
-  const newGoogleEmail = updates.googleEmail !== undefined ? updates.googleEmail.trim().toLowerCase() : current.googleEmail;
   const newEmailVerified = updates.emailVerified !== undefined ? !!updates.emailVerified : current.emailVerified;
 
   if (isSupabaseConnected) {

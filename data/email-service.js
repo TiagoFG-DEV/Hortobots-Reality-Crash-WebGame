@@ -292,10 +292,10 @@ export async function start2FARegistration({ nickname, password, email, birthDat
   if (existingAccountsCheck) {
     const checkResult = await existingAccountsCheck(cleanNick, cleanEmail);
     if (checkResult.nickTaken) {
-      throw new Error('Esse NickName já está em uso por outro piloto.');
+      throw new Error('Esse NickName já está em uso por outro piloto. Nenhum usuário tem permissão para cadastrar o mesmo NickName.');
     }
     if (checkResult.emailTaken) {
-      throw new Error('Esse e-mail Google já está vinculado a outra conta cadastrada.');
+      throw new Error('Esse e-mail já está vinculado a outra conta cadastrada. Nenhum usuário tem permissão para ter mais de uma conta por e-mail.');
     }
   }
 
