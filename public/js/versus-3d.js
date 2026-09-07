@@ -42,7 +42,7 @@ export class Versus3DEngine {
 
   _getPixelRatio() {
     const q = (typeof window !== 'undefined' && window.gameSettings) ? window.gameSettings.get('graphics') : 'high';
-    const maxDpr = q === 'low' ? 1.0 : q === 'medium' ? 1.25 : 2.0;
+    const maxDpr = q === 'low' ? 0.75 : q === 'medium' ? 1.0 : 2.0;
     return Math.min(window.devicePixelRatio || 1, maxDpr);
   }
 
@@ -742,7 +742,12 @@ export class Versus3DEngine {
       this.time += dt;
 
       // Ondulação dinâmica do Grid Cyber Matrix
-      if (this.gridGeometry && this.gridOriginalY) {
+      // Otimização de performance: no modo low, atualiza a malha a cada 2 frames
+      const q = (typeof window !== 'undefined' && window.gameSettings) ? window.gameSettings.get('graphics') : 'high';
+      this._gridFrameSkip = (this._gridFrameSkip || 0) + 1;
+      const shouldUpdateGrid = q !== 'low' || (this._gridFrameSkip % 2 === 0);
+
+      if (this.gridGeometry && this.gridOriginalY && shouldUpdateGrid) {
         const pos = this.gridGeometry.attributes.position;
         const count = pos.count;
         for (let i = 0; i < count; i++) {

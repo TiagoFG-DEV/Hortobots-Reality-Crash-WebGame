@@ -81,15 +81,31 @@ class GameSettingsManager {
     body.classList.remove('graphics-low', 'graphics-medium', 'graphics-high');
     body.classList.add(`graphics-${this.settings.graphics}`);
 
-    // 2. Scanlines CRT
+    // 2. Scanlines CRT e Overlays Visuais
+    const isLow = this.settings.graphics === 'low';
     const scanlinesEl = document.querySelector('.crt-scanlines');
     if (scanlinesEl) {
-      scanlinesEl.style.display = this.settings.scanlines ? 'block' : 'none';
+      scanlinesEl.style.display = (this.settings.scanlines && !isLow) ? 'block' : 'none';
+    }
+
+    const glareEl = document.querySelector('.crt-glass-glare');
+    if (glareEl) {
+      glareEl.style.display = isLow ? 'none' : 'block';
+    }
+
+    const fisheyeEl = document.querySelector('.crt-fisheye-overlay');
+    if (fisheyeEl) {
+      fisheyeEl.style.display = isLow ? 'none' : 'block';
+    }
+
+    const vignetteEl = document.querySelector('.crt-vignette');
+    if (vignetteEl) {
+      vignetteEl.style.display = isLow ? 'none' : 'block';
     }
 
     // 3. Efeitos de Brilho / Glow
-    if (!this.settings.glow || this.settings.graphics === 'low') {
-      root.style.setProperty('--term-glow-strength', '0.2');
+    if (!this.settings.glow || isLow) {
+      root.style.setProperty('--term-glow-strength', '0.0');
       body.classList.add('low-glow');
     } else {
       root.style.removeProperty('--term-glow-strength');

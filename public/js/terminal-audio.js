@@ -134,6 +134,16 @@ export class TerminalAudioManager {
     }
   }
 
+  preloadTrack(key) {
+    const url = this.tracks[key];
+    if (!url) return;
+    try {
+      const a = new Audio();
+      a.preload = 'auto';
+      a.src = url;
+    } catch (e) {}
+  }
+
   playBGM(key, fadeDurationMs = 600) {
     if (this.isMuted) return;
     this.initCtx();
@@ -162,6 +172,23 @@ export class TerminalAudioManager {
 
     // Garante que qualquer faixa normal toca em loop
     this.bgmAudio.loop = true;
+
+    // Se fadeDurationMs <= 0, troca e inicia IMEDIATAMENTE (sem fade out nem espera),
+    // garantindo sincronização exata no milissegundo zero da cinemática de combate
+    if (fadeDurationMs <= 0) {
+      this.currentTrack = key;
+      this.bgmAudio.src = url;
+      this.bgmAudio.loop = true;
+      this.bgmAudio.volume = this.targetVolume;
+      this.bgmAudio.currentTime = 0;
+      const playPromise = this.bgmAudio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.warn('[Audio] Aguardando interação para reprodução imediata de BGM:', err);
+        });
+      }
+      return;
+    }
 
     // Transição suave de Fade Out -> Troca de Faixa -> Fade In
     if (!this.bgmAudio.paused && this.bgmAudio.currentTime > 0) {

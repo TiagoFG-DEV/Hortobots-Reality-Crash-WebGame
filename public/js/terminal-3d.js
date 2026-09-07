@@ -42,7 +42,7 @@ export class Terminal3DEngine {
 
   _getPixelRatio() {
     const q = (typeof window !== 'undefined' && window.gameSettings) ? window.gameSettings.get('graphics') : 'high';
-    const maxDpr = q === 'low' ? 1.0 : q === 'medium' ? 1.25 : 2.0;
+    const maxDpr = q === 'low' ? 0.75 : q === 'medium' ? 1.0 : 2.0;
     return Math.min(window.devicePixelRatio || 1, maxDpr);
   }
 

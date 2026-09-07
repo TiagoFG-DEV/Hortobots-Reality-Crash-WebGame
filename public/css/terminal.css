@@ -8978,6 +8978,86 @@ body.graphics-medium .crt-scanlines {
   background: transparent;
 }
 
+/* =========================================================================
+   PERFIL ULTRA-OTIMIZADO DE PERFORMANCE: LOW GRAPHICS (PC FRACO / INTEGRATED GPU)
+   Preserva 100% da jogabilidade, fontes, cores e layout, eliminando sobrecargas
+   de GPU (backdrop-filter blur, múltiplas camadas de text-shadow e box-shadow).
+   ========================================================================= */
+
+body.graphics-low *,
+body.graphics-low *::before,
+body.graphics-low *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Modais e painéis sem blur pesado na GPU */
+body.graphics-low .settings-modal-overlay,
+body.graphics-low .story-auth-modal-overlay,
+body.graphics-low .login-modal-overlay,
+body.graphics-low .pre-duel-cinematic-overlay,
+body.graphics-low .dialogue-overlay,
+body.graphics-low .modal-overlay,
+body.graphics-low .cold-start-loading-overlay {
+  background: rgba(2, 8, 4, 0.96) !important;
+  backdrop-filter: none !important;
+}
+
+body.graphics-low .settings-modal-box,
+body.graphics-low .story-auth-modal-box,
+body.graphics-low .login-modal-box,
+body.graphics-low .email-preview-modal-box {
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(0, 255, 136, 0.4) !important;
+}
+
+/* Remove projeção 3D do container exterior (economiza render de tela inteira para framebuffer offscreen) */
+body.graphics-low .crt-monitor-container {
+  transform: none !important;
+  box-shadow: 0 0 0 4px #070a08, 0 0 15px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Desativa camadas decorativas contínuas de CRT que consomem fillrate de GPU */
+body.graphics-low .crt-glass-glare,
+body.graphics-low .crt-fisheye-overlay,
+body.graphics-low .crt-vignette {
+  display: none !important;
+}
+
+/* Reduz opacidade das scanlines no modo low para poupar redesenho */
+body.graphics-low .crt-scanlines {
+  opacity: 0.15 !important;
+}
+
+/* Remove text-shadows difusos e box-shadows excessivos */
+body.graphics-low,
+body.graphics-low * {
+  text-shadow: none !important;
+}
+
+body.graphics-low .term-btn,
+body.graphics-low .settings-pill-btn,
+body.graphics-low .story-card,
+body.graphics-low .versus-card,
+body.graphics-low .fnaf-tape-slot,
+body.graphics-low .title-account-bar,
+body.graphics-low .char-status-card,
+body.graphics-low .term-action-btn {
+  box-shadow: none !important;
+}
+
+body.graphics-low .term-btn:hover,
+body.graphics-low .settings-pill-btn:hover,
+body.graphics-low .fnaf-tape-slot:hover {
+  box-shadow: none !important;
+  background: rgba(0, 255, 102, 0.14) !important;
+}
+
+/* Desativa filtros CSS pesados nos ícones */
+body.graphics-low svg {
+  filter: none !important;
+}
+
+
 
 
 

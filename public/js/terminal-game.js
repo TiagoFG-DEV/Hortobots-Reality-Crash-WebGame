@@ -4209,7 +4209,10 @@ export class TerminalGameApp {
       overlay.classList.add('theme-default');
     }
 
-    this.audio.playBGM(bgmKey);
+    // Inicia a música de combate imediatamente no milissegundo 0 da cinemática pré-duelo
+    if (bgmKey) {
+      this.audio.playBGM(bgmKey, 0);
+    }
     overlay.classList.remove('hidden');
 
     const hideAllPhases = () => {

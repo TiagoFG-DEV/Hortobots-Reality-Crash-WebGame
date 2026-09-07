@@ -1110,7 +1110,7 @@ $('versusConfirmTeamBtn')?.addEventListener('click', async () => {
     initBadge.style.color = engine.initiative === 'PLAYER' ? '#00ff88' : '#ff4455';
   }
 
-  getAudio().playBGM(battleBgmKey, 800);
+  getAudio().playBGM(battleBgmKey, 0);
 
   addLog(`Round 1 iniciado! Iniciativa: ${initText}.`, 'kill');
   showPhaseBanner('ROUND 1', `INICIATIVA: ${initText}`, 'normal', 1600);
