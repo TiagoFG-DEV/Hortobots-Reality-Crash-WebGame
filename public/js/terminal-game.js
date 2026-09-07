@@ -1175,7 +1175,7 @@ export class TerminalGameApp {
         led.classList.add('logged');
       }
       if (text) {
-        text.textContent = `PILOTO: ${nick.toUpperCase()} // ${rp} RP`;
+        text.textContent = `${nick.toUpperCase()} (${rp} RP)`;
       }
       if (btn) {
         btn.textContent = 'CONTA';
@@ -1184,7 +1184,7 @@ export class TerminalGameApp {
         tapeLabel.textContent = `PILOTO: ${nick.toUpperCase()}`;
       }
       if (tapeSub) {
-        tapeSub.textContent = `[ CONECTADO // ${rp} RP ]`;
+        tapeSub.textContent = `[ ${rp} RP ]`;
       }
       if (tapeLed) {
         tapeLed.classList.add('active');
@@ -1414,12 +1414,12 @@ export class TerminalGameApp {
       if (data && subEl) {
         const fIdx = data.floorIndex || 0;
         const floorName = (TOWER_FLOORS && TOWER_FLOORS[fIdx]) ? TOWER_FLOORS[fIdx].name : `Andar ${fIdx + 1}`;
-        subEl.textContent = `[ RETOMAR: ANDAR ${fIdx + 1} // ${floorName.toUpperCase()} ]`;
+        subEl.textContent = `ANDAR ${fIdx + 1}: ${floorName.toUpperCase()}`;
         if (tapeSlot) {
           tapeSlot.querySelector('.tape-indicator-led')?.classList.add('active');
         }
       } else if (subEl) {
-        subEl.textContent = '[ INVASÃO RECENTE // PRONTO ]';
+        subEl.textContent = 'CHECKPOINT DISPONÍVEL';
       }
     } catch (e) {
       // ignore
@@ -1593,7 +1593,7 @@ export class TerminalGameApp {
     this.tutorialDefensesCount = 0;
     this.setBiomeTheme('forest');
 
-    const warnDiag = this.getDialogue('floor1_warning', 'SISTEMA // ALERTA', '[ALERTA]', 'ALERTA CRÍTICO: Robô DINO-BYTE detectado! Cabos roxos de corrupção da Grande Inteligência tomaram conta de seus circuitos!\nQuezadilhas assume a frente para romper o controle mental!');
+    const warnDiag = this.getDialogue('floor1_warning', 'ALERTA', '[ALERTA]', 'ALERTA CRÍTICO: Robô DINO-BYTE detectado! Cabos roxos de corrupção da Grande Inteligência tomaram conta de seus circuitos!\nQuezadilhas assume a frente para romper o controle mental!');
     this.showDialogue(
       warnDiag.speaker,
       warnDiag.avatar,
@@ -2283,7 +2283,7 @@ export class TerminalGameApp {
   // ANDAR INVESTIGATIVO (lido do JSON)
   runInvestigationFloor(floor) {
     const inv = this.getDialogue('investigations.' + floor.isInvestigation, 'DESCOBERTA', '[ARQUIVO]', 'Você acessa um servidor antigo de dados.');
-    const title = inv.title || 'DESCOBERTA // ARQUIVO CONFIDENCIAL';
+    const title = inv.title || 'ARQUIVO CONFIDENCIAL';
     const text = inv.text || '';
     const avatar = inv.avatar || '[ARQUIVO]';
 
@@ -3436,7 +3436,7 @@ export class TerminalGameApp {
     }
 
     // Fim do Round: Transição com delay cinematográfico e recarga de energia
-    this.combatLogs.push(`--- FIM DO ROUND ${this.battleRound} // SISTEMAS REINICIALIZADOS (+ENERGIA) ---`);
+    this.combatLogs.push(`--- FIM DO ROUND ${this.battleRound} ---`);
     this.renderBattleArena();
     this.audio.playPowerUp();
     await new Promise(r => setTimeout(r, 1400));
@@ -3947,15 +3947,15 @@ export class TerminalGameApp {
     let badgeText = '';
 
     if (count >= 5) {
-      rankBadge = '[ CLASSIFICAÇÃO: RANK SSS // PURGA PERFEITA (3/3) ]';
+      rankBadge = 'CLASSIFICAÇÃO: RANK SSS';
       title = 'VITÓRIA PERFEITA - SACRIFÍCIO SUPREMO';
       badgeText = 'TODOS OS 5 ROBÔS REUNIDOS DETONARAM O MUNDO VIRTUAL!';
     } else if (count === 4) {
-      rankBadge = '[ CLASSIFICAÇÃO: RANK A // SOBRECARGA SEVERA (2/3) ]';
+      rankBadge = 'CLASSIFICAÇÃO: RANK A';
       title = 'VITÓRIA NEUTRA';
       badgeText = '4 ROBÔS GERARAM SOBRECARGA SEVERA NO NÚCLEO!';
     } else {
-      rankBadge = '[ CLASSIFICAÇÃO: RANK B // PURGA PARCIAL (1/3) ]';
+      rankBadge = 'CLASSIFICAÇÃO: RANK B';
       title = 'VITÓRIA PARCIAL';
       badgeText = 'POUCOS ROBÔS NA PARTY. O MUNDO VIRTUAL AINDA PULSA!';
     }

@@ -185,49 +185,49 @@ export function generateCyberpunkEmailHTML({ nickname, email, code }) {
 <body>
   <div class="email-container">
     <div class="header-banner">
-      <div class="brand-title">[ HORTOBOTS // QUEZAS-DOS ]</div>
-      <div class="brand-subtitle">MAINFRAME MNEMOSYNE // AUTORIZAÇÃO DE TERMINAL</div>
+      <div class="brand-title">HORTOBOTS</div>
+      <div class="brand-subtitle">CÓDIGO DE VERIFICAÇÃO</div>
       <div class="crt-line"></div>
     </div>
 
     <div class="content-section">
-      <span class="terminal-tag">TRANSMISSÃO CRIPTOGRAFADA :: 2FA VERIFICATION</span>
+      <span class="terminal-tag">VERIFICAÇÃO DE E-MAIL</span>
 
-      <div class="greeting">> SAUDAÇÕES, PILOTO ${nickname.toUpperCase()}!</div>
+      <div class="greeting">Olá, ${nickname}!</div>
 
       <p style="margin: 0 0 14px 0; color: #c4f3d8; font-size: 13px;">
-        Uma solicitação de registro de conta de piloto foi realizada com sucesso na Rede Neural do Hortobots.
-        Para autorizar e ativar o seu acesso de combate, vinculamos este endereço Google verificado:
+        Uma solicitação de registro de conta de piloto foi realizada com sucesso no Hortobots.
+        Para autorizar e ativar o seu acesso, utilize o código abaixo:
       </p>
 
       <p style="margin: 0; font-size: 13px; color: #88c5a4;">
-        TERMINAL VINCULADO: <span class="highlight-cyan">${email}</span><br>
-        DATA DA EMISSÃO: <span style="color: #ffffff;">${dateStr}</span>
+        E-MAIL: <span class="highlight-cyan">${email}</span><br>
+        DATA: <span style="color: #ffffff;">${dateStr}</span>
       </p>
 
       <div class="code-wrapper">
         <div class="code-box">${formattedCode}</div>
-        <div class="code-label">// CÓDIGO DE AUTORIZAÇÃO DE 6 DÍGITOS //</div>
+        <div class="code-label">CÓDIGO DE 6 DÍGITOS</div>
       </div>
 
       <div class="instructions-card">
-        <strong style="color: #00e5ff;">INSTRUÇÕES DE ATIVAÇÃO:</strong>
+        <strong style="color: #00e5ff;">INSTRUÇÕES:</strong>
         <ol>
-          <li>Retorne à tela de registro no <strong>Hortobots</strong>.</li>
-          <li>Insira o código de 6 dígitos acima no campo de verificação <strong>2FA</strong>.</li>
-          <li>Clique no botão <strong>[ CONFIRMAR E ATIVAR CONTA ]</strong> para liberar seu acesso com 0 RP.</li>
+          <li>Retorne à tela de cadastro no <strong>Hortobots</strong>.</li>
+          <li>Insira o código de 6 dígitos acima no campo de confirmação.</li>
+          <li>Clique no botão <strong>CONFIRMAR</strong> para ativar sua conta.</li>
         </ol>
       </div>
 
       <div class="security-notice">
-        ⚠️ <strong>AVISO DE SEGURANÇA:</strong> Este código expira em <strong>15 minutos</strong> e possui uso único.
-        Nunca compartilhe este código com ninguém. Se você não solicitou este registro, desconsidere esta transmissão.
+        <strong>AVISO:</strong> Este código expira em <strong>15 minutos</strong> e possui uso único.
+        Nunca compartilhe este código. Se você não solicitou este registro, desconsidere esta mensagem.
       </div>
     </div>
 
     <div class="footer-section">
-      HORTOBOTS: REALITY CLASH // VERSÃO 1.0 // SISTEMA QUEZAS-DOS MNEMOSYNE<br>
-      © 2026 TODOS OS DIREITOS RESERVADOS // CONEXÃO PROTEGIDA POR TLS
+      HORTOBOTS: REALITY CLASH<br>
+      © 2026 Todos os direitos reservados.
     </div>
   </div>
 </body>
@@ -249,20 +249,20 @@ export async function send2FAVerificationEmail({ nickname, email, code }) {
   if (transporter) {
     try {
       await transporter.sendMail({
-        from: `"HORTOBOTS // Central Mnemosyne" <${process.env.SMTP_FROM || process.env.GMAIL_USER || 'mnemosyne@hortobots.game'}>`,
+        from: `"HORTOBOTS" <${process.env.SMTP_FROM || process.env.GMAIL_USER || 'central@hortobots.game'}>`,
         to: cleanEmail,
-        subject: `[HORTOBOTS // QUEZAS-DOS] Código de Verificação 2FA: ${code}`,
-        text: `HORTOBOTS 2FA VERIFICATION\nPiloto: ${nickname}\nCódigo de Confirmação: ${code}\nValidade: 15 minutos.\nUse este código no jogo para ativar sua conta.`,
+        subject: `[HORTOBOTS] Código de Verificação: ${code}`,
+        text: `HORTOBOTS VERIFICAÇÃO\nPiloto: ${nickname}\nCódigo de Confirmação: ${code}\nValidade: 15 minutos.\nUse este código no jogo para ativar sua conta.`,
         html,
       });
       emailSent = true;
-      console.log(`[2FA] ✅ E-mail enviado com sucesso via SMTP para: ${cleanEmail}`);
+      console.log(`[2FA] E-mail enviado com sucesso via SMTP para: ${cleanEmail}`);
     } catch (err) {
       errorDetail = err.message;
-      console.warn(`[2FA] ⚠️ Falha no envio SMTP (${err.message}). Operando em modo de entrega segura em terminal.`);
+      console.warn(`[2FA] Falha no envio SMTP (${err.message}). Operando em modo de entrega segura em terminal.`);
     }
   } else {
-    console.log(`[2FA] ℹ️ SMTP não configurado no .env. Transmissão registrada localmente e disponível para preview.`);
+    console.log(`[2FA] SMTP não configurado no .env. Código registrado e disponível para prévia.`);
   }
 
   // Log destacado no console do servidor para visibilidade imediata do desenvolvedor/usuário

@@ -364,12 +364,12 @@ $('versusAuthRegBtn')?.addEventListener('click', async () => {
       codeInput.focus();
     }
 
-    showAuthStatus(`[2FA] Código enviado para ${email}! Verifique sua caixa de entrada.`, false);
+    showAuthStatus(`Código enviado para ${email}.`, false);
     getAudio().playKeyClack();
   } catch (err) {
-    showAuthStatus(`[FALHA] ${err.message || 'Erro ao iniciar registro 2FA'}`);
+    showAuthStatus(err.message || 'Erro ao iniciar registro');
   } finally {
-    if (btn) btn.textContent = 'AVANÇAR // ENVIAR CÓDIGO 2FA';
+    if (btn) btn.textContent = 'CRIAR CONTA';
   }
 });
 
@@ -379,17 +379,17 @@ async function handleConfirm2FACode() {
   const code = ($('versus2FACodeInput')?.value || '').replace(/\D/g, '').trim();
 
   if (!code || code.length !== 6) {
-    showAuthStatus('[AVISO] Digite a chave de segurança de 6 dígitos.');
+    showAuthStatus('Digite o código de 6 dígitos.');
     return;
   }
 
   if (!pendingRegEmail) {
-    showAuthStatus('[ERRO] Sessão de verificação expirada. Retorne e inicie o registro novamente.');
+    showAuthStatus('Sessão expirada. Tente novamente.');
     return;
   }
 
   const btn = $('versus2FAConfirmBtn');
-  if (btn) btn.textContent = '[ VALIDANDO CHAVE... ]';
+  if (btn) btn.textContent = 'VALIDANDO...';
 
   try {
     const res = await AccountAPI.verify2FARegister(pendingRegEmail, code);
@@ -401,16 +401,16 @@ async function handleConfirm2FACode() {
       account.twoFactorEnabled = true;
       localStorage.setItem('hortobots_pilot_account', JSON.stringify(account));
     }
-    showAuthStatus(`[SUCESSO] Conta ativada com segurança 2FA Google! Piloto: ${account.nickname} (0 RP)`, false);
+    showAuthStatus(`Conta ativada com sucesso! Piloto: ${account.nickname}`, false);
     updateProfileHeader(account);
     getAudio().playKeyClack();
     setTimeout(() => {
       showScreen('versusModeSelectScreen');
     }, 750);
   } catch (err) {
-    showAuthStatus(`[2FA INVÁLIDO] ${err.message || 'Código incorreto ou expirado'}`);
+    showAuthStatus(err.message || 'Código incorreto ou expirado');
   } finally {
-    if (btn) btn.textContent = 'CONFIRMAR E ATIVAR CONTA';
+    if (btn) btn.textContent = 'CONFIRMAR';
   }
 }
 
@@ -427,13 +427,13 @@ $('versus2FACodeInput')?.addEventListener('keydown', (e) => {
 $('versus2FAResendBtn')?.addEventListener('click', async () => {
   if (!pendingRegEmail) return;
   const btn = $('versus2FAResendBtn');
-  if (btn) btn.textContent = '[ REENVIANDO... ]';
+  if (btn) btn.textContent = 'REENVIANDO...';
   try {
     await AccountAPI.resend2FACode(pendingRegEmail);
-    showAuthStatus(`[2FA] Novo código gerado e transmitido para ${pendingRegEmail}!`, false);
+    showAuthStatus('Novo código enviado!', false);
     getAudio().playKeyClack();
   } catch (err) {
-    showAuthStatus(`[FALHA] ${err.message || 'Não foi possível reenviar o código'}`);
+    showAuthStatus(err.message || 'Erro ao reenviar o código');
   } finally {
     if (btn) btn.textContent = 'REENVIAR CÓDIGO';
   }
@@ -972,7 +972,7 @@ function buildCompactDraftList() {
   // Inicializa o preview 3D com o primeiro robô
   versus3DEngine.initDraft3DPreview('versusDraft3DPreview', VERSUS_ROBOTS['DB']);
   const nameEl = $('versusDraft3DName');
-  if (nameEl) nameEl.textContent = `[ DINO-BYTE // FOGO ]`;
+  if (nameEl) nameEl.textContent = `DINO-BYTE (FOGO)`;
 
   keys.forEach(id => {
     const r = VERSUS_ROBOTS[id];
@@ -994,12 +994,12 @@ function buildCompactDraftList() {
 
     card.addEventListener('mouseenter', () => {
       versus3DEngine.initDraft3DPreview('versusDraft3DPreview', r);
-      if (nameEl) nameEl.textContent = `[ ${r.name.toUpperCase()} // ${elem.toUpperCase()} ]`;
+      if (nameEl) nameEl.textContent = `${r.name.toUpperCase()} (${elem.toUpperCase()})`;
     });
 
     card.addEventListener('click', () => {
       versus3DEngine.initDraft3DPreview('versusDraft3DPreview', r);
-      if (nameEl) nameEl.textContent = `[ ${r.name.toUpperCase()} // ${elem.toUpperCase()} ]`;
+      if (nameEl) nameEl.textContent = `${r.name.toUpperCase()} (${elem.toUpperCase()})`;
       toggleDraftRobot(id);
     });
     container.appendChild(card);
@@ -1112,13 +1112,13 @@ $('versusConfirmTeamBtn')?.addEventListener('click', async () => {
 
   getAudio().playBGM(battleBgmKey, 800);
 
-  addLog(`Round 1 iniciado! Iniciativa sorteada: ${initText}.`, 'kill');
-  showPhaseBanner('ROUND 1', `INICIATIVA: ${initText} // DEFINA SUAS TÁTICAS`, 'normal', 1600);
+  addLog(`Round 1 iniciado! Iniciativa: ${initText}.`, 'kill');
+  showPhaseBanner('ROUND 1', `INICIATIVA: ${initText}`, 'normal', 1600);
 
   resetRoleAssignmentUI();
   updateArenaHUD();
   updateStatusPanel();
-  updateGuide('ROUND 1 // FASE DE COMANDO', 'Defina funções para seus combatentes ou poupe energia.');
+  updateGuide('FASE DE COMANDO', 'Defina as ações dos seus combatentes.');
   renderCommandCards();
   resetNarratorToStatus();
 });
@@ -1255,41 +1255,41 @@ function resetNarratorToStatus() {
       const isReady = selBot.currentEnergy >= (atk?.energyCost || 0);
       const symbolSVG = getRobotAttackSymbolSVG(selBot.id, tier, selBot.color, isReady, 32);
       setNarratorInfo(
-        `${selBot.name} // ${concept.role}`,
+        `${selBot.name} - ${concept.role}`,
         `Alvo: ${target ? target.name : 'Nenhum'}. ${concept.desc} Custo: ${atk ? atk.energyCost || 1 : 1} EN.`,
         symbolSVG,
         selBot.color,
-        `[ FASE DE COMANDO // TIER ${tier} ]`
+        `[ TIER ${tier} ]`
       );
       return;
     } else if (selBot.action === 'defense') {
       if (selBot.id === 'DB') {
         setNarratorInfo(
-          `${selBot.name} // MURALHA COLETIVA (5 HP)`,
+          `${selBot.name}: MURALHA COLETIVA (5 HP)`,
           'Dino-Byte concederá barreira de 5 HP sobre os 3 robôs aliados por 2 rounds (Requer sucesso na moeda).',
           DEF_ICON_SVG,
           '#00e5ff',
-          '[ FASE DE COMANDO ]'
+          '[ DEFESA ]'
         );
       } else {
         const target = selBot._chosenDefenseTarget || selBot;
         setNarratorInfo(
-          `${selBot.name} // ESCUDO INDIVIDUAL (10 HP)`,
+          `${selBot.name}: ESCUDO (10 HP)`,
           `Destinado a: ${target.name}. Efeito: ${selBot.defense?.desc || 'Barreira protetora.'}`,
           DEF_ICON_SVG,
           '#00e5ff',
-          '[ FASE DE COMANDO ]'
+          '[ DEFESA ]'
         );
       }
       return;
     } else if (selBot.action === 'support') {
       const target = selBot._chosenAllyTarget || selBot;
       setNarratorInfo(
-        `${selBot.name} // SUPORTE NANOMÉDICO`,
+        `${selBot.name}: SUPORTE`,
         `Destinado a: ${target.name}. Cura até 4 HP ou revive aliado caído com 10 HP cheio.`,
         SUP_ICON_SVG,
         '#00ff88',
-        '[ FASE DE COMANDO ]'
+        '[ SUPORTE ]'
       );
       return;
     }
@@ -1525,11 +1525,11 @@ function attachCommandCardListeners() {
       if (action === 'attack') {
         const canAtk = robot.currentEnergy >= 1;
         setNarratorInfo(
-          `ATAQUE DE COMBATE (1 EN)`,
+          `ATAQUE (1 EN)`,
           `Dispara golpe de energia direto. ${!canAtk ? '[SEM ENERGIA SUFICIENTE] ' : ''}Requer sucesso na moeda e causa dano ampliado pelo ATK (${robot.attackPower} atual).`,
           ATK_ICON_SVG,
           '#ff4455',
-          '[ TÁTICA // OFENSIVA ]'
+          '[ ATAQUE ]'
         );
       } else if (action === 'defense') {
         if (robot.id === 'DB') {
@@ -1538,7 +1538,7 @@ function attachCommandCardListeners() {
             `Dino-Byte é o ÚNICO que protege os 3 robôs ao mesmo tempo. Concede 5 HP de escudo para todos por 2 rounds (Requer sucesso na moeda).`,
             DEF_ICON_SVG,
             '#00e5ff',
-            '[ TÁTICA // DEFESA ]'
+            '[ DEFESA ]'
           );
         } else {
           setNarratorInfo(
@@ -1546,18 +1546,18 @@ function attachCommandCardListeners() {
             `Concede 10 HP de escudo ao aliado selecionado. Efeito único: ${robot.defense?.desc || 'Barreira protetora.'}`,
             DEF_ICON_SVG,
             '#00e5ff',
-            '[ TÁTICA // DEFESA ]'
+            '[ DEFESA ]'
           );
         }
       } else if (action === 'support') {
         const cost = robot.support?.energyCost || 2;
         const canSup = robot.currentEnergy >= cost;
         setNarratorInfo(
-          `SUPORTE & NANITES (${cost} EN)`,
+          `SUPORTE (${cost} EN)`,
           `Distribui nanorrobôs médicos. ${!canSup ? '[SEM ENERGIA SUFICIENTE] ' : ''}Cura 4 HP de combatente ativo ou REVIVE combatente caído com 10 HP cheio.`,
           SUP_ICON_SVG,
           '#00ff88',
-          '[ TÁTICA // SUPORTE ]'
+          '[ SUPORTE ]'
         );
       } else if (action === 'rest') {
         setNarratorInfo(
@@ -1565,7 +1565,7 @@ function attachCommandCardListeners() {
           `Combatente descansa durante este round para recarregar baterias (+1 ponto de Energia para turnos posteriores).`,
           REST_ICON_SVG,
           '#ffd700',
-          '[ TÁTICA // RECARGA ]'
+          '[ RECARGA ]'
         );
       }
     };
@@ -1663,7 +1663,7 @@ function attachCommandCardListeners() {
         `Clique para abrir a seleção direta no tabuleiro e escolher o robô aliado que receberá a blindagem.`,
         DEF_ICON_SVG,
         '#00e5ff',
-        '[ MIRA // ALIADO ]'
+        '[ ALIADO ]'
       );
     };
     btn.onmouseleave = () => resetNarratorToStatus();
@@ -1684,7 +1684,7 @@ function attachCommandCardListeners() {
         `Clique para abrir a seleção direta no tabuleiro e escolher o aliado a curar (ou ressuscitar se estiver caído).`,
         SUP_ICON_SVG,
         '#00ff88',
-        '[ MIRA // ALIADO ]'
+        '[ ALIADO ]'
       );
     };
     btn.onmouseleave = () => resetNarratorToStatus();
@@ -1705,7 +1705,7 @@ function attachCommandCardListeners() {
         `Clique para travar a mira diretamente em um robô adversário no tabuleiro tático.`,
         ATK_ICON_SVG,
         '#ff4455',
-        '[ MIRA // INIMIGO ]'
+        '[ INIMIGO ]'
       );
     };
     btn.onmouseleave = () => resetNarratorToStatus();
@@ -1730,11 +1730,11 @@ function attachCommandCardListeners() {
       const isReady = robot.currentEnergy >= (atk.energyCost || 0);
       const symbolSVG = getRobotAttackSymbolSVG(robotId, tier, robot.color, isReady, 32);
       setNarratorInfo(
-        `${robot.name} // ${concept.role} (${atk.energyCost || 0} EN)`,
+        `${robot.name} - ${concept.role} (${atk.energyCost || 0} EN)`,
         `${concept.desc} ${!isReady ? '[SEM ENERGIA SUFICIENTE] ' : ''}Nome do Golpe: ${atk.name}.`,
         symbolSVG,
         robot.color,
-        `[ TÁTICA // TIER ${tier} ]`
+        `[ TIER ${tier} ]`
       );
     };
 
@@ -1815,8 +1815,8 @@ async function executeSimultaneousClash() {
   // ──────────────────────────────────────────────────────────────────
   // 1ª ETAPA — DEFESA: dá um passo à frente, faz minigame e volta se a moeda permitir
   // ──────────────────────────────────────────────────────────────────
-  updateGuide('EMBATE // 1ª ETAPA: DEFESA', 'Passo à frente: protocolo de escudo holográfico.');
-  setNarratorInfo('1ª ETAPA: DEFESA', 'Acionamento de barreiras e escudos de contenção holográficos.', DEF_ICON_SVG, '#00e5ff', '[ COMBATE // DEFESA ]');
+  updateGuide('1ª ETAPA: DEFESA', 'Passo à frente: protocolo de escudo.');
+  setNarratorInfo('1ª ETAPA: DEFESA', 'Acionamento de barreiras e escudos holográficos.', DEF_ICON_SVG, '#00e5ff', '[ DEFESA ]');
 
   const defRobots = [
     ...(engine.initiative === 'PLAYER'
@@ -1830,7 +1830,7 @@ async function executeSimultaneousClash() {
     const stepCol = isPlayer ? 1 : 3;
 
     addLog(`[DEFESA] ${defBot.name} dá um passo à frente para acionar o escudo!`, 'defense');
-    setNarratorInfo(`DEFESA // ${defBot.name}`, `${defBot.name} avança para acionar protocolo de escudo holográfico.`, DEF_ICON_SVG, '#00e5ff', '[ DEFESA ]');
+    setNarratorInfo(`DEFESA: ${defBot.name}`, `${defBot.name} avança para acionar escudo holográfico.`, DEF_ICON_SVG, '#00e5ff', '[ DEFESA ]');
     await board.animateRobotMove(defBot, stepCol, defBot.homeRow, 350);
     await delay(250);
 
@@ -1873,7 +1873,7 @@ async function executeSimultaneousClash() {
       }
     } else {
       addLog(`[DEFESA] ${defBot.name} errou a moeda (sem escudo).`, 'miss');
-      setNarratorInfo(`DEFESA FALHOU: ${defBot.name}`, `A moeda caiu incorreta. O escudo holográfico falhou em armar.`, DEF_ICON_SVG, '#ff4455', '[ DEFESA // FALHA ]');
+      setNarratorInfo(`DEFESA FALHOU: ${defBot.name}`, `A moeda caiu incorreta. O escudo holográfico falhou em armar.`, DEF_ICON_SVG, '#ff4455', '[ DEFESA FALHOU ]');
       if (isPlayer) getAudio().playAccessDenied();
     }
 
@@ -1887,8 +1887,8 @@ async function executeSimultaneousClash() {
   // ──────────────────────────────────────────────────────────────────
   // 2ª ETAPA — ATAQUE: dá um passo à frente, se posiciona de frente com o alvo, faz o minigame, ataca e volta
   // ──────────────────────────────────────────────────────────────────
-  updateGuide('EMBATE // 2ª ETAPA: ATAQUES', 'Avanço frontal, alinhamento com o alvo e disparo.');
-  setNarratorInfo('2ª ETAPA: ATAQUES', 'Avanço frontal, alinhamento de mira e disparos balísticos.', ATK_ICON_SVG, '#ff4455', '[ COMBATE // ATAQUE ]');
+  updateGuide('2ª ETAPA: ATAQUES', 'Avanço frontal e disparo.');
+  setNarratorInfo('2ª ETAPA: ATAQUES', 'Avanço frontal e disparos.', ATK_ICON_SVG, '#ff4455', '[ ATAQUE ]');
 
   const playerAtk = engine.playerTeam.find(r => r.action === 'attack' && r.isAlive);
   const enemyAtk  = engine.enemyTeam.find(r => r.action === 'attack' && r.isAlive);
@@ -1911,7 +1911,7 @@ async function executeSimultaneousClash() {
       : myEnemySide.find(r => r.row === attacker.homeRow && r.isAlive) || myEnemySide.find(r => r.isAlive);
 
     addLog(`[ATAQUE] ${attacker.name} avança para a linha de frente e mira em ${target ? target.name : 'vazio'}!`, 'attack');
-    setNarratorInfo(`ATAQUE // ${attacker.name}`, `Avançando para desferir ataque em ${target ? target.name : 'alvo'}!`, ATK_ICON_SVG, '#ff4455', '[ COMBATE // ATAQUE ]');
+    setNarratorInfo(`ATAQUE: ${attacker.name}`, `Avançando para desferir ataque em ${target ? target.name : 'alvo'}!`, ATK_ICON_SVG, '#ff4455', '[ ATAQUE ]');
     await board.animateRobotMove(attacker, stepCol, attacker.homeRow, 350);
     await delay(250);
 
@@ -2016,8 +2016,8 @@ async function executeSimultaneousClash() {
   // ──────────────────────────────────────────────────────────────────
   // 3ª ETAPA — SUPORTE: vai para frente e usa habilidade que custa energia. Se não houver energia, não faz nada só passa a vez
   // ──────────────────────────────────────────────────────────────────
-  updateGuide('EMBATE // 3ª ETAPA: SUPORTE', 'Protocolos médicos e nanites de suporte.');
-  setNarratorInfo('3ª ETAPA: SUPORTE', 'Protocolos médicos e nanites de reparo celular.', SUP_ICON_SVG, '#00ff88', '[ COMBATE // SUPORTE ]');
+  updateGuide('3ª ETAPA: SUPORTE', 'Protocolos médicos e suporte.');
+  setNarratorInfo('3ª ETAPA: SUPORTE', 'Protocolos médicos e nanites de reparo.', SUP_ICON_SVG, '#00ff88', '[ SUPORTE ]');
 
   const playerSup = engine.playerTeam.find(r => r.action === 'support' && r.isAlive);
   const enemySup  = engine.enemyTeam.find(r => r.action === 'support' && r.isAlive);
@@ -2048,7 +2048,7 @@ async function executeSimultaneousClash() {
     // Vai para a frente
     const supStepCol = isPlayer ? 1 : 3;
     addLog(`[SUPORTE] ${supporter.name} avança e canaliza suporte (${energyCost} EN)!`, 'support');
-    setNarratorInfo(`SUPORTE // ${supporter.name}`, `Avançando para canalizar nanites de suporte (${energyCost} EN)!`, SUP_ICON_SVG, '#00ff88', '[ SUPORTE ]');
+    setNarratorInfo(`SUPORTE: ${supporter.name}`, `Avançando para canalizar suporte (${energyCost} EN)!`, SUP_ICON_SVG, '#00ff88', '[ SUPORTE ]');
     await board.animateRobotMove(supporter, supStepCol, supporter.homeRow, 350);
     await delay(250);
 
@@ -2103,7 +2103,7 @@ async function executeSimultaneousClash() {
   if (checkMatchEnded()) return;
 
   // Transição cinematográfica e delay entre rounds
-  addLog(`--- FIM DO ROUND ${engine.round} // ATUALIZANDO TELEMETRIA ---`, 'info');
+  addLog(`--- FIM DO ROUND ${engine.round} ---`, 'info');
   await delay(1400);
 
   // Notifica robôs que descansaram (+1 EN)
@@ -2120,13 +2120,13 @@ async function executeSimultaneousClash() {
   if (buffedRobots && buffedRobots.length > 0) {
     buffedRobots.forEach(b => {
       const sideName = b.bot.side === 'PLAYER' ? 'ALIADO' : 'INIMIGO';
-      addLog(`[SOBRECARGA // ${sideName}] ${b.bot.name}: Ataque aumentou +${b.diff} (${b.oldAtk} -> ${b.newAtk}/20)!`, 'info');
+      addLog(`[SOBRECARGA: ${sideName}] ${b.bot.name}: Ataque aumentou +${b.diff} (${b.oldAtk} -> ${b.newAtk}/20)!`, 'info');
     });
   }
 
   // Verifica sobrecarga máxima de 20 para ativar o Alerta de Emergência
   if (engine.isAttackOverloaded) {
-    addLog(`[ALERTA DE EMERGÊNCIA] Sistemas de ataque em SOBRECARGA MÁXIMA (20)!`, 'miss');
+    addLog(`[ALERTA] Sistemas de ataque em SOBRECARGA MÁXIMA (20)!`, 'miss');
     getAudio().playHeavyImpact();
   }
 
@@ -2144,8 +2144,8 @@ async function executeSimultaneousClash() {
   renderCommandCards();
   resetNarratorToStatus();
 
-  updateGuide(`ROUND ${engine.round} // FASE DE COMANDO`, 'Defina ataques, defesas, suportes ou poupe energia.');
-  showPhaseBanner(`ROUND ${engine.round}`, 'FASE DE COMANDO // DEFINA SUAS AÇÕES', 'normal', 1400);
+  updateGuide(`ROUND ${engine.round}`, 'Defina os comandos da equipe.');
+  showPhaseBanner(`ROUND ${engine.round}`, 'FASE DE COMANDO', 'normal', 1400);
   addLog(`--- INÍCIO DO ROUND ${engine.round} ---`, 'info');
 }
 
@@ -2345,7 +2345,7 @@ async function endMatch(winner) {
     // Vitória: G.I. Entrance adapted → Lizardilhas POP Theme em loop
     audio.playVictorySequencePvP(700);
     audio.playVictoryFanfare();
-    showPhaseBanner('VITÓRIA TÁTICA!', 'EQUIPE VITORIOSA // ACESSO AO RANKING CONCEDIDO', 'normal', 2500);
+    showPhaseBanner('VITÓRIA!', 'Duelo finalizado', 'normal', 2500);
 
     if (overlay) overlay.classList.remove('hidden');
   } else {
@@ -2370,7 +2370,7 @@ async function endMatch(winner) {
   }
 
   if (title) {
-    title.textContent = playerWon ? 'VITÓRIA TÁTICA!' : 'DERROTA';
+    title.textContent = playerWon ? 'VITÓRIA!' : 'DERROTA';
     title.className = `versus-result-title ${playerWon ? 'victory' : 'defeat'}`;
   }
   if (sub) {
@@ -2383,7 +2383,7 @@ async function endMatch(winner) {
       <div>Suas Medalhas: <strong>${engine.medals.PLAYER}</strong>/10</div>
       <div>Medalhas Inimigas: <strong>${engine.medals.ENEMY}</strong>/10</div>
       <div>Rounds Jogados: ${engine.round}</div>
-      <div>Modo: ${currentMode === 'bot' ? 'TREINAMENTO // IA' : 'COMPETITIVO // SALAS ONLINE'}</div>
+      <div>Modo: ${currentMode === 'bot' ? 'TREINAMENTO CONTRA IA' : 'COMPETITIVO ONLINE'}</div>
       ${mmrInfo ? `
         <div style="margin-top: 8px; padding-top: 6px; border-top: 1px dashed rgba(255,255,255,0.2);">
           Pontuação de Ranking: <strong style="color: ${playerWon ? '#00ff88' : '#ff3344'};">${mmrInfo.delta} RP</strong> 

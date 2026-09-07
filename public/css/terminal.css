@@ -1830,7 +1830,7 @@ html, body {
 }
 
 .pokemon-card-slot.active-party::before {
-  content: "// ATIVO NA PARTY //";
+  content: "ATIVO";
   position: absolute;
   top: -10px;
   right: 12px;
