@@ -1520,53 +1520,40 @@ export class Terminal3DEngine {
   // =========================================================================
   // 6. TELA PRÉ-TÍTULO: TERMINAL 3D DE DADOS BINÁRIOS & SINCRONIZAÇÃO NEURAL
   // =========================================================================
-  _createBinaryCanvasTexture(text, color = '#00ff88', glowColor = 'rgba(0, 255, 136, 0.65)') {
+  _createVerticalBinaryChainTexture(digits) {
     const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 64;
+    canvas.width = 64;
+    canvas.height = digits.length * 48;
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
 
+    // Fundo 100% transparente — SEM CAIXAS, SEM BORDAS, SEM NENHUMA PLACA
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Placa holográfica translúcida
-    ctx.fillStyle = 'rgba(1, 15, 8, 0.45)';
-    ctx.fillRect(4, 6, canvas.width - 8, canvas.height - 12);
-
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 1.6;
-    ctx.strokeRect(4, 6, canvas.width - 8, canvas.height - 12);
-
-    // Cantoneiras cibernéticas
-    ctx.fillStyle = color;
-    ctx.fillRect(4, 6, 8, 3);
-    ctx.fillRect(4, 6, 3, 8);
-    ctx.fillRect(canvas.width - 12, 6, 8, 3);
-    ctx.fillRect(canvas.width - 7, 6, 3, 8);
-    ctx.fillRect(4, canvas.height - 9, 8, 3);
-    ctx.fillRect(4, canvas.height - 14, 3, 8);
-    ctx.fillRect(canvas.width - 12, canvas.height - 9, 8, 3);
-    ctx.fillRect(canvas.width - 7, canvas.height - 14, 3, 8);
-
-    // Tag minúscula de hex no canto superior esquerdo
-    ctx.font = '10px "Share Tech Mono", monospace';
-    ctx.fillStyle = 'rgba(0, 255, 136, 0.7)';
-    ctx.fillText('0xDATA', 16, 17);
-
-    // Texto Binário Central
-    ctx.font = 'bold 30px "Share Tech Mono", "Courier New", monospace';
+    // Tipografia nítida e verde neon puro
+    ctx.font = 'bold 36px "Share Tech Mono", "Courier New", monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.shadowColor = glowColor;
-    ctx.shadowBlur = 10;
-    ctx.fillStyle = color;
-    ctx.fillText(text, canvas.width / 2, (canvas.height / 2) + 2);
+    ctx.fillStyle = '#00ff88'; // Apenas a cor verde
+    ctx.shadowColor = 'rgba(0, 255, 136, 0.9)';
+    ctx.shadowBlur = 12;
+
+    const rowH = 48;
+    for (let i = 0; i < digits.length; i++) {
+      const y = (i * rowH) + (rowH / 2);
+      ctx.fillText(String(digits[i]), canvas.width / 2, y);
+    }
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.LinearFilter;
     this.preTitleTextures.push(texture);
-    return texture;
+
+    return {
+      texture,
+      width: 0.9,
+      height: digits.length * 0.82
+    };
   }
 
   initPreTitleBinary3D(canvasId = 'preTitle3DCanvas') {
@@ -1599,33 +1586,28 @@ export class Terminal3DEngine {
     renderer.setClearColor(0x000000, 0);
     this.preTitleRenderer = renderer;
 
-    // Paleta estrita: Zero Roxo. Apenas verde esmeralda, ciano e âmbar dourado
-    const binaryStrings = [
-      { text: '000101', color: '#00ff88', glow: 'rgba(0, 255, 136, 0.7)' },
-      { text: '1101011', color: '#00ff88', glow: 'rgba(0, 255, 136, 0.7)' },
-      { text: '101100', color: '#00e5ff', glow: 'rgba(0, 229, 255, 0.7)' },
-      { text: '011010', color: '#00ff88', glow: 'rgba(0, 255, 136, 0.7)' },
-      { text: '001011', color: '#00ff88', glow: 'rgba(0, 255, 136, 0.7)' },
-      { text: '1110010', color: '#00e5ff', glow: 'rgba(0, 229, 255, 0.7)' },
-      { text: '010110', color: '#00ff88', glow: 'rgba(0, 255, 136, 0.7)' },
-      { text: '100011', color: '#ffd700', glow: 'rgba(255, 215, 0, 0.7)' },
-      { text: '1100101', color: '#00ff88', glow: 'rgba(0, 255, 136, 0.7)' },
-      { text: '001100', color: '#00e5ff', glow: 'rgba(0, 229, 255, 0.7)' },
-      { text: '1010101', color: '#00ff88', glow: 'rgba(0, 255, 136, 0.7)' },
-      { text: '0111010', color: '#00ff88', glow: 'rgba(0, 255, 136, 0.7)' }
+    // Padrões de correntes verticais de dígitos 0 e 1 (apenas verde, sem caixas)
+    const chainPatterns = [
+      [0, 0, 1, 0, 1, 1, 1],
+      [1, 1, 0, 1, 0, 0, 1, 0],
+      [0, 1, 0, 1, 1, 0, 1, 1, 0],
+      [1, 0, 0, 1, 1, 1, 0, 1],
+      [0, 0, 0, 1, 0, 1, 1, 0, 1, 1],
+      [1, 0, 1, 0, 0, 1, 0, 1],
+      [0, 1, 1, 1, 0, 0, 1],
+      [1, 1, 1, 0, 1, 0, 1, 0],
+      [0, 1, 0, 0, 1, 1, 0, 1, 1],
+      [1, 0, 1, 1, 0, 1, 0, 0, 1]
     ];
 
-    // Gerar texturas em cache
-    const textures = binaryStrings.map(item => this._createBinaryCanvasTexture(item.text, item.color, item.glow));
+    // Gerar texturas verticais translúcidas
+    const chainDataList = chainPatterns.map(pattern => this._createVerticalBinaryChainTexture(pattern));
 
-    const planeGeo = new THREE.PlaneGeometry(3.6, 0.9);
-    const elementsList = [];
-
-    // ── 1. ANÉIS ORBITAIS CONCÊNTRICOS DE NÚMEROS BINÁRIOS (Girando em 3D e ondulando) ──
+    // ── 1. ANÉIS ORBITAIS CONCÊNTRICOS DE CORRENTES BINÁRIAS (Girando em 3D e ondulando) ──
     const ringsConfig = [
-      { radius: 8.5, count: 8, rotSpeed: 0.0075, tiltX: 0.45, tiltZ: -0.25, undFreq: 2.4, undAmp: 0.8 },
-      { radius: 14.5, count: 12, rotSpeed: -0.0055, tiltX: -0.6, tiltZ: 0.35, undFreq: 1.8, undAmp: 1.2 },
-      { radius: 21.0, count: 16, rotSpeed: 0.0040, tiltX: 0.75, tiltZ: -0.4, undFreq: 1.4, undAmp: 1.5 }
+      { radius: 9.0, count: 10, rotSpeed: 0.0075, tiltX: 0.45, tiltZ: -0.25, undFreq: 2.4, undAmp: 0.9 },
+      { radius: 15.0, count: 14, rotSpeed: -0.0055, tiltX: -0.6, tiltZ: 0.35, undFreq: 1.8, undAmp: 1.3 },
+      { radius: 21.5, count: 18, rotSpeed: 0.0040, tiltX: 0.75, tiltZ: -0.4, undFreq: 1.4, undAmp: 1.6 }
     ];
 
     const ringGroups = [];
@@ -1641,11 +1623,12 @@ export class Terminal3DEngine {
 
       for (let i = 0; i < cfg.count; i++) {
         const angle = i * step;
-        const tex = textures[(ringIdx * 3 + i) % textures.length];
+        const cData = chainDataList[(ringIdx * 3 + i) % chainDataList.length];
+        const planeGeo = new THREE.PlaneGeometry(cData.width, cData.height);
         const mat = new THREE.MeshBasicMaterial({
-          map: tex,
+          map: cData.texture,
           transparent: true,
-          opacity: 0.85,
+          opacity: 0.88,
           blending: THREE.AdditiveBlending,
           side: THREE.DoubleSide
         });
@@ -1654,7 +1637,6 @@ export class Terminal3DEngine {
         const x = Math.cos(angle) * cfg.radius;
         const z = Math.sin(angle) * cfg.radius;
         mesh.position.set(x, 0, z);
-        mesh.rotation.y = -angle + Math.PI / 2;
 
         ringGroup.add(mesh);
         items.push({
@@ -1672,38 +1654,50 @@ export class Terminal3DEngine {
       });
     });
 
-    // ── 2. COLUNAS VERTICAIS DE DADOS EM PROFUNDIDADE 3D (Subindo e descendo) ──
-    const columnCount = 22;
+    // ── 2. CORRENTES VERTICAIS DE DADOS EM CASCATA 3D (Subindo e descendo como chuva/fluxo) ──
+    const columnCount = 28;
     const columns = [];
 
     for (let c = 0; c < columnCount; c++) {
       const colGroup = new THREE.Group();
-      const colX = (Math.random() - 0.5) * 62;
+      const colX = (Math.random() - 0.5) * 64;
       const colZ = -45 + Math.random() * 52;
-      const colBaseY = (Math.random() - 0.5) * 40;
+      const colBaseY = (Math.random() - 0.5) * 44;
 
-      // Evitar colocar colunas muito grudadas no centro para não obstruir o retículo
-      if (Math.abs(colX) < 4.5 && colZ > 10) continue;
+      // Evitar colocar colunas muito grudadas no centro para manter o retículo limpo
+      if (Math.abs(colX) < 4.0 && colZ > 10) continue;
 
       colGroup.position.set(colX, colBaseY, colZ);
       scene.add(colGroup);
 
-      const colSpeed = (Math.random() > 0.5 ? 1 : -1) * (0.05 + Math.random() * 0.08);
-      const plaquesInCol = 3 + Math.floor(Math.random() * 3);
-      const colSpacing = 2.0;
+      const colSpeed = (Math.random() > 0.5 ? 1 : -1) * (0.07 + Math.random() * 0.10);
+      const cData = chainDataList[c % chainDataList.length];
+      const planeGeo = new THREE.PlaneGeometry(cData.width, cData.height);
 
-      for (let p = 0; p < plaquesInCol; p++) {
-        const tex = textures[(c * 2 + p) % textures.length];
-        const mat = new THREE.MeshBasicMaterial({
-          map: tex,
+      const mat = new THREE.MeshBasicMaterial({
+        map: cData.texture,
+        transparent: true,
+        opacity: 0.7 + Math.random() * 0.28,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide
+      });
+      const mesh = new THREE.Mesh(planeGeo, mat);
+      colGroup.add(mesh);
+
+      // Adiciona um segundo segmento conectado para correntes mais longas em algumas colunas
+      if (Math.random() > 0.45) {
+        const cData2 = chainDataList[(c + 3) % chainDataList.length];
+        const planeGeo2 = new THREE.PlaneGeometry(cData2.width, cData2.height);
+        const mat2 = new THREE.MeshBasicMaterial({
+          map: cData2.texture,
           transparent: true,
-          opacity: 0.65 + Math.random() * 0.3,
+          opacity: 0.6 + Math.random() * 0.3,
           blending: THREE.AdditiveBlending,
           side: THREE.DoubleSide
         });
-        const mesh = new THREE.Mesh(planeGeo, mat);
-        mesh.position.y = (p - plaquesInCol / 2) * colSpacing;
-        colGroup.add(mesh);
+        const mesh2 = new THREE.Mesh(planeGeo2, mat2);
+        mesh2.position.y = (colSpeed > 0 ? -1 : 1) * (cData.height + 0.5);
+        colGroup.add(mesh2);
       }
 
       columns.push({
@@ -1714,16 +1708,16 @@ export class Terminal3DEngine {
       });
     }
 
-    // ── 3. GRADES DE PERSPECTIVA CYBERPUNK (Chão e Teto) ──
+    // ── 3. GRADES DE PERSPECTIVA CYBERPUNK (Chão e Teto em Verde Matrix) ──
     const gridBottom = new THREE.GridHelper(80, 36, 0x00ff88, 0x003318);
-    gridBottom.position.y = -14.5;
+    gridBottom.position.y = -15;
     scene.add(gridBottom);
 
-    const gridTop = new THREE.GridHelper(80, 36, 0x00e5ff, 0x002233);
-    gridTop.position.y = 14.5;
+    const gridTop = new THREE.GridHelper(80, 36, 0x00ff88, 0x003318);
+    gridTop.position.y = 15;
     scene.add(gridTop);
 
-    // ── 4. PARTÍCULAS QUÂNTICAS DE BITS ──
+    // ── 4. PARTÍCULAS QUÂNTICAS DE BITS (Verde Matrix) ──
     const particleCount = 200;
     const particleGeo = new THREE.BufferGeometry();
     const particlePositions = new Float32Array(particleCount * 3);
@@ -1745,11 +1739,11 @@ export class Terminal3DEngine {
     const particleField = new THREE.Points(particleGeo, particleMat);
     scene.add(particleField);
 
-    // Iluminação Ambiental & Ponto Central
-    const ambient = new THREE.AmbientLight(0x00ff88, 0.8);
+    // Iluminação Ambiental & Ponto Central (Verde)
+    const ambient = new THREE.AmbientLight(0x00ff88, 0.9);
     scene.add(ambient);
 
-    const centerLight = new THREE.PointLight(0x00e5ff, 2.0, 35);
+    const centerLight = new THREE.PointLight(0x00ff88, 2.2, 35);
     centerLight.position.set(0, 0, 10);
     scene.add(centerLight);
 
