@@ -8044,145 +8044,70 @@ html, body {
 }
 
 /* ===================================================
-   TELA PRÉ-TÍTULO (PRESSIONE ESPAÇO PARA CONTINUAR)
+   OVERLAY PRÉ-TÍTULO MINIMALISTA
+   Uma tela preta simples sobreposta ao monitor que
+   desaparece suavemente ao receber qualquer input do usuário.
    =================================================== */
-.press-space-screen {
+.press-space-overlay {
   position: absolute;
   inset: 0;
-  background: #010402;
-  z-index: 95;
+  background: #000000;
+  z-index: 999;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   user-select: none;
-  transition: opacity 1.8s cubic-bezier(0.4, 0, 0.2, 1), transform 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.8s ease-out;
   opacity: 1;
 }
 
-.press-space-screen.fade-out-slow {
+.press-space-overlay.fade-out {
   opacity: 0;
-  transform: scale(1.025);
   pointer-events: none;
 }
 
-.press-space-crt-ambient {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 50% 50%, rgba(0, 255, 102, 0.05) 0%, rgba(0, 0, 0, 0.96) 80%);
-  pointer-events: none;
-}
-
-.press-space-content {
-  position: relative;
-  z-index: 2;
+.press-space-minimal-content {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 24px;
-  max-width: 90vw;
+  gap: 18px;
 }
 
-.press-space-key-visual {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 24px;
-  filter: drop-shadow(0 0 16px rgba(0, 255, 102, 0.55)) drop-shadow(0 0 35px rgba(0, 255, 102, 0.25));
-  transition: transform 0.12s ease, filter 0.12s ease;
-}
-
-.press-space-gif {
-  width: 250px;
-  max-width: 82vw;
+.press-space-clean-img {
+  width: 175px;
+  max-width: 65vw;
   height: auto;
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
-  border-radius: 4px;
+  display: block;
+  background: transparent;
+  filter: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  outline: none !important;
+  transition: transform 0.08s ease;
+  animation: spacebarKeyFloat 2.2s ease-in-out infinite;
 }
 
-.press-space-key-visual.pressed {
-  transform: translateY(6px) scale(0.96);
-  filter: drop-shadow(0 0 30px rgba(0, 255, 102, 0.95)) drop-shadow(0 0 50px rgba(0, 229, 255, 0.7));
+.press-space-clean-img.pressed {
+  transform: translateY(4px) scale(0.97);
 }
 
-.press-space-text {
-  font-family: 'Share Tech Mono', 'VT323', monospace;
-  font-size: 1.6rem;
-  font-weight: 700;
+@keyframes spacebarKeyFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(3px); }
+}
+
+.press-space-clean-text {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 1.3rem;
   color: #00ff66;
-  text-shadow: 0 0 14px rgba(0, 255, 102, 0.85), 0 0 28px rgba(0, 255, 102, 0.45);
   letter-spacing: 2px;
   text-transform: uppercase;
-  animation: pressSpaceBreathe 2s ease-in-out infinite alternate;
-}
-
-@keyframes pressSpaceBreathe {
-  0% {
-    opacity: 0.85;
-    text-shadow: 0 0 10px rgba(0, 255, 102, 0.6);
-  }
-  100% {
-    opacity: 1;
-    text-shadow: 0 0 20px rgba(0, 255, 102, 1), 0 0 36px rgba(0, 255, 102, 0.6);
-  }
-}
-
-.press-space-sub {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.8rem;
-  color: rgba(0, 255, 102, 0.55);
-  letter-spacing: 1.4px;
-  margin-top: 10px;
-}
-
-.press-space-badge {
-  margin-top: 30px;
-  padding: 6px 14px;
-  border: 1px dashed rgba(0, 255, 102, 0.35);
-  background: rgba(0, 20, 8, 0.6);
-  border-radius: 4px;
-  font-size: 0.72rem;
-  color: #008f39;
-  letter-spacing: 1.2px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.press-space-badge .pulse-dot {
-  width: 7px;
-  height: 7px;
-  background: #00ff66;
-  border-radius: 50%;
-  box-shadow: 0 0 8px #00ff66;
-  animation: pulseDotAnim 1.2s infinite ease-in-out;
-}
-
-@keyframes pulseDotAnim {
-  0%, 100% { opacity: 0.3; transform: scale(0.8); }
-  50% { opacity: 1; transform: scale(1.2); }
-}
-
-/* Transição de Fade-in Muito Lento da Tela de Título */
-.title-screen-container {
-  transition: opacity 1.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.title-screen-container.fade-in-slow {
-  animation: titleSlowFadeIn 1.9s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-@keyframes titleSlowFadeIn {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
+  opacity: 0.9;
 }
 
 /* ===================================================

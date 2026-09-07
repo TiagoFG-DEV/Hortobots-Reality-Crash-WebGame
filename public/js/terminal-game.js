@@ -559,7 +559,8 @@ export class TerminalGameApp {
 
     this.initUI();
     this.checkSavedCheckpoint();
-    this.initPressSpaceScreen();
+    this.showTitle();
+    this.initPressSpaceOverlay();
   }
 
   // ==========================================
@@ -872,85 +873,48 @@ export class TerminalGameApp {
     }
   }
 
-  // ─── TELA 0: PRÉ-TÍTULO (Pressione Espaço para Continuar e Desbloquear Áudio) ───
-  initPressSpaceScreen() {
-    const pressScreen = document.getElementById('pressSpaceScreen');
-    const titleScreen = document.getElementById('titleScreen');
-    const keyVisual = document.getElementById('pressSpaceKeyVisual');
-
-    // Inicialmente esconde a tela de título por baixo (aguardando input do usuário)
-    if (titleScreen) {
-      titleScreen.classList.add('hidden');
-      titleScreen.style.opacity = '0';
-    }
-
-    if (!pressScreen) {
-      this.showTitle();
-      return;
-    }
+  // ─── OVERLAY PRÉ-TÍTULO (Desbloqueio de Áudio ao primeiro input do usuário) ───
+  initPressSpaceOverlay() {
+    const overlay = document.getElementById('pressSpaceOverlay');
+    if (!overlay) return;
 
     let hasTriggered = false;
 
-    const proceedToTitle = (e) => {
-      // Se for evento de teclado, aceita tecla Espaço ou Enter
-      if (e && e.type === 'keydown') {
-        if (e.code !== 'Space' && e.key !== ' ' && e.keyCode !== 32 && e.key !== 'Enter' && e.keyCode !== 13) {
-          return;
-        }
-        e.preventDefault();
-      }
-
+    const dismissOverlay = () => {
       if (hasTriggered) return;
       hasTriggered = true;
 
-      // Animação visual imediata da tecla sendo pressionada
-      if (keyVisual) {
-        keyVisual.classList.add('pressed');
+      const img = document.getElementById('pressSpaceImg');
+      if (img) img.classList.add('pressed');
+
+      if (this.audio) {
+        if (typeof this.audio.playKeyClack === 'function') {
+          this.audio.playKeyClack();
+        }
+        // Inicia a música oficial da tela de título desimpedida pelo navegador
+        this.audio.playTitleSequence(1000);
       }
 
-      // Efeito sonoro mecânico de clique de switch de terminal
-      if (this.audio && typeof this.audio.playKeyClack === 'function') {
-        this.audio.playKeyClack();
-      }
+      overlay.classList.add('fade-out');
 
-      // Inicia o fade OUT bem lento da tela pré-título
-      pressScreen.classList.add('fade-out-slow');
+      window.removeEventListener('keydown', onKeyDown);
+      overlay.removeEventListener('click', dismissOverlay);
 
-      // Revela a tela de título e inicializa todos os subsistemas
-      this.showTitle();
-
-      const blackOverlay = document.getElementById('titleBlackTransition');
-      if (blackOverlay) {
-        blackOverlay.classList.add('fade-out');
-      }
-
-      if (titleScreen) {
-        titleScreen.classList.remove('hidden');
-        titleScreen.classList.add('fade-in-slow');
-        titleScreen.style.opacity = '1';
-      }
-
-      // Remove listeners
-      window.removeEventListener('keydown', proceedToTitle);
-      pressScreen.removeEventListener('click', proceedToTitle);
-
-      // Após a conclusão da transição lenta (~1.9s), remove a tela pré-título
       setTimeout(() => {
-        pressScreen.classList.add('hidden');
-      }, 1950);
+        overlay.remove();
+      }, 850);
     };
 
-    window.addEventListener('keydown', proceedToTitle);
-    pressScreen.addEventListener('click', proceedToTitle);
+    const onKeyDown = () => {
+      dismissOverlay();
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    overlay.addEventListener('click', dismissOverlay);
   }
 
-  showTitle() {
+  showTitle(fromNav = false) {
     this.showScreen('titleScreen');
-
-    const titleScreen = document.getElementById('titleScreen');
-    if (titleScreen) {
-      titleScreen.style.opacity = '1';
-    }
 
     // Transição suave de Fade-out de tela preta por cima da tela de título
     const blackOverlay = document.getElementById('titleBlackTransition');
@@ -961,9 +925,12 @@ export class TerminalGameApp {
       }, 100);
     }
 
-    // Inicia a sequência de título: G.I. Entrance adapted → Lobby Theme (loop)
-    // Se o Lobby Theme já estiver tocando (retorno do menu Versus), não interrompe.
-    this.audio.playTitleSequence(900);
+    // Se o overlay de espaço inicial estiver presente na tela, aguarda o primeiro input para tocar BGM
+    const hasSpaceOverlay = document.getElementById('pressSpaceOverlay');
+    if (!hasSpaceOverlay || fromNav) {
+      this.audio.playTitleSequence(900);
+    }
+
     this.checkSavedCheckpoint();
 
     // Inicializa o fundo 3D com a Torre Realista girando suavemente
