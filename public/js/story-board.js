@@ -42,13 +42,14 @@ export class StoryBoard {
 
     // Mapeamento de Cores Oficiais dos Robôs
     this.robotColors = {
-      'dinobyte': '#00ff88',
+      'dinobyte': '#ff3344',
       'cowputer': '#ffd700',
       'penlinux': '#00e5ff',
-      'tigervex': '#ff4455',
-      'pavabyte': '#ffaa00',
-      'quezas': '#ffd700',
-      'default': '#00ff88'
+      'tigervex': '#ff8c00',
+      'pavabyte': '#ff69b4',
+      'quezas': '#00ff66',
+      'quezas_avatar': '#00ff66',
+      'default': '#ff3344'
     };
 
     this.resize();
@@ -105,14 +106,14 @@ export class StoryBoard {
       if (bot.ghostHp === undefined) bot.ghostHp = bot.currentHp;
       bot.code = this._normalizeBotId(bot.id, bot.name);
       const palette = {
-        'DB': '#00ff88',
-        'PL': '#00e5ff',
-        'CP': '#ffd700',
-        'PB': '#ffaa00',
-        'TV': '#ff4455',
-        'QZ': '#ffd700'
+        'DB': '#ff3344',   // Dino-Byte é VERMELHO oficial
+        'PL': '#00e5ff',   // Penlinux é Ciano/Gelo
+        'CP': '#ffd700',   // Cowputer é Dourado/Terra
+        'PB': '#ff69b4',   // Pavabyte é Rosa/Luz
+        'TV': '#ff8c00',   // Tigervex é Laranja/Elétrico
+        'QZ': '#00ff66'    // Quezadilhas é o ÚNICO verde no 1º round
       };
-      bot.color = palette[bot.code] || this.robotColors[bot.id] || '#00ff88';
+      bot.color = palette[bot.code] || this.robotColors[bot.id] || '#ff3344';
       if (bot.pulsePhase === undefined) bot.pulsePhase = Math.random() * Math.PI * 2;
     });
 
@@ -127,7 +128,9 @@ export class StoryBoard {
       if (enemy.displayHp === undefined) enemy.displayHp = enemy.currentHp;
       if (enemy.ghostHp === undefined) enemy.ghostHp = enemy.currentHp;
       enemy.code = this._normalizeBotId(enemy.id, enemy.name);
-      enemy.color = enemy.isBoss ? '#ffd700' : '#ff3344';
+      // Inimigos usam roxo escuro com brilho rosa (corrupção da Grande Inteligência)
+      enemy.color = enemy.isBoss ? '#ffd700' : '#80148a';
+      enemy.glowColor = '#ff2a85';
       if (enemy.pulsePhase === undefined) enemy.pulsePhase = Math.random() * Math.PI * 2;
     });
   }
@@ -333,7 +336,7 @@ export class StoryBoard {
     const startY = attacker.homeY;
     const targetX = target.homeX;
     const targetY = target.homeY;
-    const color = attacker.color || (isPlayer ? '#00ff88' : '#ff3344');
+    const color = attacker.color || (isPlayer ? (attacker.color || '#ff3344') : '#ff2a85');
 
     // 1. Dash para frente (~0.22s)
     const forwardX = isPlayer ? startX + (this.W * 0.28) : startX - (this.W * 0.28);
@@ -760,11 +763,11 @@ export class StoryBoard {
       // Robô abatido com halo de corrupção
       ctx.save();
       ctx.globalAlpha = 0.25;
-      ctx.fillStyle = robot.color || '#ff3344';
+      ctx.fillStyle = robot.color || (isAllied ? '#ff3344' : '#80148a');
       ctx.beginPath();
       ctx.arc(x, y, 18, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = '#ff3344';
+      ctx.fillStyle = isAllied ? '#ff3344' : '#ff4da6';
       ctx.font = 'bold 10px monospace';
       ctx.textAlign = 'center';
       ctx.fillText('[DOWN]', x, y + 4);
@@ -777,8 +780,8 @@ export class StoryBoard {
     const breath = Math.sin(t * 0.07 + (robot.pulsePhase || 0)) * 2;
     const r = baseRadius + breath;
 
-    // 2. Rotating 3D Orbital Rings (Exatamente igual ao Modo Versus)
-    this._drawOrbitalRings(x, y, r, robot.color, robot.pulsePhase || 0);
+    // 2. Rotating 3D Orbital Rings (com suporte a anel e partículas de corrupção)
+    this._drawOrbitalRings(x, y, r, isAllied ? robot.color : '#80148a', robot.pulsePhase || 0, !isAllied);
 
     // 3. Aura de Ação / Turno Atual do Aliado
     if (isActing) {
@@ -802,7 +805,7 @@ export class StoryBoard {
 
     // 4. Modo de Evidência / Seleção de Alvo Direta no Tabuleiro
     if (isSelectable) {
-      const candColor = isAllied ? '#00ff88' : '#ff3344';
+      const candColor = isAllied ? (robot.color || '#00ff66') : '#ff4da6';
 
       ctx.save();
       ctx.strokeStyle = candColor;
@@ -873,20 +876,30 @@ export class StoryBoard {
 
     // 5. Robot Body Gradient & Metallic Core
     ctx.save();
-    ctx.shadowColor = robot.color;
-    ctx.shadowBlur = 18;
+    const isEnemy = !isAllied;
+    const glowCol = isEnemy ? (robot.glowColor || '#ff2a85') : (robot.glowColor || robot.color);
+    ctx.shadowColor = glowCol;
+    ctx.shadowBlur = isEnemy ? 26 : 18;
 
     const bodyGrad = ctx.createRadialGradient(x - 5, y - 5, 2, x, y, r);
-    bodyGrad.addColorStop(0, this._lighten(robot.color, 0.7));
-    bodyGrad.addColorStop(0.5, robot.color);
-    bodyGrad.addColorStop(1, this._darken(robot.color, 0.4));
+    if (isEnemy) {
+      // Inimigos: Roxo escuro que brilha rosa (Corrupção da Grande Inteligência)
+      bodyGrad.addColorStop(0, '#ff4da6');   // Luz rosa neon brilhante no topo
+      bodyGrad.addColorStop(0.35, '#9c27b0'); // Roxo vivo translúcido
+      bodyGrad.addColorStop(0.7, '#5c1380');  // Roxo escuro
+      bodyGrad.addColorStop(1, '#20042b');    // Roxo profundo na base metálica
+    } else {
+      bodyGrad.addColorStop(0, this._lighten(robot.color, 0.7));
+      bodyGrad.addColorStop(0.5, robot.color);
+      bodyGrad.addColorStop(1, this._darken(robot.color, 0.4));
+    }
     ctx.fillStyle = bodyGrad;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
 
     // Inner Phosphor Lens Ring
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.strokeStyle = isEnemy ? 'rgba(255, 77, 166, 0.85)' : 'rgba(255, 255, 255, 0.7)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.arc(x, y, r * 0.75, 0, Math.PI * 2);
@@ -901,7 +914,7 @@ export class StoryBoard {
     this._drawRobotMiniHUD(robot, x, y, r, isAllied);
   }
 
-  _drawOrbitalRings(x, y, r, color, phase) {
+  _drawOrbitalRings(x, y, r, color, phase, isEnemy = false) {
     const ctx = this.ctx;
     const t = this.time * 0.04 + phase;
 
@@ -909,7 +922,7 @@ export class StoryBoard {
     // Ring 1 (Tilted +25 deg)
     ctx.translate(x, y);
     ctx.rotate(0.4);
-    ctx.strokeStyle = `${color}44`;
+    ctx.strokeStyle = isEnemy ? 'rgba(186, 104, 200, 0.45)' : `${color}44`;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.ellipse(0, 0, r + 7, (r + 7) * 0.45, 0, 0, Math.PI * 2);
@@ -918,16 +931,16 @@ export class StoryBoard {
     // Orbiting particle 1
     const px1 = Math.cos(t) * (r + 7);
     const py1 = Math.sin(t) * (r + 7) * 0.45;
-    ctx.fillStyle = '#ffffff';
-    ctx.shadowColor = color;
-    ctx.shadowBlur = 8;
+    ctx.fillStyle = isEnemy ? '#ff4da6' : '#ffffff';
+    ctx.shadowColor = isEnemy ? '#ff2a85' : color;
+    ctx.shadowBlur = 10;
     ctx.beginPath();
-    ctx.arc(px1, py1, 2.5, 0, Math.PI * 2);
+    ctx.arc(px1, py1, 2.8, 0, Math.PI * 2);
     ctx.fill();
 
     // Ring 2 (Tilted -35 deg, counter-rotating)
     ctx.rotate(-0.8);
-    ctx.strokeStyle = `${color}33`;
+    ctx.strokeStyle = isEnemy ? 'rgba(128, 20, 138, 0.4)' : `${color}33`;
     ctx.beginPath();
     ctx.ellipse(0, 0, r + 9, (r + 9) * 0.4, 0, 0, Math.PI * 2);
     ctx.stroke();
@@ -935,9 +948,11 @@ export class StoryBoard {
     // Orbiting particle 2
     const px2 = Math.cos(-t * 1.3) * (r + 9);
     const py2 = Math.sin(-t * 1.3) * (r + 9) * 0.4;
-    ctx.fillStyle = color;
+    ctx.fillStyle = isEnemy ? '#ff80bf' : color;
+    ctx.shadowColor = isEnemy ? '#ff2a85' : color;
+    ctx.shadowBlur = isEnemy ? 8 : 0;
     ctx.beginPath();
-    ctx.arc(px2, py2, 2.2, 0, Math.PI * 2);
+    ctx.arc(px2, py2, 2.4, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.restore();
@@ -1080,7 +1095,7 @@ export class StoryBoard {
     // HP Fill
     const hpColor = isAllied
       ? (curPct > 0.5 ? '#00ff88' : curPct > 0.25 ? '#ffd700' : '#ff3344')
-      : (curPct > 0.5 ? '#ff4444' : curPct > 0.25 ? '#ffd700' : '#ff2222');
+      : (curPct > 0.5 ? '#ff4da6' : curPct > 0.25 ? '#e879f9' : '#9c27b0');
 
     ctx.fillStyle = hpColor;
     ctx.shadowColor = hpColor;
@@ -1090,7 +1105,7 @@ export class StoryBoard {
     ctx.fill();
 
     // Border
-    ctx.strokeStyle = isAllied ? 'rgba(0, 255, 136, 0.4)' : 'rgba(255, 51, 68, 0.4)';
+    ctx.strokeStyle = isAllied ? 'rgba(0, 255, 136, 0.4)' : 'rgba(255, 77, 166, 0.45)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.roundRect(barX, barY, barW, barH, 3);
@@ -1128,7 +1143,7 @@ export class StoryBoard {
 
     // Nome do Robô
     ctx.font = '700 10px "Share Tech Mono", monospace';
-    ctx.fillStyle = isAllied ? '#ffffff' : (robot.isBoss ? '#ffd700' : '#ff8899');
+    ctx.fillStyle = isAllied ? '#ffffff' : (robot.isBoss ? '#ffd700' : '#ff80bf');
     ctx.textAlign = 'center';
     ctx.fillText(robot.name || 'ROBOT', x, barY + barH + (isAllied ? 16 : 10));
 

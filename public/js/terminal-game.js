@@ -1608,6 +1608,7 @@ export class TerminalGameApp {
           name: quezasTmpl.name || 'Quezadilhas',
           type: quezasTmpl.type || ElementTypes.FIRE,
           badgeClass: quezasTmpl.badgeClass || 'char-badge-quezas',
+          color: '#00ff66', // O ÚNICO robô/personagem verde no primeiro round de gameplay!
           avatar: quezasTmpl.avatar || '[QUEZAS]',
           maxHp: quezasTmpl.baseHp || 45,
           currentHp: quezasTmpl.baseHp || 45,
@@ -2663,7 +2664,7 @@ export class TerminalGameApp {
     }
 
     if (enemySide) {
-      enemySide.innerHTML = '<h3 style="color: var(--term-alert); border-bottom: 1px dashed var(--term-dim); padding-bottom: 4px;">[ HOSTIS ]</h3>';
+      enemySide.innerHTML = '<h3 style="color: #ff4da6; border-bottom: 1px dashed rgba(255, 77, 166, 0.4); padding-bottom: 4px;">[ HOSTIS CORROMPIDOS ]</h3>';
       this.currentEnemies.forEach((enemy, idx) => {
         const hpPct = Math.max(0, (enemy.currentHp / enemy.maxHp) * 100);
         const hpColorClass = this.getHpFillClass(enemy.currentHp, enemy.maxHp);
@@ -2674,13 +2675,13 @@ export class TerminalGameApp {
         card.className = 'battler-card-block corrupted';
         card.innerHTML = `
           <div style="display: flex; justify-content: space-between; font-weight: 700;">
-            <span>${enemy.avatar} ${enemy.name}</span>
-            <span style="color: var(--term-alert);">EN: ${enemy.currentEnergy}</span>
+            <span style="color: #ff80bf;">${enemy.avatar} ${enemy.name}</span>
+            <span style="color: #ff4da6;">EN: ${enemy.currentEnergy}</span>
           </div>
           <div class="battler-bar-track"><div class="battler-bar-fill-hp ${hpColorClass}" style="width: ${hpPct}%;"></div></div>
           <div style="display: flex; justify-content: space-between; font-size: 0.98rem; font-weight: 800; margin-top: 3px;">
             <span style="color: #ffffff; text-shadow: 0 0 5px rgba(255,255,255,0.45);">HP: <strong>${enemy.currentHp}</strong>/${enemy.maxHp}</span>
-            <span style="color: ${hpPct <= 25 ? '#ff3344' : hpPct <= 50 ? '#ffd700' : '#ff4444'}; font-weight: 800;">${Math.floor(hpPct)}%</span>
+            <span style="color: ${hpPct <= 25 ? '#ff2a85' : hpPct <= 50 ? '#e879f9' : '#ff4da6'}; font-weight: 800;">${Math.floor(hpPct)}%</span>
           </div>
         `;
         enemySide.appendChild(card);
@@ -2785,14 +2786,14 @@ export class TerminalGameApp {
     const list = document.getElementById('attackMovesList');
 
     const botThemeColor = {
-      dinobyte: '#00ff66',
-      cowputer: '#e6c875',
+      dinobyte: '#ff3344',
+      cowputer: '#ffd700',
       penlinux: '#00d4ff',
-      tigervex: '#ffcc00',
-      pavabyte: '#00e5ff',
-      quezas_avatar: '#ff3344',
-      quezadilhas: '#ff3344'
-    }[currentBot.id] || '#00ff66';
+      tigervex: '#ff8c00',
+      pavabyte: '#ff69b4',
+      quezas_avatar: '#00ff66',
+      quezadilhas: '#00ff66'
+    }[currentBot.id] || '#ff3344';
 
     // Lista os ataques normais baseados no nível do robô
     currentBot.moves.forEach((move, idx) => {

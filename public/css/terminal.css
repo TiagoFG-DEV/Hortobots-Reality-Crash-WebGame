@@ -73,9 +73,9 @@ body.biome-core {
 }
 
 .char-badge-fogo {
-  color: #ff5722;
-  border: 1px solid #ff5722;
-  background: rgba(255, 87, 34, 0.12);
+  color: #ff3344;
+  border: 1px solid #ff3344;
+  background: rgba(255, 51, 68, 0.12);
 }
 
 .char-badge-terra {
@@ -109,9 +109,10 @@ body.biome-core {
 }
 
 .char-badge-corrupt {
-  color: #e879f9;
-  border: 1px solid #e879f9;
-  background: rgba(232, 121, 249, 0.12);
+  color: #ff4da6;
+  border: 1px solid #ff4da6;
+  background: rgba(80, 16, 110, 0.35);
+  box-shadow: 0 0 8px rgba(255, 77, 166, 0.35);
 }
 
 * {
@@ -1144,7 +1145,8 @@ html, body {
 }
 
 .battler-card-block.corrupted .battler-bar-fill-hp {
-  background: #ff3344;
+  background: linear-gradient(90deg, #80148a 0%, #ff4da6 100%);
+  box-shadow: 0 0 8px rgba(255, 77, 166, 0.4);
 }
 
 .battler-bar-fill-shield {
@@ -2243,8 +2245,9 @@ html, body {
 }
 
 .battler-card-block.corrupted {
-  border-color: var(--term-alert);
-  background: rgba(255, 51, 68, 0.06);
+  border-color: #ff4da6;
+  background: rgba(70, 14, 95, 0.22);
+  box-shadow: 0 0 10px rgba(255, 77, 166, 0.2);
 }
 
 .battler-bar-track {
