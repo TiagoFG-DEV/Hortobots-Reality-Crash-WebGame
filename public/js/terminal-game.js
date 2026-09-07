@@ -1056,44 +1056,86 @@ export class TerminalGameApp {
     }
   }
 
-  // ─── OVERLAY PRÉ-TÍTULO (Desbloqueio de Áudio ao primeiro input do usuário) ───
+  // ─── OVERLAY PRÉ-TÍTULO (Terminal 3D de Dados Binários & Sincronização Neural) ───
   initPressSpaceOverlay() {
     const overlay = document.getElementById('pressSpaceOverlay');
     if (!overlay) return;
 
+    // Inicializa o background 3D com dados binários flutuantes e colunas em cascata
+    if (this.engine3D && typeof this.engine3D.initPreTitleBinary3D === 'function') {
+      this.engine3D.initPreTitleBinary3D('preTitle3DCanvas');
+    }
+
     let hasTriggered = false;
 
-    const dismissOverlay = () => {
+    const finishDismiss = () => {
+      overlay.classList.add('fade-out');
+      setTimeout(() => {
+        if (this.engine3D && typeof this.engine3D.disposePreTitleBinary3D === 'function') {
+          this.engine3D.disposePreTitleBinary3D();
+        }
+        overlay.remove();
+      }, 750);
+    };
+
+    const triggerNeuralSync = (e) => {
       if (hasTriggered) return;
       hasTriggered = true;
 
-      const img = document.getElementById('pressSpaceImg');
-      if (img) img.classList.add('pressed');
+      // Feedback visual imediato no HUD holográfico
+      const reticle = document.getElementById('preTitleReticle');
+      if (reticle) reticle.classList.add('syncing');
 
+      const statusTag = document.getElementById('preTitleStatusTag');
+      if (statusTag) {
+        statusTag.innerHTML = '<span class="hud-blink-dot active"></span> SINAL ESTABELECIDO // LINK ATIVO';
+        statusTag.classList.add('synced');
+      }
+
+      const actionTitle = document.getElementById('preTitleActionTitle');
+      if (actionTitle) {
+        actionTitle.innerText = '[ SINCRONIZAÇÃO COMPLETA ]';
+        actionTitle.classList.add('synced');
+      }
+
+      const actionDesc = document.getElementById('preTitleActionDesc');
+      if (actionDesc) {
+        actionDesc.innerText = 'CARREGANDO SISTEMA OPERACIONAL QUEZAS-DOS...';
+      }
+
+      // Desbloqueio e início da trilha sonora
       if (this.audio) {
         if (typeof this.audio.playKeyClack === 'function') {
           this.audio.playKeyClack();
         }
-        // Inicia a música oficial da tela de título desimpedida pelo navegador
+        if (typeof this.audio.playPowerUp === 'function') {
+          this.audio.playPowerUp();
+        }
         this.audio.playTitleSequence(1000);
       }
 
-      overlay.classList.add('fade-out');
-
+      // Remove listeners imediatamente
       window.removeEventListener('keydown', onKeyDown);
-      overlay.removeEventListener('click', dismissOverlay);
+      overlay.removeEventListener('click', triggerNeuralSync);
+      overlay.removeEventListener('touchstart', triggerNeuralSync);
 
-      setTimeout(() => {
-        overlay.remove();
-      }, 850);
+      // Dispara o data-warp 3D acelerando os códigos binários em direção à câmera
+      if (this.engine3D && typeof this.engine3D.triggerPreTitleWarp === 'function') {
+        this.engine3D.triggerPreTitleWarp(() => {
+          finishDismiss();
+        });
+      } else {
+        setTimeout(finishDismiss, 400);
+      }
     };
 
-    const onKeyDown = () => {
-      dismissOverlay();
+    const onKeyDown = (e) => {
+      triggerNeuralSync(e);
     };
 
     window.addEventListener('keydown', onKeyDown);
-    overlay.addEventListener('click', dismissOverlay);
+    overlay.addEventListener('click', triggerNeuralSync);
+    overlay.addEventListener('touchstart', triggerNeuralSync, { passive: true });
   }
 
   showTitle(fromNav = false) {

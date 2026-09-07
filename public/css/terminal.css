@@ -8066,22 +8066,24 @@ html, body {
 }
 
 /* ===================================================
-   OVERLAY PRÉ-TÍTULO MINIMALISTA
-   Uma tela preta simples sobreposta ao monitor que
-   desaparece suavemente ao receber qualquer input do usuário.
+   OVERLAY PRÉ-TÍTULO: TERMINAL 3D DE DADOS BINÁRIOS
+   Ambiente 3D em Three.js com colunas de dados binários,
+   anéis concêntricos orbitais e sincronização neural.
    =================================================== */
 .press-space-overlay {
   position: absolute;
   inset: 0;
-  background: #000000;
+  background: radial-gradient(circle at center, rgba(1, 16, 7, 0.94) 0%, #010503 82%);
   z-index: 999;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   cursor: pointer;
   user-select: none;
-  transition: opacity 0.8s ease-out;
+  transition: opacity 0.75s ease-out;
   opacity: 1;
+  overflow: hidden;
 }
 
 .press-space-overlay.fade-out {
@@ -8089,47 +8091,251 @@ html, body {
   pointer-events: none;
 }
 
-.press-space-minimal-content {
+.pre-title-3d-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  display: block;
+  pointer-events: none;
+}
+
+.pre-title-hud {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px 32px;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.pre-title-hud-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.pre-title-sys-tag {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.92rem;
+  color: #00ff88;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.65);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hud-blink-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffd700;
+  box-shadow: 0 0 8px #ffd700;
+  animation: hudDotBlink 1.4s infinite ease-in-out;
+  display: inline-block;
+}
+
+.hud-blink-dot.active {
+  background: #00ff88;
+  box-shadow: 0 0 12px #00ff88;
+}
+
+.pre-title-status-tag {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.82rem;
+  color: #ffd700;
+  letter-spacing: 1.5px;
+  border: 1px solid rgba(255, 215, 0, 0.45);
+  padding: 5px 14px;
+  border-radius: 3px;
+  background: rgba(255, 215, 0, 0.08);
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+}
+
+.pre-title-status-tag.synced {
+  color: #00ff88;
+  border-color: #00ff88;
+  background: rgba(0, 255, 136, 0.16);
+  box-shadow: 0 0 16px rgba(0, 255, 136, 0.5);
+}
+
+.pre-title-center-core {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  gap: 18px;
+  justify-content: center;
+  gap: 22px;
+  pointer-events: auto;
+  margin: auto;
+  transition: transform 0.2s ease;
 }
 
-.press-space-clean-img {
-  width: 175px;
-  max-width: 65vw;
-  height: auto;
-  image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
-  display: block;
-  background: transparent;
-  filter: none !important;
-  box-shadow: none !important;
-  border: none !important;
-  outline: none !important;
-  transition: transform 0.08s ease;
-  animation: spacebarKeyFloat 2.2s ease-in-out infinite;
+.pre-title-center-core:hover .pre-title-action-badge {
+  border-color: #00ff88;
+  box-shadow: 0 0 28px rgba(0, 255, 136, 0.45);
+  transform: translateY(-2px);
 }
 
-.press-space-clean-img.pressed {
-  transform: translateY(4px) scale(0.97);
+.pre-title-reticle {
+  position: relative;
+  width: 108px;
+  height: 108px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
 }
 
-@keyframes spacebarKeyFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(3px); }
+.reticle-ring-outer {
+  position: absolute;
+  inset: 0;
+  border: 2px dashed rgba(0, 255, 136, 0.55);
+  border-radius: 50%;
+  animation: reticleSpinClockwise 14s linear infinite;
 }
 
-.press-space-clean-text {
+.reticle-ring-ticks {
+  position: absolute;
+  inset: 11px;
+  border: 1.5px dotted rgba(0, 229, 255, 0.7);
+  border-radius: 50%;
+  animation: reticleSpinCounter 9s linear infinite;
+}
+
+.reticle-ring-inner {
+  position: absolute;
+  inset: 22px;
+  border: 1.5px solid rgba(0, 255, 136, 0.4);
+  border-radius: 50%;
+}
+
+.reticle-glyph {
+  color: #00ff88;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.85));
+  animation: reticlePulse 2.6s ease-in-out infinite;
+}
+
+.pre-title-reticle.syncing {
+  animation: reticleSyncBurst 0.75s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+
+.pre-title-action-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 32px;
+  background: rgba(1, 18, 9, 0.82);
+  border: 1px solid rgba(0, 255, 136, 0.45);
+  border-radius: 4px;
+  box-shadow: 0 0 22px rgba(0, 255, 136, 0.25);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.pre-title-action-title {
   font-family: 'Share Tech Mono', monospace;
-  font-size: 1.3rem;
-  color: #00ff66;
+  font-size: 1.32rem;
+  font-weight: 700;
+  color: #00ff88;
+  letter-spacing: 3px;
+  text-shadow: 0 0 14px rgba(0, 255, 136, 0.75);
+  transition: all 0.25s ease;
+}
+
+.pre-title-action-title.synced {
+  color: #00e5ff;
+  text-shadow: 0 0 20px #00e5ff;
+}
+
+.pre-title-action-desc {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.84rem;
+  color: #00e5ff;
   letter-spacing: 2px;
   text-transform: uppercase;
   opacity: 0.9;
+  animation: actionDescGlow 2.2s ease-in-out infinite;
+}
+
+.pre-title-hud-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.pre-title-metric {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.82rem;
+  letter-spacing: 1.5px;
+}
+
+@keyframes reticleSpinClockwise {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes reticleSpinCounter {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@keyframes reticlePulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+    filter: drop-shadow(0 0 18px rgba(0, 255, 136, 1));
+  }
+}
+
+@keyframes reticleSyncBurst {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  45% {
+    transform: scale(1.35);
+    filter: brightness(2.5);
+    box-shadow: 0 0 45px #00ff88;
+  }
+  100% {
+    transform: scale(2.0);
+    opacity: 0;
+  }
+}
+
+@keyframes actionDescGlow {
+  0%, 100% {
+    opacity: 0.75;
+    text-shadow: 0 0 4px rgba(0, 229, 255, 0.4);
+  }
+  50% {
+    opacity: 1;
+    text-shadow: 0 0 12px rgba(0, 229, 255, 0.9);
+  }
+}
+
+@keyframes hudDotBlink {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
 }
 
 /* ===================================================

@@ -20,11 +20,48 @@
   <div class="crt-glass-glare"></div>
 
   <div class="crt-monitor-container">
-    <!-- OVERLAY PRÉ-TÍTULO MINIMALISTA (DESBLOQUEIO DE ÁUDIO NO NAVEGADOR) -->
+    <!-- OVERLAY PRÉ-TÍTULO CIBERNÉTICO 3D (TERMINAL DE DADOS BINÁRIOS & SINCRONIZAÇÃO NEURAL) -->
     <div id="pressSpaceOverlay" class="press-space-overlay">
-      <div class="press-space-minimal-content">
-        <img src="/img/space-key.png" alt="Espaço" class="press-space-clean-img" id="pressSpaceImg">
-        <div class="press-space-clean-text">Clique espaço para continuar</div>
+      <canvas id="preTitle3DCanvas" class="pre-title-3d-canvas"></canvas>
+
+      <div class="pre-title-hud">
+        <div class="pre-title-hud-top">
+          <div class="pre-title-sys-tag">
+            <span class="hud-blink-dot"></span> [ PROTOCOLO MNEMOSYNE // KERNEL v1.0 ]
+          </div>
+          <div class="pre-title-status-tag" id="preTitleStatusTag">
+            STANDBY // AGUARDANDO SINCRONIZAÇÃO
+          </div>
+        </div>
+
+        <div class="pre-title-center-core">
+          <div class="pre-title-reticle" id="preTitleReticle">
+            <div class="reticle-ring-outer"></div>
+            <div class="reticle-ring-ticks"></div>
+            <div class="reticle-ring-inner"></div>
+            <div class="reticle-glyph">
+              <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M12 2v3m0 14v3M2 12h3m14 0h3"></path>
+                <path d="m4.93 4.93 2.12 2.12m9.9 9.9 2.12 2.12M4.93 19.07l2.12-2.12m9.9-9.9 2.12-2.12"></path>
+              </svg>
+            </div>
+          </div>
+
+          <div class="pre-title-action-badge">
+            <div class="pre-title-action-title" id="preTitleActionTitle">[ DISPARAR IMPULSO NEURAL ]</div>
+            <div class="pre-title-action-desc" id="preTitleActionDesc">TOQUE EM QUALQUER TECLA OU CLIQUE NA TELA</div>
+          </div>
+        </div>
+
+        <div class="pre-title-hud-bottom">
+          <div class="pre-title-metric">
+            <span class="term-dim">CANAL DE DADOS:</span> <span class="term-cyan">0x7F-QUANTUM</span>
+          </div>
+          <div class="pre-title-metric">
+            <span class="term-dim">SINAL:</span> <span class="term-gold">ATIVO (99.8%)</span>
+          </div>
+        </div>
       </div>
     </div>
 

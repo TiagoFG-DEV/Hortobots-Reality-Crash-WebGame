@@ -20,6 +20,18 @@ export class Terminal3DEngine {
     this.titleAnimId = null;
     this.titleTowerGroup = null;
 
+    // Fundo 3D da Tela Pré-Título (Terminal de Dados Binários & Sincronização Neural)
+    this.preTitleScene = null;
+    this.preTitleCamera = null;
+    this.preTitleRenderer = null;
+    this.preTitleAnimId = null;
+    this.preTitleElements = [];
+    this.preTitleIsWarping = false;
+    this.preTitleWarpStartTime = 0;
+    this.preTitleTextures = [];
+    this.preTitleMouseMoveHandler = null;
+    this.preTitleResizeHandler = null;
+
     // Preload do ícone oficial para a textura da Moeda 3D (Lado CARA)
     this.caraIconTexture = null;
     if (typeof THREE !== 'undefined') {
@@ -35,6 +47,7 @@ export class Terminal3DEngine {
           if (this.titleRenderer) this.titleRenderer.setPixelRatio(dpr);
           if (this.coreRenderer) this.coreRenderer.setPixelRatio(dpr);
           if (this.ascentRenderer) this.ascentRenderer.setPixelRatio(dpr);
+          if (this.preTitleRenderer) this.preTitleRenderer.setPixelRatio(dpr);
         }
       });
     }
@@ -1498,11 +1511,385 @@ export class Terminal3DEngine {
     }, 2400);
 
     setTimeout(() => {
-      if (animId) cancelAnimationFrame(animId);
-      renderer.dispose();
       container.innerHTML = '';
       overlay.classList.add('hidden');
       if (onComplete) onComplete({ won: playerGuess === outcome, outcome });
     }, 4000);
   }
+
+  // =========================================================================
+  // 6. TELA PRÉ-TÍTULO: TERMINAL 3D DE DADOS BINÁRIOS & SINCRONIZAÇÃO NEURAL
+  // =========================================================================
+  _createBinaryCanvasTexture(text, color = '#00ff88', glowColor = 'rgba(0, 255, 136, 0.65)') {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Placa holográfica translúcida
+    ctx.fillStyle = 'rgba(1, 15, 8, 0.45)';
+    ctx.fillRect(4, 6, canvas.width - 8, canvas.height - 12);
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.6;
+    ctx.strokeRect(4, 6, canvas.width - 8, canvas.height - 12);
+
+    // Cantoneiras cibernéticas
+    ctx.fillStyle = color;
+    ctx.fillRect(4, 6, 8, 3);
+    ctx.fillRect(4, 6, 3, 8);
+    ctx.fillRect(canvas.width - 12, 6, 8, 3);
+    ctx.fillRect(canvas.width - 7, 6, 3, 8);
+    ctx.fillRect(4, canvas.height - 9, 8, 3);
+    ctx.fillRect(4, canvas.height - 14, 3, 8);
+    ctx.fillRect(canvas.width - 12, canvas.height - 9, 8, 3);
+    ctx.fillRect(canvas.width - 7, canvas.height - 14, 3, 8);
+
+    // Tag minúscula de hex no canto superior esquerdo
+    ctx.font = '10px "Share Tech Mono", monospace';
+    ctx.fillStyle = 'rgba(0, 255, 136, 0.7)';
+    ctx.fillText('0xDATA', 16, 17);
+
+    // Texto Binário Central
+    ctx.font = 'bold 30px "Share Tech Mono", "Courier New", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = glowColor;
+    ctx.shadowBlur = 10;
+    ctx.fillStyle = color;
+    ctx.fillText(text, canvas.width / 2, (canvas.height / 2) + 2);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    this.preTitleTextures.push(texture);
+    return texture;
+  }
+
+  initPreTitleBinary3D(canvasId = 'preTitle3DCanvas') {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas || typeof THREE === 'undefined') return;
+
+    this.disposePreTitleBinary3D();
+
+    const parent = canvas.parentElement;
+    const width = parent ? (parent.clientWidth || window.innerWidth) : window.innerWidth;
+    const height = parent ? (parent.clientHeight || window.innerHeight) : window.innerHeight;
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x010804, 0.016);
+    this.preTitleScene = scene;
+
+    const aspect = width / height;
+    const camera = new THREE.PerspectiveCamera(52, aspect, 0.1, 500);
+    camera.position.set(0, 0, 30);
+    this.preTitleCamera = camera;
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas: canvas,
+      antialias: true,
+      alpha: true,
+      powerPreference: 'high-performance'
+    });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(this._getPixelRatio());
+    renderer.setClearColor(0x000000, 0);
+    this.preTitleRenderer = renderer;
+
+    // Paleta estrita: Zero Roxo. Apenas verde esmeralda, ciano e âmbar dourado
+    const binaryStrings = [
+      { text: '000101', color: '#00ff88', glow: 'rgba(0, 255, 136, 0.7)' },
+      { text: '1101011', color: '#00ff88', glow: 'rgba(0, 255, 136, 0.7)' },
+      { text: '101100', color: '#00e5ff', glow: 'rgba(0, 229, 255, 0.7)' },
+      { text: '011010', color: '#00ff88', glow: 'rgba(0, 255, 136, 0.7)' },
+      { text: '001011', color: '#00ff88', glow: 'rgba(0, 255, 136, 0.7)' },
+      { text: '1110010', color: '#00e5ff', glow: 'rgba(0, 229, 255, 0.7)' },
+      { text: '010110', color: '#00ff88', glow: 'rgba(0, 255, 136, 0.7)' },
+      { text: '100011', color: '#ffd700', glow: 'rgba(255, 215, 0, 0.7)' },
+      { text: '1100101', color: '#00ff88', glow: 'rgba(0, 255, 136, 0.7)' },
+      { text: '001100', color: '#00e5ff', glow: 'rgba(0, 229, 255, 0.7)' },
+      { text: '1010101', color: '#00ff88', glow: 'rgba(0, 255, 136, 0.7)' },
+      { text: '0111010', color: '#00ff88', glow: 'rgba(0, 255, 136, 0.7)' }
+    ];
+
+    // Gerar texturas em cache
+    const textures = binaryStrings.map(item => this._createBinaryCanvasTexture(item.text, item.color, item.glow));
+
+    const planeGeo = new THREE.PlaneGeometry(3.6, 0.9);
+    const elementsList = [];
+
+    // ── 1. ANÉIS ORBITAIS CONCÊNTRICOS DE NÚMEROS BINÁRIOS (Girando em 3D e ondulando) ──
+    const ringsConfig = [
+      { radius: 8.5, count: 8, rotSpeed: 0.0075, tiltX: 0.45, tiltZ: -0.25, undFreq: 2.4, undAmp: 0.8 },
+      { radius: 14.5, count: 12, rotSpeed: -0.0055, tiltX: -0.6, tiltZ: 0.35, undFreq: 1.8, undAmp: 1.2 },
+      { radius: 21.0, count: 16, rotSpeed: 0.0040, tiltX: 0.75, tiltZ: -0.4, undFreq: 1.4, undAmp: 1.5 }
+    ];
+
+    const ringGroups = [];
+
+    ringsConfig.forEach((cfg, ringIdx) => {
+      const ringGroup = new THREE.Group();
+      ringGroup.rotation.x = cfg.tiltX;
+      ringGroup.rotation.z = cfg.tiltZ;
+      scene.add(ringGroup);
+
+      const items = [];
+      const step = (Math.PI * 2) / cfg.count;
+
+      for (let i = 0; i < cfg.count; i++) {
+        const angle = i * step;
+        const tex = textures[(ringIdx * 3 + i) % textures.length];
+        const mat = new THREE.MeshBasicMaterial({
+          map: tex,
+          transparent: true,
+          opacity: 0.85,
+          blending: THREE.AdditiveBlending,
+          side: THREE.DoubleSide
+        });
+
+        const mesh = new THREE.Mesh(planeGeo, mat);
+        const x = Math.cos(angle) * cfg.radius;
+        const z = Math.sin(angle) * cfg.radius;
+        mesh.position.set(x, 0, z);
+        mesh.rotation.y = -angle + Math.PI / 2;
+
+        ringGroup.add(mesh);
+        items.push({
+          mesh,
+          baseAngle: angle,
+          radius: cfg.radius,
+          phase: i * 0.65
+        });
+      }
+
+      ringGroups.push({
+        group: ringGroup,
+        cfg,
+        items
+      });
+    });
+
+    // ── 2. COLUNAS VERTICAIS DE DADOS EM PROFUNDIDADE 3D (Subindo e descendo) ──
+    const columnCount = 22;
+    const columns = [];
+
+    for (let c = 0; c < columnCount; c++) {
+      const colGroup = new THREE.Group();
+      const colX = (Math.random() - 0.5) * 62;
+      const colZ = -45 + Math.random() * 52;
+      const colBaseY = (Math.random() - 0.5) * 40;
+
+      // Evitar colocar colunas muito grudadas no centro para não obstruir o retículo
+      if (Math.abs(colX) < 4.5 && colZ > 10) continue;
+
+      colGroup.position.set(colX, colBaseY, colZ);
+      scene.add(colGroup);
+
+      const colSpeed = (Math.random() > 0.5 ? 1 : -1) * (0.05 + Math.random() * 0.08);
+      const plaquesInCol = 3 + Math.floor(Math.random() * 3);
+      const colSpacing = 2.0;
+
+      for (let p = 0; p < plaquesInCol; p++) {
+        const tex = textures[(c * 2 + p) % textures.length];
+        const mat = new THREE.MeshBasicMaterial({
+          map: tex,
+          transparent: true,
+          opacity: 0.65 + Math.random() * 0.3,
+          blending: THREE.AdditiveBlending,
+          side: THREE.DoubleSide
+        });
+        const mesh = new THREE.Mesh(planeGeo, mat);
+        mesh.position.y = (p - plaquesInCol / 2) * colSpacing;
+        colGroup.add(mesh);
+      }
+
+      columns.push({
+        group: colGroup,
+        baseX: colX,
+        speed: colSpeed,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+
+    // ── 3. GRADES DE PERSPECTIVA CYBERPUNK (Chão e Teto) ──
+    const gridBottom = new THREE.GridHelper(80, 36, 0x00ff88, 0x003318);
+    gridBottom.position.y = -14.5;
+    scene.add(gridBottom);
+
+    const gridTop = new THREE.GridHelper(80, 36, 0x00e5ff, 0x002233);
+    gridTop.position.y = 14.5;
+    scene.add(gridTop);
+
+    // ── 4. PARTÍCULAS QUÂNTICAS DE BITS ──
+    const particleCount = 200;
+    const particleGeo = new THREE.BufferGeometry();
+    const particlePositions = new Float32Array(particleCount * 3);
+
+    for (let i = 0; i < particleCount * 3; i += 3) {
+      particlePositions[i] = (Math.random() - 0.5) * 70;
+      particlePositions[i + 1] = (Math.random() - 0.5) * 40;
+      particlePositions[i + 2] = -40 + Math.random() * 65;
+    }
+
+    particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+    const particleMat = new THREE.PointsMaterial({
+      color: 0x00ff88,
+      size: 0.35,
+      transparent: true,
+      opacity: 0.6,
+      blending: THREE.AdditiveBlending
+    });
+    const particleField = new THREE.Points(particleGeo, particleMat);
+    scene.add(particleField);
+
+    // Iluminação Ambiental & Ponto Central
+    const ambient = new THREE.AmbientLight(0x00ff88, 0.8);
+    scene.add(ambient);
+
+    const centerLight = new THREE.PointLight(0x00e5ff, 2.0, 35);
+    centerLight.position.set(0, 0, 10);
+    scene.add(centerLight);
+
+    // ── 5. PARALLAX DO MOUSE ──
+    let targetCamX = 0;
+    let targetCamY = 0;
+
+    this.preTitleMouseMoveHandler = (e) => {
+      const normX = (e.clientX / window.innerWidth) - 0.5;
+      const normY = (e.clientY / window.innerHeight) - 0.5;
+      targetCamX = normX * 4.5;
+      targetCamY = -normY * 3.5;
+    };
+    window.addEventListener('mousemove', this.preTitleMouseMoveHandler, { passive: true });
+
+    // ── 6. RESIZE RESPONSIVO ──
+    this.preTitleResizeHandler = () => {
+      if (!this.preTitleRenderer || !this.preTitleCamera) return;
+      const w = parent ? (parent.clientWidth || window.innerWidth) : window.innerWidth;
+      const h = parent ? (parent.clientHeight || window.innerHeight) : window.innerHeight;
+      this.preTitleCamera.aspect = w / h;
+      this.preTitleCamera.updateProjectionMatrix();
+      this.preTitleRenderer.setSize(w, h);
+    };
+    window.addEventListener('resize', this.preTitleResizeHandler);
+
+    // ── 7. LOOP DE ANIMAÇÃO ──
+    this.preTitleIsWarping = false;
+    let clock = new THREE.Clock();
+
+    const animate = () => {
+      this.preTitleAnimId = requestAnimationFrame(animate);
+
+      const delta = clock.getDelta();
+      const elapsed = clock.getElapsedTime();
+
+      const speedMultiplier = this.preTitleIsWarping ? 7.0 : 1.0;
+
+      // Parallax suave da câmera
+      if (!this.preTitleIsWarping) {
+        camera.position.x += (targetCamX - camera.position.x) * 0.045;
+        camera.position.y += (targetCamY - camera.position.y) * 0.045;
+        camera.lookAt(0, 0, 0);
+      } else {
+        // Durante o Warp de Sincronização: avanço hiperdimensional da câmera para frente
+        camera.position.z -= 42 * delta;
+        camera.position.x *= 0.95;
+        camera.position.y *= 0.95;
+      }
+
+      // Animação dos Anéis 3D (Rotação e ondulação vertical)
+      ringGroups.forEach((rg) => {
+        rg.group.rotation.y += rg.cfg.rotSpeed * speedMultiplier;
+
+        rg.items.forEach((item) => {
+          // Ondulação vertical senoidal individual
+          const undY = Math.sin(elapsed * rg.cfg.undFreq + item.phase) * rg.cfg.undAmp;
+          item.mesh.position.y = undY;
+
+          if (this.preTitleIsWarping) {
+            item.mesh.material.opacity = Math.max(0, item.mesh.material.opacity - delta * 1.5);
+          }
+        });
+      });
+
+      // Animação das Colunas Verticais de Dados (Indo para cima e para baixo)
+      columns.forEach((col) => {
+        col.group.position.y += col.speed * speedMultiplier;
+        col.group.position.x = col.baseX + Math.sin(elapsed * 1.2 + col.phase) * 0.6;
+
+        // Loop vertical contínuo
+        if (col.speed > 0 && col.group.position.y > 28) {
+          col.group.position.y = -28;
+        } else if (col.speed < 0 && col.group.position.y < -28) {
+          col.group.position.y = 28;
+        }
+      });
+
+      // Translação sutil das grades ao longo do tempo para sensação de túnel
+      gridBottom.position.z = (elapsed * 3.5 * speedMultiplier) % 4;
+      gridTop.position.z = (elapsed * 3.5 * speedMultiplier) % 4;
+
+      // Movimentação sutil das partículas
+      const pos = particleGeo.attributes.position.array;
+      for (let i = 2; i < particleCount * 3; i += 3) {
+        pos[i] += (this.preTitleIsWarping ? 35 : 1.2) * delta;
+        if (pos[i] > 30) pos[i] = -40;
+      }
+      particleGeo.attributes.position.needsUpdate = true;
+
+      renderer.render(scene, camera);
+    };
+
+    animate();
+  }
+
+  triggerPreTitleWarp(onComplete) {
+    if (this.preTitleIsWarping) return;
+    this.preTitleIsWarping = true;
+    this.preTitleWarpStartTime = Date.now();
+
+    // Pulso de aceleração durante 750ms antes da transição completa
+    setTimeout(() => {
+      if (typeof onComplete === 'function') {
+        onComplete();
+      }
+    }, 700);
+  }
+
+  disposePreTitleBinary3D() {
+    if (this.preTitleAnimId) {
+      cancelAnimationFrame(this.preTitleAnimId);
+      this.preTitleAnimId = null;
+    }
+
+    if (this.preTitleMouseMoveHandler) {
+      window.removeEventListener('mousemove', this.preTitleMouseMoveHandler);
+      this.preTitleMouseMoveHandler = null;
+    }
+
+    if (this.preTitleResizeHandler) {
+      window.removeEventListener('resize', this.preTitleResizeHandler);
+      this.preTitleResizeHandler = null;
+    }
+
+    if (this.preTitleTextures && this.preTitleTextures.length > 0) {
+      this.preTitleTextures.forEach(tex => {
+        if (tex && typeof tex.dispose === 'function') tex.dispose();
+      });
+      this.preTitleTextures = [];
+    }
+
+    if (this.preTitleRenderer) {
+      this.preTitleRenderer.dispose();
+      this.preTitleRenderer = null;
+    }
+
+    this.preTitleScene = null;
+    this.preTitleCamera = null;
+    this.preTitleIsWarping = false;
+  }
 }
+
