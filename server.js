@@ -139,48 +139,11 @@ app.post('/api/auth/register-2fa-resend', async (req, res) => {
   }
 });
 
-// ── AUTH: Cadastro Direto (Quando e-mail Google é deixado em branco) ───
-app.post('/api/auth/register-direct', async (req, res) => {
-  try {
-    const { nickname, password, birthDate } = req.body;
-    const cleanNick = sanitizeNick(nickname);
-    if (!cleanNick || cleanNick.length < 2) {
-      return res.status(400).json({ error: 'O NickName deve conter no mínimo 2 caracteres alfanuméricos.' });
-    }
-    if (!password || String(password).length < 8) {
-      return res.status(400).json({ error: 'A senha de acesso deve conter no mínimo 8 dígitos.' });
-    }
-
-    const existingAccount = await getAccount(cleanNick);
-    const accounts = readAccounts();
-    const existingKey = Object.keys(accounts).find(k => k.toUpperCase() === cleanNick);
-    if (existingAccount || existingKey) {
-      return res.status(409).json({ error: 'Esse NickName já está em uso por outro piloto.' });
-    }
-
-    const newAccount = await createAccount({
-      name: cleanNick,
-      nickname: cleanNick,
-      password: String(password),
-      birthDate: (birthDate || '').trim(),
-      email: '',
-      googleLinked: false,
-      googleEmail: '',
-      emailVerified: false,
-      twoFactorEnabled: false,
-      rankingPoints: 0,
-      wins: 0,
-      losses: 0,
-      totalMatches: 0,
-      totalMedals: 0,
-      customBio: 'Piloto Cadastrado no Sistema Mnemosyne',
-      avatarBadge: 'quezas',
-    });
-
-    res.status(201).json({ ok: true, account: newAccount, message: `Conta do piloto ${cleanNick} criada com sucesso!` });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
+// ── AUTH: Cadastro Direto Desativado (E-mail Real é Obrigatório) ────────
+app.post('/api/auth/register-direct', (req, res) => {
+  return res.status(403).json({
+    error: 'O cadastro direto sem e-mail foi desativado. É obrigatório registrar com e-mail real do Gmail com verificação de 2 fatores.'
+  });
 });
 
 // ── AUTH: Login Padrão (Usuário e Senha) ────────────────────────────────

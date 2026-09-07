@@ -8190,60 +8190,59 @@ html, body {
 .title-account-bar {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  background: rgba(3, 14, 7, 0.88);
-  border: 1px solid rgba(0, 255, 102, 0.25);
-  border-radius: 4px;
-  padding: 3px 8px;
-  box-shadow: 0 0 10px rgba(0, 255, 102, 0.08);
-  backdrop-filter: blur(4px);
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
   white-space: nowrap;
 }
 
 .title-account-info {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  display: none;
 }
 
 .title-account-status-led {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #ffaa00;
-  box-shadow: 0 0 6px #ffaa00;
-  flex-shrink: 0;
-  transition: all 0.3s ease;
-}
-
-.title-account-status-led.logged {
-  background: #00ff66;
-  box-shadow: 0 0 8px #00ff66;
-}
-
-.title-account-status-led.guest {
-  background: #ffaa00;
-  box-shadow: 0 0 6px #ffaa00;
+  display: none;
 }
 
 .title-account-text {
-  font-family: 'Share Tech Mono', 'Courier New', monospace;
-  font-size: 0.74rem;
-  font-weight: 700;
-  color: var(--term-gold, #ffd700);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  white-space: nowrap;
+  display: none;
 }
 
 .title-account-auth-btn {
-  flex-shrink: 0;
-  font-size: 0.7rem !important;
-  padding: 2px 7px !important;
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  font-size: 0.8rem !important;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  padding: 4px 12px !important;
   cursor: pointer;
-  letter-spacing: 0.5px;
   line-height: 1.2;
-  border-radius: 3px;
+  border-radius: 4px;
+  background: rgba(255, 215, 0, 0.08);
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  color: #ffd700;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.15);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.title-account-auth-btn:hover {
+  background: rgba(255, 215, 0, 0.2);
+  border-color: #ffd700;
+  box-shadow: 0 0 14px rgba(255, 215, 0, 0.4);
+}
+
+.title-account-auth-btn.logged {
+  background: rgba(0, 255, 136, 0.08);
+  border: 1px solid rgba(0, 255, 136, 0.5);
+  color: #00ff88;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.15);
+}
+
+.title-account-auth-btn.logged:hover {
+  background: rgba(0, 255, 136, 0.2);
+  border-color: #00ff88;
+  box-shadow: 0 0 14px rgba(0, 255, 136, 0.4);
 }
 
 /* BADGES CENTRALIZADAS NO TOPO APENAS NO MODO HISTÓRIA */

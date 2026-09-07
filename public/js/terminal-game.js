@@ -1164,20 +1164,21 @@ export class TerminalGameApp {
     const tapeLed = document.getElementById('titleAccountTapeLed');
 
     if (isLogged) {
-      const nick = (account.nickname || account.name || 'PILOTO').toUpperCase();
+      const nick = account.nickname || account.name || 'PILOTO';
       const rp = account.rankingPoints !== undefined ? Math.min(999, Math.max(0, account.rankingPoints)) : 0;
       if (led) {
-        led.classList.remove('guest');
-        led.classList.add('logged');
+        led.style.display = 'none';
       }
       if (text) {
-        text.textContent = `[${nick}]`;
+        text.style.display = 'none';
+        text.textContent = '';
       }
       if (btn) {
-        btn.textContent = `[${nick}]`;
+        btn.textContent = nick;
+        btn.className = 'term-btn title-account-auth-btn logged';
       }
       if (tapeLabel) {
-        tapeLabel.textContent = `PILOTO: [${nick}]`;
+        tapeLabel.textContent = `PILOTO: ${nick}`;
       }
       if (tapeSub) {
         tapeSub.textContent = `[ ${rp} RP ]`;
@@ -1187,14 +1188,15 @@ export class TerminalGameApp {
       }
     } else {
       if (led) {
-        led.classList.remove('logged');
-        led.classList.add('guest');
+        led.style.display = 'none';
       }
       if (text) {
-        text.textContent = 'INICIAR SESSÃO';
+        text.style.display = 'none';
+        text.textContent = '';
       }
       if (btn) {
         btn.textContent = 'INICIAR SESSÃO';
+        btn.className = 'term-btn gold title-account-auth-btn';
       }
       if (tapeLabel) {
         tapeLabel.textContent = 'INICIAR SESSÃO';

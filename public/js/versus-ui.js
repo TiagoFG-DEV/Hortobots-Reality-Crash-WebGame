@@ -40,31 +40,50 @@ function getCurrentVisibleScreen() {
 }
 
 function showScreen(id) {
+  if (!id || id === 'titleScreen') {
+    showTitle();
+    return;
+  }
+
+  // Telas da História
+  if (['storyScreen', 'elevatorScreen', 'battleScreen', 'endingScreen'].includes(id)) {
+    screens.forEach(s => $(s)?.classList.add('hidden'));
+    if (window.gameInstance && typeof window.gameInstance.showScreen === 'function') {
+      window.gameInstance.showScreen(id);
+    } else {
+      ['storyScreen', 'elevatorScreen', 'battleScreen', 'endingScreen'].forEach(s => {
+        const el = $(s);
+        if (el) el.classList.toggle('hidden', s !== id);
+      });
+      $('titleScreen')?.classList.add('hidden');
+    }
+    return;
+  }
+
+  // Telas do Versus e Conta
   screens.forEach(s => {
     const el = $(s);
     if (el) el.classList.toggle('hidden', s !== id);
   });
-  if (id) {
-    ['titleScreen', 'storyScreen', 'elevatorScreen', 'battleScreen', 'endingScreen'].forEach(s => {
-      $(s)?.classList.add('hidden');
-    });
-    $('storyHeaderBadges')?.classList.add('hidden');
+  ['titleScreen', 'storyScreen', 'elevatorScreen', 'battleScreen', 'endingScreen'].forEach(s => {
+    $(s)?.classList.add('hidden');
+  });
+  $('storyHeaderBadges')?.classList.add('hidden');
 
-    // Oculta barra de conta no cabeçalho durante combate PVP ou Batalha da História
-    const accountBar = $('titleAccountBar');
-    if (accountBar) {
-      const inCombat = id === 'versusArenaScreen' || id === 'battleScreen';
-      accountBar.style.display = inCombat ? 'none' : 'flex';
-    }
+  // Oculta barra de conta no cabeçalho durante combate PVP ou Batalha da História
+  const accountBar = $('titleAccountBar');
+  if (accountBar) {
+    const inCombat = id === 'versusArenaScreen' || id === 'battleScreen';
+    accountBar.style.display = inCombat ? 'none' : 'flex';
+  }
 
-    // O botão Home só aparece fora de duelos e fora da tela de conta
-    const homeBtn = $('termHomeBtn');
-    if (homeBtn) {
-      if (id === 'versusArenaScreen' || id === 'versusCompetitiveScreen' || id === 'accountScreen') {
-        homeBtn.classList.add('hidden');
-      } else {
-        homeBtn.classList.remove('hidden');
-      }
+  // O botão Home só aparece fora de duelos e fora da tela de conta
+  const homeBtn = $('termHomeBtn');
+  if (homeBtn) {
+    if (id === 'versusArenaScreen' || id === 'versusCompetitiveScreen' || id === 'accountScreen') {
+      homeBtn.classList.add('hidden');
+    } else {
+      homeBtn.classList.remove('hidden');
     }
   }
 }
@@ -398,13 +417,20 @@ async function renderAccountScreen() {
 // ── Botão Voltar da Tela de Conta ────────────────────────────────────
 $('accountBackBtn')?.addEventListener('click', () => {
   getAudio().playKeyClack();
-  const prev = window.accountPreviousScreen || 'titleScreen';
+  const prev = window.accountPreviousScreen;
+
+  if (!prev || prev === 'titleScreen' || prev === 'accountScreen') {
+    showTitle();
+    return;
+  }
+
   if (prev === 'storyScreen') {
     if (window.gameInstance && typeof window.gameInstance.showScreen === 'function') {
       window.gameInstance.showScreen('storyScreen');
       return;
     }
   }
+
   if (prev === 'versusModeSelectScreen') {
     if (account && (account.nickname || account.name)) {
       showScreen('versusModeSelectScreen');
@@ -413,7 +439,14 @@ $('accountBackBtn')?.addEventListener('click', () => {
     }
     return;
   }
-  showScreen(prev);
+
+  if (screens.includes(prev)) {
+    showScreen(prev);
+    return;
+  }
+
+  // Fallback seguro incondicional: NUNCA deixa tela preta
+  showTitle();
 });
 
 // ── Alternância entre Telas de Login e Cadastro ──────────────────────
@@ -560,7 +593,7 @@ async function handleGoogleLinkResponse(response) {
   }
 }
 
-// ── Cadastro de Nova Conta com Gmail Oficial (2FA) ou Registro Direto ─
+// ── Cadastro de Nova Conta com Gmail Obrigatório e Real (2FA) ─────────
 $('accountRegSubmitBtn')?.addEventListener('click', async (e) => {
   e.preventDefault();
   clearAccountStatus();
@@ -579,52 +612,34 @@ $('accountRegSubmitBtn')?.addEventListener('click', async (e) => {
     return;
   }
 
+  if (!googleEmail) {
+    showAccountStatus('[OBRIGATÓRIO] Informe seu endereço de e-mail do Gmail para criar a conta.', 'warning');
+    return;
+  }
+
+  if (!/^[a-zA-Z0-9._%+-]+@(gmail\.com|googlemail\.com)$/i.test(googleEmail)) {
+    showAccountStatus('[OBRIGATÓRIO] É necessário utilizar um endereço de e-mail válido do Google (@gmail.com ou @googlemail.com).', 'warning');
+    return;
+  }
+
   if (!pass || pass.length < 8) {
     showAccountStatus('A senha de acesso deve ter pelo menos 8 dígitos.', 'warning');
     return;
   }
 
   const btn = $('accountRegSubmitBtn');
+  if (btn) btn.textContent = 'ENVIANDO E-MAIL AO GMAIL...';
 
-  // Caso 1: E-mail Google fornecido -> Inicia 2FA com envio real para o Gmail
-  if (googleEmail) {
-    if (!/^[a-zA-Z0-9._%+-]+@(gmail\.com|googlemail\.com)$/i.test(googleEmail)) {
-      showAccountStatus('Por favor, utilize um endereço válido do Gmail (@gmail.com).', 'warning');
-      return;
-    }
-
-    if (btn) btn.textContent = 'ENVIANDO E-MAIL AO GMAIL...';
-
-    try {
-      await AccountAPI.start2FARegister(nick, pass, googleEmail, birth);
-      pendingRegEmail = googleEmail;
-      showAccount2FAForm(googleEmail);
-      showAccountStatus(`Código de 6 dígitos transmitido ao seu Gmail (${googleEmail}).`, 'info');
-      getAudio().playKeyClack();
-    } catch (err) {
-      showAccountStatus(err.message || 'Erro ao enviar código de verificação');
-    } finally {
-      if (btn) btn.textContent = 'CONCLUIR CADASTRO';
-    }
-  } else {
-    // Caso 2: Sem e-mail Google no momento -> Registro direto (vinculação posterior obrigatória para login Google)
-    if (btn) btn.textContent = 'CRIANDO CONTA...';
-
-    try {
-      const res = await AccountAPI.registerDirect(nick, pass, birth);
-      account = res.account || res;
-      if (account) account.nickname = account.nickname || account.name;
-      updateProfileHeader(account);
-      showAccountStatus(`Conta criada com sucesso! Piloto: ${account.nickname}`, 'success');
-      getAudio().playKeyClack();
-      setTimeout(() => {
-        renderAccountScreen();
-      }, 500);
-    } catch (err) {
-      showAccountStatus(err.message || 'Erro ao criar conta');
-    } finally {
-      if (btn) btn.textContent = 'CONCLUIR CADASTRO';
-    }
+  try {
+    await AccountAPI.start2FARegister(nick, pass, googleEmail, birth);
+    pendingRegEmail = googleEmail;
+    showAccount2FAForm(googleEmail);
+    showAccountStatus(`Código de 6 dígitos transmitido ao seu Gmail (${googleEmail}). Abra seu Gmail para verificar.`, 'info');
+    getAudio().playKeyClack();
+  } catch (err) {
+    showAccountStatus(err.message || 'Erro ao enviar código de verificação para o Gmail');
+  } finally {
+    if (btn) btn.textContent = 'CONCLUIR CADASTRO';
   }
 });
 
