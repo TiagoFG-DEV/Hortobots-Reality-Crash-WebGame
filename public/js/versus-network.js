@@ -50,6 +50,43 @@ export const AccountAPI = {
     return data;
   },
 
+  async start2FARegister(nickname, password, email) {
+    const res = await fetch(`${API_BASE}/auth/register-2fa-start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nickname, password, email }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Falha ao solicitar código 2FA');
+    return data;
+  },
+
+  async verify2FARegister(email, code) {
+    const res = await fetch(`${API_BASE}/auth/register-2fa-verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, code }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Falha ao validar código 2FA');
+    return data;
+  },
+
+  async resend2FACode(email) {
+    const res = await fetch(`${API_BASE}/auth/register-2fa-resend`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Falha ao reenviar código 2FA');
+    return data;
+  },
+
+  getPreviewEmailUrl(email) {
+    return `${API_BASE}/auth/preview-email/${encodeURIComponent(email || '')}`;
+  },
+
   async register(nickname, password, email = '', googleEmail = null, googleLinked = false) {
     const res = await fetch(`${API_BASE}/auth/register`, {
       method: 'POST',

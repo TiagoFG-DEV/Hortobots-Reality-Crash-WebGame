@@ -68,6 +68,8 @@ export async function initSupabase() {
         CREATE INDEX IF NOT EXISTS idx_accounts_google_email ON accounts(google_email);
         CREATE INDEX IF NOT EXISTS idx_accounts_ranking ON accounts(ranking_points DESC);
         ALTER TABLE accounts ADD COLUMN IF NOT EXISTS story_save JSONB DEFAULT NULL;
+        ALTER TABLE accounts ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT false;
+        ALTER TABLE accounts ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT false;
       `);
       isSupabaseConnected = true;
       console.log('\n[SUPABASE] 🚀 Banco de dados PostgreSQL Conectado com Sucesso!');
@@ -90,6 +92,8 @@ function mapRowToAccount(row) {
     email: row.email || '',
     googleLinked: !!row.google_linked,
     googleEmail: row.google_email || '',
+    emailVerified: !!row.email_verified,
+    twoFactorEnabled: !!row.two_factor_enabled,
     rankingPoints: Number(row.ranking_points) || 0,
     wins: Number(row.wins) || 0,
     losses: Number(row.losses) || 0,
@@ -147,6 +151,8 @@ export async function createAccount(data) {
   const cleanNick = (data.name || data.nickname || '').trim().toUpperCase();
   const now = Date.now();
   const cleanEmail = (data.email || data.googleEmail || '').trim().toLowerCase();
+  const emailVerified = data.emailVerified !== undefined ? !!data.emailVerified : true;
+  const twoFactorEnabled = data.twoFactorEnabled !== undefined ? !!data.twoFactorEnabled : true;
 
   if (isSupabaseConnected) {
     try {
@@ -154,8 +160,9 @@ export async function createAccount(data) {
         INSERT INTO accounts (
           name, password, email, google_linked, google_email,
           ranking_points, wins, losses, total_matches, total_medals,
-          custom_bio, avatar_badge, created_at, last_seen
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+          custom_bio, avatar_badge, created_at, last_seen,
+          email_verified, two_factor_enabled
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
         RETURNING *;
       `;
       const values = [
@@ -172,7 +179,9 @@ export async function createAccount(data) {
         data.customBio || 'Piloto Cadastrado no Sistema Mnemosyne',
         data.avatarBadge || 'quezas',
         now,
-        now
+        now,
+        emailVerified,
+        twoFactorEnabled
       ];
       const res = await pool.query(query, values);
       const acc = mapRowToAccount(res.rows[0]);
@@ -197,6 +206,8 @@ export async function createAccount(data) {
     email: cleanEmail,
     googleLinked: !!data.googleLinked,
     googleEmail: data.googleLinked ? cleanEmail : '',
+    emailVerified,
+    twoFactorEnabled,
     rankingPoints: 0,
     wins: 0,
     losses: 0,

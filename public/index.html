@@ -38,7 +38,8 @@
           <span class="title-account-status-led guest" id="titleAccountStatusLed"></span>
           <span class="title-account-text" id="titleAccountText">PILOTO: NÃO AUTENTICADO [MODO CONVIDADO]</span>
         </div>
-        <button class="term-btn gold title-account-auth-btn" id="titleAccountAuthBtn" type="button" title="Entrar ou criar conta">
+        <button class="term-btn gold title-account-auth-btn" id="titleAccountAuthBtn" type="button"
+          title="Entrar ou criar conta">
           [ ENTRAR / CRIAR CONTA ]
         </button>
       </div>
@@ -593,8 +594,9 @@
         </div>
 
         <div class="versus-auth-card">
-          <div class="versus-auth-section secondary">
-            <div class="versus-auth-section-title">> REGISTRO DE NOVO PILOTO</div>
+          <!-- ETAPA 1: Formulário de Registro (Google Obrigatório) -->
+          <div class="versus-auth-section secondary" id="versusRegFormStep">
+            <div class="versus-auth-section-title">> REGISTRO DE PILOTO (CONTA GOOGLE OBRIGATÓRIA)</div>
             <div class="versus-input-grid">
               <div class="versus-input-group">
                 <label class="versus-label" for="versusRegNick">NOVO NICKNAME (MÍN. 2 CARACTERES)</label>
@@ -609,25 +611,46 @@
             </div>
 
             <div class="versus-input-group" style="margin-top: 6px;">
-              <label class="versus-label" for="versusRegEmail">E-MAIL DO PILOTO (OBRIGATÓRIO)</label>
-              <input type="email" id="versusRegEmail" class="versus-input" placeholder="seu-email@dominio.com"
-                autocomplete="email" />
+              <label class="versus-label" for="versusRegEmail"><span style="color: #00ff88;">●</span> E-MAIL GOOGLE OBRIGATÓRIO (@GMAIL.COM)</label>
+              <input type="email" id="versusRegEmail" class="versus-input" placeholder="seu-email@gmail.com"
+                autocomplete="email" required />
             </div>
 
-            <div class="versus-checkbox-row" style="margin-top: 6px;">
-              <label class="versus-checkbox-label">
-                <input type="checkbox" id="versusRegGoogleLinkCheck" />
-                <span>Vincular perfil à Conta Google</span>
-              </label>
-            </div>
-
-            <div class="versus-input-group hidden" id="versusRegGoogleEmailGroup">
-              <label class="versus-label" for="versusRegGoogleEmail">E-MAIL GOOGLE PARA VINCULAR</label>
-              <input type="email" id="versusRegGoogleEmail" class="versus-input" placeholder="seu-email@gmail.com" />
+            <div class="versus-2fa-badge-banner">
+              <span class="badge-icon">🛡️</span>
+              <span class="badge-text">PROTOCOLO 2FA: Um e-mail estilizado com chave temporária de 6 dígitos será transmitido para validação do seu acesso.</span>
             </div>
 
             <div class="versus-btn-row" style="margin-top: 8px;">
-              <button class="versus-action-btn cyan" id="versusAuthRegBtn" type="button">CONFIRMAR CADASTRO</button>
+              <button class="versus-action-btn cyan" id="versusAuthRegBtn" type="button">AVANÇAR // ENVIAR CÓDIGO 2FA</button>
+            </div>
+          </div>
+
+          <!-- ETAPA 2: Validação de Chave 2FA -->
+          <div class="versus-auth-section secondary hidden" id="versus2FAStep">
+            <div class="versus-auth-section-title">> AUTENTICAÇÃO EM DUAS ETAPAS (2FA GOOGLE)</div>
+
+            <div class="versus-2fa-panel">
+              <div class="versus-2fa-status-badge">TRANSMISSÃO SEGURA ENVIADA</div>
+              <p class="versus-2fa-text">
+                Enviamos o código de segurança para: <strong id="versus2FAEmailDisplay" class="highlight-cyan">...</strong>
+              </p>
+
+              <div class="versus-input-group">
+                <label class="versus-label" for="versus2FACodeInput">DIGITE A CHAVE DE 6 DÍGITOS</label>
+                <input type="text" id="versus2FACodeInput" class="versus-input versus-2fa-input" placeholder="000000"
+                  maxlength="6" inputmode="numeric" autocomplete="one-time-code" />
+              </div>
+
+              <div class="versus-btn-row" style="margin-top: 10px;">
+                <button class="versus-action-btn cyan" id="versus2FAConfirmBtn" type="button">CONFIRMAR E ATIVAR CONTA</button>
+              </div>
+
+              <div class="versus-btn-row versus-2fa-aux-row" style="margin-top: 6px;">
+                <button class="versus-action-btn ghost" id="versus2FAResendBtn" type="button">REENVIAR CÓDIGO</button>
+                <button class="versus-action-btn ghost" id="versus2FAPreviewBtn" type="button">✉️ VER E-MAIL RECEBIDO</button>
+                <button class="versus-action-btn ghost" id="versus2FABackBtn" type="button">← ALTERAR DADOS</button>
+              </div>
             </div>
           </div>
 
@@ -1237,7 +1260,8 @@
   </div>
 
   <!-- MODAL DE CONFIGURAÇÕES GLOBAIS DO SISTEMA (GRÁFICOS, CRT, ÁUDIO) -->
-  <div id="gameSettingsModal" class="settings-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="gameSettingsTitle">
+  <div id="gameSettingsModal" class="settings-modal-overlay hidden" role="dialog" aria-modal="true"
+    aria-labelledby="gameSettingsTitle">
     <div class="settings-modal-box">
       <div class="settings-modal-scanlines"></div>
       <div class="settings-modal-header">
@@ -1249,11 +1273,15 @@
         <!-- SEÇÃO 1: PERFIL GRÁFICO E PERFORMANCE -->
         <div class="settings-section">
           <div class="settings-section-title">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h7l-2 3v1h8v-1l-2-3h7c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path
+                d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h7l-2 3v1h8v-1l-2-3h7c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" />
+            </svg>
             <span>DESEMPENHO &amp; QUALIDADE GRÁFICA</span>
           </div>
           <p class="settings-section-desc">
-            Ajuste a intensidade de pós-processamento, sombras e fidelidade. O jogo preserva 100% da jogabilidade em todos os perfis.
+            Ajuste a intensidade de pós-processamento, sombras e fidelidade. O jogo preserva 100% da jogabilidade em
+            todos os perfis.
           </p>
           <div class="settings-btn-group" id="settingsGraphicsGroup">
             <button type="button" class="settings-pill-btn" data-graphic="low">
@@ -1274,7 +1302,10 @@
         <!-- SEÇÃO 2: EFEITOS VISUAIS RETRO CRT -->
         <div class="settings-section">
           <div class="settings-section-title">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path
+                d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+            </svg>
             <span>EFEITOS VISUAIS ANALÓGICOS</span>
           </div>
           <div class="settings-toggle-row">
@@ -1296,11 +1327,15 @@
         <!-- SEÇÃO 3: ÁUDIO &amp; VOLUMES -->
         <div class="settings-section">
           <div class="settings-section-title">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path
+                d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+            </svg>
             <span>ÁUDIO &amp; TRILHA SONORA</span>
           </div>
           <div class="settings-audio-mute-row">
-            <button type="button" class="term-btn gold settings-mute-btn" id="settingsMuteToggleBtn">[ SOM: ATIVO ]</button>
+            <button type="button" class="term-btn gold settings-mute-btn" id="settingsMuteToggleBtn">[ SOM: ATIVO
+              ]</button>
           </div>
           <div class="settings-slider-row">
             <div class="slider-header">
@@ -1321,6 +1356,28 @@
 
       <div class="settings-modal-footer">
         <button class="term-btn gold" id="settingsSaveCloseBtn" type="button">[ CONCLUÍDO ]</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Prévia do E-mail Estilizado Cyberpunk 2FA -->
+  <div id="emailPreviewModal" class="settings-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="emailPreviewTitle">
+    <div class="settings-modal-box email-preview-modal-box">
+      <div class="settings-modal-scanlines"></div>
+      <div class="settings-modal-header">
+        <div class="settings-modal-tag" id="emailPreviewTitle">// TRANSMISSÃO MNEMOSYNE // INBOX 2FA //</div>
+        <button class="settings-close-btn" id="closeEmailPreviewBtn" type="button" title="Fechar">&times;</button>
+      </div>
+      <div class="email-preview-meta-bar">
+        <div><strong>DE:</strong> <span style="color: #00ff88;">central-mnemosyne@hortobots.game</span></div>
+        <div><strong>PARA:</strong> <span id="emailPreviewRecipient" style="color: #00e5ff;">...</span></div>
+        <div><strong>ASSUNTO:</strong> <span style="color: #ffffff;">[HORTOBOTS // QUEZAS-DOS] Código de Verificação 2FA</span></div>
+      </div>
+      <div class="email-preview-frame-wrap">
+        <iframe id="emailPreviewIframe" src="about:blank" title="Visualização de E-mail 2FA"></iframe>
+      </div>
+      <div class="settings-modal-footer">
+        <button class="term-btn cyan" id="closeEmailPreviewFooterBtn" type="button">[ FECHAR E VOLTAR AO JOGO ]</button>
       </div>
     </div>
   </div>

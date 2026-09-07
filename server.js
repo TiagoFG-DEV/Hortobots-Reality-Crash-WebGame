@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
 import { initSupabase, getAccount, getAccountByEmail, createAccount, updateAccount, saveMatchResult, getLeaderboard, applyDraftPenalty as supabasePenalty, saveStoryToAccount, getStoryFromAccount } from './data/supabase.js';
+import { isGoogleEmail, start2FARegistration, verify2FARegistration, resend2FACode, getPreviewEmailHTML } from './data/email-service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -75,8 +76,73 @@ function sanitizeNick(raw) {
   return (raw || '').trim().replace(/[^a-zA-Z0-9_]/g, '').toUpperCase().slice(0, 16);
 }
 
-// POST /api/auth/register â€” Cadastro de Conta
-app.post('/api/auth/register', (req, res) => {
+// ── AUTH 2FA: Início do Registro com E-mail Google Obrigatório ───────────
+app.post('/api/auth/register-2fa-start', async (req, res) => {
+  try {
+    const { nickname, password, email } = req.body;
+    const result = await start2FARegistration({
+      nickname,
+      password,
+      email,
+      existingAccountsCheck: async (cleanNick, cleanEmail) => {
+        const accDb = await getAccount(cleanNick);
+        const emailDb = await getAccountByEmail(cleanEmail);
+        const accountsLocal = readAccounts();
+        const localNickKey = Object.keys(accountsLocal).find(k => k.toUpperCase() === cleanNick);
+        const localEmailKey = Object.keys(accountsLocal).find(k => (
+          (accountsLocal[k].email || '').toLowerCase() === cleanEmail ||
+          (accountsLocal[k].googleEmail || '').toLowerCase() === cleanEmail
+        ));
+        return {
+          nickTaken: !!accDb || !!localNickKey,
+          emailTaken: !!emailDb || !!localEmailKey,
+        };
+      },
+    });
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ── AUTH 2FA: Confirmação do Código e Ativação da Conta ─────────────────
+app.post('/api/auth/register-2fa-verify', async (req, res) => {
+  try {
+    const { email, code } = req.body;
+    const result = await verify2FARegistration({
+      email,
+      code,
+      createAccountFn: async (accountData) => {
+        return await createAccount(accountData);
+      },
+    });
+    res.status(201).json(result);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ── AUTH 2FA: Reenviar Código ──────────────────────────────────────────
+app.post('/api/auth/register-2fa-resend', async (req, res) => {
+  try {
+    const { email } = req.body;
+    const result = await resend2FACode({ email });
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ── AUTH 2FA: Prévia do E-mail Estilizado Cyberpunk ────────────────────
+app.get(['/api/auth/preview-email', '/api/auth/preview-email/:email'], (req, res) => {
+  const targetEmail = req.params.email || req.query.email;
+  const html = getPreviewEmailHTML(targetEmail);
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(html);
+});
+
+// POST /api/auth/register — Cadastro de Conta (com Validação Google Obrigatória)
+app.post('/api/auth/register', async (req, res) => {
   const { nickname, password, email, googleEmail, googleLinked } = req.body;
   const cleanNick = sanitizeNick(nickname);
   if (!cleanNick || cleanNick.length < 2) {
@@ -88,40 +154,41 @@ app.post('/api/auth/register', (req, res) => {
   }
 
   const primaryEmail = (email || googleEmail || '').trim().toLowerCase();
-  if (!isValidEmail(primaryEmail)) {
-    return res.status(400).json({ error: 'E-mail inválido. Informe um endereço de e-mail válido para vincular à conta.' });
+  if (!isGoogleEmail(primaryEmail)) {
+    return res.status(400).json({ error: 'Obrigatório utilizar um e-mail do Google (@gmail.com ou @googlemail.com) para vincular à conta.' });
   }
 
+  const existingAccount = await getAccount(cleanNick);
   const accounts = readAccounts();
   const existingKey = Object.keys(accounts).find(k => k.toUpperCase() === cleanNick);
-  if (existingKey) {
+  if (existingAccount || existingKey) {
     return res.status(409).json({ error: 'Esse NickName já está em uso por outro piloto.' });
   }
 
+  const existingEmail = await getAccountByEmail(primaryEmail);
   const emailInUse = Object.keys(accounts).find(k => (accounts[k].email === primaryEmail || accounts[k].googleEmail === primaryEmail));
-  if (emailInUse) {
+  if (existingEmail || emailInUse) {
     return res.status(409).json({ error: 'Esse e-mail já está vinculado a outro piloto cadastrado.' });
   }
 
-  const newAccount = {
+  const newAccount = await createAccount({
     name: cleanNick,
+    nickname: cleanNick,
     password: String(password),
     email: primaryEmail,
-    googleLinked: !!googleLinked,
-    googleEmail: googleLinked ? primaryEmail : '',
+    googleLinked: true,
+    googleEmail: primaryEmail,
+    emailVerified: true,
+    twoFactorEnabled: true,
     rankingPoints: 0, // Toda conta inicia obrigatoriamente com 0 RP
     wins: 0,
     losses: 0,
     totalMatches: 0,
     totalMedals: 0,
-    customBio: 'Piloto Cadastrado no Sistema Mnemosyne',
+    customBio: `Piloto Google Verificado (${primaryEmail})`,
     avatarBadge: 'quezas',
-    createdAt: Date.now(),
-    lastSeen: Date.now()
-  };
+  });
 
-  accounts[cleanNick] = newAccount;
-  writeAccounts(accounts);
   res.status(201).json(newAccount);
 });
 

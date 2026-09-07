@@ -142,6 +142,10 @@ window.openLoginFromTitle = (targetScreen = 'versusLoginScreen') => {
   $('titleScreen')?.classList.add('hidden');
   getAudio().playBGM('versusLobby', 600);
   clearAuthStatus();
+  if (targetScreen === 'versusRegisterScreen') {
+    $('versusRegFormStep')?.classList.remove('hidden');
+    $('versus2FAStep')?.classList.add('hidden');
+  }
   showScreen(targetScreen);
 };
 
@@ -313,48 +317,166 @@ $('versusRegGoogleLinkCheck')?.addEventListener('change', (e) => {
   }
 });
 
-// ── Auth: Cadastro de Nova Conta ─────────────────────────────────────
+// ── Auth: Cadastro de Nova Conta com 2FA Google Obrigatório ───────────
+let pendingRegEmail = '';
+
+function isGoogleEmailClient(email) {
+  if (!email || typeof email !== 'string') return false;
+  return /^[a-zA-Z0-9._%+-]+@(gmail\.com|googlemail\.com)$/i.test(email.trim());
+}
+
+// ETAPA 1: Iniciar Registro e Transmitir Código 2FA
 $('versusAuthRegBtn')?.addEventListener('click', async () => {
   clearAuthStatus();
   const nick = ($('versusRegNick')?.value || '').trim();
   const pass = ($('versusRegPass')?.value || '').trim();
-  const email = ($('versusRegEmail')?.value || '').trim();
-  const linkGoogle = $('versusRegGoogleLinkCheck')?.checked || false;
-  const googleEmail = linkGoogle ? ($('versusRegGoogleEmail')?.value || '').trim() : null;
+  const email = ($('versusRegEmail')?.value || '').trim().toLowerCase();
 
   if (!nick || nick.length < 2) {
-    showAuthStatus('[AVISO] O Nickname deve conter no mínimo 2 caracteres.');
+    showAuthStatus('[AVISO] O Nickname deve conter no mínimo 2 caracteres alfanuméricos.');
     return;
   }
 
   if (!pass || pass.length < 8) {
-    showAuthStatus('[AVISO] A senha deve conter no mínimo 8 dígitos.');
+    showAuthStatus('[AVISO] A senha de acesso deve conter no mínimo 8 dígitos.');
     return;
   }
 
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  if (!email || !emailRegex.test(email)) {
-    showAuthStatus('[AVISO] Informe um e-mail válido (ex: piloto@dominio.com).');
+  if (!isGoogleEmailClient(email)) {
+    showAuthStatus('[OBRIGATÓRIO] É necessário utilizar um endereço de e-mail do Google (@gmail.com ou @googlemail.com).');
     return;
   }
 
   const btn = $('versusAuthRegBtn');
-  if (btn) btn.textContent = '[ CRIANDO CONTA... ]';
+  if (btn) btn.textContent = '[ ENVIANDO TRANSMISSÃO 2FA... ]';
 
   try {
-    const res = await AccountAPI.register(nick, pass, email, googleEmail, linkGoogle);
+    const res = await AccountAPI.start2FARegister(nick, pass, email);
+    pendingRegEmail = email;
+
+    // Transiciona para a Etapa 2 (Código 2FA)
+    $('versusRegFormStep')?.classList.add('hidden');
+    $('versus2FAStep')?.classList.remove('hidden');
+
+    const emailDisplay = $('versus2FAEmailDisplay');
+    if (emailDisplay) emailDisplay.textContent = email;
+
+    const modalRecipient = $('emailPreviewRecipient');
+    if (modalRecipient) modalRecipient.textContent = email;
+
+    const codeInput = $('versus2FACodeInput');
+    if (codeInput) {
+      codeInput.value = '';
+      codeInput.focus();
+    }
+
+    showAuthStatus(`[2FA] Código enviado para ${email}! Verifique sua caixa de entrada.`, false);
+    getAudio().playKeyClack();
+  } catch (err) {
+    showAuthStatus(`[FALHA] ${err.message || 'Erro ao iniciar registro 2FA'}`);
+  } finally {
+    if (btn) btn.textContent = 'AVANÇAR // ENVIAR CÓDIGO 2FA';
+  }
+});
+
+// ETAPA 2: Confirmar Código 2FA e Ativar Conta
+async function handleConfirm2FACode() {
+  clearAuthStatus();
+  const code = ($('versus2FACodeInput')?.value || '').replace(/\D/g, '').trim();
+
+  if (!code || code.length !== 6) {
+    showAuthStatus('[AVISO] Digite a chave de segurança de 6 dígitos.');
+    return;
+  }
+
+  if (!pendingRegEmail) {
+    showAuthStatus('[ERRO] Sessão de verificação expirada. Retorne e inicie o registro novamente.');
+    return;
+  }
+
+  const btn = $('versus2FAConfirmBtn');
+  if (btn) btn.textContent = '[ VALIDANDO CHAVE... ]';
+
+  try {
+    const res = await AccountAPI.verify2FARegister(pendingRegEmail, code);
     account = res.account || res;
-    if (account) account.nickname = account.nickname || account.name;
-    showAuthStatus(`[SUCESSO] Piloto ${account.nickname} registrado! Ranking inicial: 0 RP`, false);
+    if (account) {
+      account.nickname = account.nickname || account.name;
+      account.googleLinked = true;
+      account.emailVerified = true;
+      account.twoFactorEnabled = true;
+      localStorage.setItem('hortobots_pilot_account', JSON.stringify(account));
+    }
+    showAuthStatus(`[SUCESSO] Conta ativada com segurança 2FA Google! Piloto: ${account.nickname} (0 RP)`, false);
     updateProfileHeader(account);
+    getAudio().playKeyClack();
     setTimeout(() => {
       showScreen('versusModeSelectScreen');
-    }, 700);
+    }, 750);
   } catch (err) {
-    showAuthStatus(`[FALHA] ${err.message || 'Erro ao registrar nova conta'}`);
+    showAuthStatus(`[2FA INVÁLIDO] ${err.message || 'Código incorreto ou expirado'}`);
   } finally {
-    if (btn) btn.textContent = '[ CRIAR CONTA ]';
+    if (btn) btn.textContent = 'CONFIRMAR E ATIVAR CONTA';
   }
+}
+
+$('versus2FAConfirmBtn')?.addEventListener('click', handleConfirm2FACode);
+
+$('versus2FACodeInput')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    handleConfirm2FACode();
+  }
+});
+
+// Reenviar Código 2FA
+$('versus2FAResendBtn')?.addEventListener('click', async () => {
+  if (!pendingRegEmail) return;
+  const btn = $('versus2FAResendBtn');
+  if (btn) btn.textContent = '[ REENVIANDO... ]';
+  try {
+    await AccountAPI.resend2FACode(pendingRegEmail);
+    showAuthStatus(`[2FA] Novo código gerado e transmitido para ${pendingRegEmail}!`, false);
+    getAudio().playKeyClack();
+  } catch (err) {
+    showAuthStatus(`[FALHA] ${err.message || 'Não foi possível reenviar o código'}`);
+  } finally {
+    if (btn) btn.textContent = 'REENVIAR CÓDIGO';
+  }
+});
+
+// Abrir Modal com Visualização do E-mail Estilizado
+$('versus2FAPreviewBtn')?.addEventListener('click', () => {
+  if (!pendingRegEmail) return;
+  const modal = $('emailPreviewModal');
+  const iframe = $('emailPreviewIframe');
+  const recipient = $('emailPreviewRecipient');
+
+  if (recipient) recipient.textContent = pendingRegEmail;
+  if (iframe) {
+    iframe.src = AccountAPI.getPreviewEmailUrl(pendingRegEmail) + '?t=' + Date.now();
+  }
+  if (modal) modal.classList.remove('hidden');
+  getAudio().playKeyClack();
+});
+
+// Fechar Modal de E-mail
+$('closeEmailPreviewBtn')?.addEventListener('click', () => {
+  $('emailPreviewModal')?.classList.add('hidden');
+  getAudio().playKeyClack();
+});
+
+$('closeEmailPreviewFooterBtn')?.addEventListener('click', () => {
+  $('emailPreviewModal')?.classList.add('hidden');
+  getAudio().playKeyClack();
+});
+
+// Voltar à etapa de dados de registro
+$('versus2FABackBtn')?.addEventListener('click', () => {
+  $('versus2FAStep')?.classList.add('hidden');
+  $('versusRegFormStep')?.classList.remove('hidden');
+  clearAuthStatus();
+  getAudio().playKeyClack();
 });
 
 // ── Auth: Fluxo de Login com Google ──────────────────────────────────
@@ -403,6 +525,8 @@ $('versusConfirmGoogleBtn')?.addEventListener('click', async () => {
 // ── Auth: Navegação entre Login e Registro ───────────────────────────
 $('versusGoToRegisterBtn')?.addEventListener('click', () => {
   clearAuthStatus();
+  $('versusRegFormStep')?.classList.remove('hidden');
+  $('versus2FAStep')?.classList.add('hidden');
   showScreen('versusRegisterScreen');
   getAudio().playKeyClack();
 });
