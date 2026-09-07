@@ -555,6 +555,16 @@ export class TerminalGameApp {
     this.activeTypewriterTargetEl = null;
     this.isTypewriterFinished = true;
 
+    // Modo Convidado e Save em Memória da Sessão
+    this.isGuestMode = false;
+    this.activeSessionSave = null;
+
+    // Purga chaves antigas de salvamento estático
+    try {
+      localStorage.removeItem('quezas_story_save.json');
+      localStorage.removeItem('quezas_terminal_checkpoint');
+    } catch (e) {}
+
     this.loadGameData();
 
     this.initUI();
@@ -685,19 +695,51 @@ export class TerminalGameApp {
       });
     });
 
+    // Inicializa widgets de conta na tela de título
+    this.initTitleAccountWidget();
+
     const startBtn = document.getElementById('termStartBtn');
     if (startBtn) {
-      startBtn.onclick = () => this.triggerTapeTransition(startBtn, () => this.startNewCampaign());
+      startBtn.onclick = () => {
+        const loggedAcc = typeof window.getLoggedAccount === 'function' ? window.getLoggedAccount() : null;
+        if (loggedAcc && (loggedAcc.nickname || loggedAcc.name)) {
+          this.isGuestMode = false;
+          this.triggerTapeTransition(startBtn, () => this.startNewCampaign());
+        } else {
+          // Usuário não está logado: exibe aviso com opções
+          this.showStoryAuthPromptModal(() => {
+            // Seguir sem conta mesmo: joga sem salvar progresso persistente
+            this.isGuestMode = true;
+            this.activeSessionSave = null;
+            this.triggerTapeTransition(startBtn, () => this.startNewCampaign());
+          });
+        }
+      };
     }
 
     const resumeBtn = document.getElementById('termResumeBtn') || document.getElementById('termContinueBtn');
     if (resumeBtn) {
-      resumeBtn.onclick = () => this.triggerTapeTransition(resumeBtn, () => this.restoreFromCheckpoint());
+      resumeBtn.onclick = async () => {
+        const data = await this.loadGameFromJSON();
+        if (data && (data.floorIndex !== undefined || data.floorName)) {
+          this.triggerTapeTransition(resumeBtn, () => this.restoreFromCheckpoint());
+        } else {
+          const loggedAcc = typeof window.getLoggedAccount === 'function' ? window.getLoggedAccount() : null;
+          if (!loggedAcc) {
+            this.showStoryAuthPromptModal(null, 'Para continuar um progresso salvo, entre na sua conta.');
+          } else {
+            this.showSystemToast('NENHUM CHECKPOINT', 'Sua conta ainda não possui um save registrado na Torre Virtual.', 'alert');
+          }
+        }
+      };
     }
 
     const continueBtn = document.getElementById('termContinueBtn');
     if (continueBtn && continueBtn !== resumeBtn) {
-      continueBtn.onclick = () => this.triggerTapeTransition(continueBtn, () => this.restoreFromCheckpoint());
+      continueBtn.onclick = () => {
+        if (resumeBtn && typeof resumeBtn.onclick === 'function') resumeBtn.onclick();
+        else this.triggerTapeTransition(continueBtn, () => this.restoreFromCheckpoint());
+      };
     }
 
     const versusBtn = document.getElementById('termVersusBtn');
@@ -768,7 +810,11 @@ export class TerminalGameApp {
 
         // Se estiver no Modo História, salva e retorna
         await this.saveGameToJSON();
-        this.showSystemToast('PROGRESSO SALVO', 'Partida salva em arquivo .json! Retornando ao menu principal...', 'gold');
+        if (this.isGuestMode) {
+          this.showSystemToast('MODO CONVIDADO', 'Progresso mantido na sessão atual (não salvo na nuvem).', 'gold');
+        } else {
+          this.showSystemToast('PROGRESSO SALVO', 'Partida salva na sua conta! Retornando ao menu principal...', 'gold');
+        }
         this.showTitle();
       };
     }
@@ -931,12 +977,164 @@ export class TerminalGameApp {
       this.audio.playTitleSequence(900);
     }
 
+    this.updateTitleAccountWidget();
     this.checkSavedCheckpoint();
 
     // Inicializa o fundo 3D com a Torre Realista girando suavemente
     if (this.engine3D && typeof this.engine3D.initTitle3DBackground === 'function') {
       this.engine3D.initTitle3DBackground('title3DCanvasContainer');
     }
+  }
+
+  // ─── Widgets de Conta e Autenticação na Tela de Título ───
+  initTitleAccountWidget() {
+    const authBtn = document.getElementById('titleAccountAuthBtn');
+    if (authBtn) {
+      authBtn.onclick = (e) => {
+        e.stopPropagation();
+        this.audio.playKeyClack();
+        const acc = typeof window.getLoggedAccount === 'function' ? window.getLoggedAccount() : null;
+        if (acc && typeof window.openLoginFromTitle === 'function') {
+          window.openLoginFromTitle('versusModeSelectScreen');
+        } else if (typeof window.openLoginFromTitle === 'function') {
+          window.openLoginFromTitle('versusLoginScreen');
+        }
+      };
+    }
+
+    const tapeBtn = document.getElementById('titleAccountTapeBtn');
+    if (tapeBtn) {
+      tapeBtn.onclick = () => {
+        this.triggerTapeTransition(tapeBtn, () => {
+          const acc = typeof window.getLoggedAccount === 'function' ? window.getLoggedAccount() : null;
+          if (acc && typeof window.openLoginFromTitle === 'function') {
+            window.openLoginFromTitle('versusModeSelectScreen');
+          } else if (typeof window.openLoginFromTitle === 'function') {
+            window.openLoginFromTitle('versusLoginScreen');
+          }
+        });
+      };
+    }
+
+    this.updateTitleAccountWidget();
+  }
+
+  updateTitleAccountWidget() {
+    const account = typeof window.getLoggedAccount === 'function' ? window.getLoggedAccount() : null;
+    const isLogged = !!(account && (account.nickname || account.name));
+
+    const led = document.getElementById('titleAccountStatusLed');
+    const text = document.getElementById('titleAccountText');
+    const btn = document.getElementById('titleAccountAuthBtn');
+    const tapeLabel = document.getElementById('titleAccountTapeLabel');
+    const tapeSub = document.getElementById('titleAccountTapeSub');
+    const tapeLed = document.getElementById('titleAccountTapeLed');
+
+    if (isLogged) {
+      const nick = account.nickname || account.name;
+      const rp = account.rankingPoints !== undefined ? Math.min(999, Math.max(0, account.rankingPoints)) : 0;
+      if (led) {
+        led.classList.remove('guest');
+        led.classList.add('logged');
+      }
+      if (text) {
+        text.textContent = `PILOTO: ${nick.toUpperCase()} [${rp} RP] // CONECTADO`;
+      }
+      if (btn) {
+        btn.textContent = '[ PERFIL / TROCAR CONTA ]';
+      }
+      if (tapeLabel) {
+        tapeLabel.textContent = `PILOTO: ${nick.toUpperCase()}`;
+      }
+      if (tapeSub) {
+        tapeSub.textContent = `[ CONECTADO // ${rp} RP // NUVEM ATIVA ]`;
+      }
+      if (tapeLed) {
+        tapeLed.classList.add('active');
+      }
+    } else {
+      if (led) {
+        led.classList.remove('logged');
+        led.classList.add('guest');
+      }
+      if (text) {
+        text.textContent = 'PILOTO: NÃO AUTENTICADO [MODO CONVIDADO]';
+      }
+      if (btn) {
+        btn.textContent = '[ ENTRAR / CRIAR CONTA ]';
+      }
+      if (tapeLabel) {
+        tapeLabel.textContent = 'ENTRAR / CRIAR CONTA';
+      }
+      if (tapeSub) {
+        tapeSub.textContent = '[ SINCRONIZAR PROGRESSO NA NUVEM ]';
+      }
+      if (tapeLed) {
+        tapeLed.classList.remove('active');
+      }
+    }
+  }
+
+  showStoryAuthPromptModal(onGuestContinue, customTitle = null) {
+    const modal = document.getElementById('storyAuthPromptModal');
+    if (!modal) {
+      if (typeof onGuestContinue === 'function') onGuestContinue();
+      return;
+    }
+
+    if (this.audio) this.audio.playKeyClack();
+
+    const titleEl = document.getElementById('storyAuthModalTitle');
+    if (titleEl && customTitle) {
+      titleEl.textContent = customTitle;
+    } else if (titleEl) {
+      titleEl.textContent = 'Seu progresso pode ser salvo em uma conta. Logar?';
+    }
+
+    const closeModal = () => {
+      modal.classList.add('hidden');
+      window.removeEventListener('keydown', onKeyDown);
+    };
+
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') closeModal();
+    };
+    window.addEventListener('keydown', onKeyDown);
+
+    const closeBtn = document.getElementById('storyAuthModalCloseBtn');
+    if (closeBtn) closeBtn.onclick = closeModal;
+
+    const loginBtn = document.getElementById('storyAuthModalLoginBtn');
+    if (loginBtn) {
+      loginBtn.onclick = () => {
+        closeModal();
+        if (typeof window.openLoginFromTitle === 'function') {
+          window.openLoginFromTitle('versusLoginScreen');
+        }
+      };
+    }
+
+    const regBtn = document.getElementById('storyAuthModalRegisterBtn');
+    if (regBtn) {
+      regBtn.onclick = () => {
+        closeModal();
+        if (typeof window.openLoginFromTitle === 'function') {
+          window.openLoginFromTitle('versusRegisterScreen');
+        }
+      };
+    }
+
+    const guestBtn = document.getElementById('storyAuthModalGuestBtn');
+    if (guestBtn) {
+      guestBtn.onclick = () => {
+        closeModal();
+        if (typeof onGuestContinue === 'function') {
+          onGuestContinue();
+        }
+      };
+    }
+
+    modal.classList.remove('hidden');
   }
 
   // ─── Transição de Fita Cassete + Estática CRT Analógica (Estilo FNAF) ───
@@ -1325,7 +1523,7 @@ export class TerminalGameApp {
   }
 
   // ==========================================
-  // SISTEMA DE SALVAMENTO & RETOMADA EM .JSON (LOCAL & SERVIDOR)
+  // SISTEMA DE SALVAMENTO & RETOMADA NA CONTA DO PILOTO (SUPABASE)
   // ==========================================
   async saveGameToJSON() {
     const currentFloor = TOWER_FLOORS[this.currentFloorIndex] || TOWER_FLOORS[0];
@@ -1333,6 +1531,7 @@ export class TerminalGameApp {
       floorIndex: this.currentFloorIndex,
       lastCheckpointFloorIndex: this.lastCheckpointFloorIndex,
       floorName: currentFloor.name,
+      biome: currentFloor.biome,
       party: this.party.map(b => ({
         ...b,
         currentHp: b.currentHp !== undefined ? b.currentHp : b.maxHp,
@@ -1348,23 +1547,38 @@ export class TerminalGameApp {
       savedAt: Date.now()
     };
 
-    // 1. Salva localmente no navegador (localStorage)
-    try {
-      localStorage.setItem('quezas_story_save.json', JSON.stringify(payload));
-      localStorage.setItem('quezas_terminal_checkpoint', JSON.stringify(payload));
-    } catch (e) {
-      console.warn('Erro ao salvar no localStorage:', e);
+    // Caso de Convidado (Guest Mode):
+    // "seguir sem conta mesmo, sem salvar o progresso, ou seja, se a pagina for recarregada nenhum save deverá existir."
+    if (this.isGuestMode) {
+      this.activeSessionSave = payload;
+      await this.checkSavedCheckpoint();
+      return payload;
     }
 
-    // 2. Salva em arquivo físico .json no servidor (/api/story-save)
-    try {
-      await fetch('/api/story-save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-    } catch (e) {
-      console.warn('Erro ao persistir /api/story-save no servidor:', e);
+    const account = typeof window.getLoggedAccount === 'function' ? window.getLoggedAccount() : null;
+    const accountName = account ? (account.nickname || account.name) : null;
+
+    if (accountName) {
+      // 1. Salva no cache local exclusivo da conta
+      try {
+        localStorage.setItem(`quezas_story_save_${accountName.toUpperCase()}`, JSON.stringify(payload));
+      } catch (e) {
+        console.warn('Erro ao salvar no localStorage da conta:', e);
+      }
+
+      // 2. Persiste na conta do jogador no Supabase / Servidor
+      try {
+        await fetch('/api/story-save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            accountName: accountName,
+            save: payload
+          })
+        });
+      } catch (e) {
+        console.warn('Erro ao persistir /api/story-save na conta:', e);
+      }
     }
 
     await this.checkSavedCheckpoint();
@@ -1372,27 +1586,43 @@ export class TerminalGameApp {
   }
 
   async loadGameFromJSON() {
-    // 1. Tenta carregar do arquivo .json do servidor
+    // 1. Se estiver jogando como convidado na sessão ativa, usa a memória local da aba
+    if (this.isGuestMode) {
+      return this.activeSessionSave || null;
+    }
+
+    const account = typeof window.getLoggedAccount === 'function' ? window.getLoggedAccount() : null;
+    const accountName = account ? (account.nickname || account.name) : null;
+
+    if (!accountName) {
+      // Não autenticado e fora de sessão de convidado: nenhum save retornado
+      return null;
+    }
+
+    // 2. Tenta carregar da conta no servidor (Supabase)
     try {
-      const res = await fetch('/api/story-save');
+      const res = await fetch(`/api/story-save?account=${encodeURIComponent(accountName)}`);
       if (res.ok) {
         const data = await res.json();
         if (data && data.saved && data.party) {
+          try {
+            localStorage.setItem(`quezas_story_save_${accountName.toUpperCase()}`, JSON.stringify(data));
+          } catch (e) {}
           return data;
         }
       }
     } catch (e) {
-      console.warn('Falha ao ler /api/story-save do servidor, usando fallback local:', e);
+      console.warn('Falha ao ler /api/story-save da conta no servidor:', e);
     }
 
-    // 2. Fallback: localStorage
+    // 3. Fallback: cache local da conta logada
     try {
-      const raw = localStorage.getItem('quezas_story_save.json') || localStorage.getItem('quezas_terminal_checkpoint');
+      const raw = localStorage.getItem(`quezas_story_save_${accountName.toUpperCase()}`);
       if (raw) {
         return JSON.parse(raw);
       }
     } catch (e) {
-      console.warn('Falha ao ler save local:', e);
+      console.warn('Falha ao ler save local da conta:', e);
     }
 
     return null;
@@ -1402,19 +1632,44 @@ export class TerminalGameApp {
     const resumeBtn = document.getElementById('termResumeBtn') || document.getElementById('termContinueBtn');
     if (!resumeBtn) return;
 
+    const labelEl = resumeBtn.querySelector('.tape-label');
+    const subEl = resumeBtn.querySelector('.tape-sub') || document.getElementById('termResumeFloorSub');
+    const ledEl = resumeBtn.querySelector('.tape-indicator-led');
+
+    const account = typeof window.getLoggedAccount === 'function' ? window.getLoggedAccount() : null;
+    const isLogged = !!(account && (account.nickname || account.name));
+
     const data = await this.loadGameFromJSON();
     if (data && (data.floorIndex !== undefined || data.floorName)) {
       const floor = TOWER_FLOORS[data.floorIndex] || TOWER_FLOORS[0];
       const floorName = data.floorName || floor.name;
-      resumeBtn.innerText = `[ RETOMAR INVASÃO: ${floorName.toUpperCase()} ]`;
+      if (labelEl) {
+        labelEl.textContent = 'CONTINUAR INVASÃO';
+      } else {
+        resumeBtn.innerText = `[ RETOMAR INVASÃO: ${floorName.toUpperCase()} ]`;
+      }
+      if (subEl) {
+        subEl.textContent = `[ ANDAR ${data.floorIndex + 1}: ${floorName.toUpperCase()} ]`;
+      }
+      if (ledEl) ledEl.classList.add('active');
+
       resumeBtn.classList.remove('hidden', 'disabled');
       resumeBtn.removeAttribute('disabled');
       resumeBtn.style.opacity = '1';
       resumeBtn.style.pointerEvents = 'auto';
     } else {
-      resumeBtn.innerText = '[ RETOMAR INVASÃO (SEM DADOS) ]';
+      if (labelEl) {
+        labelEl.textContent = 'CONTINUAR INVASÃO';
+      } else {
+        resumeBtn.innerText = '[ RETOMAR INVASÃO (SEM DADOS) ]';
+      }
+      if (subEl) {
+        subEl.textContent = isLogged ? '[ NENHUM CHECKPOINT SALVO ]' : '[ REQUER CONTA LOGADA ]';
+      }
+      if (ledEl) ledEl.classList.remove('active');
+
       resumeBtn.classList.add('disabled');
-      resumeBtn.style.opacity = '0.5';
+      resumeBtn.style.opacity = '0.55';
     }
   }
 
@@ -1451,12 +1706,12 @@ export class TerminalGameApp {
 
       this.audio.playPowerUp();
       const floorName = TOWER_FLOORS[this.currentFloorIndex]?.name || 'Andar 1';
-      this.showSystemToast('PARTIDA RETOMADA', `Invasão restaurada no ${floorName} a partir do arquivo .json!`, 'gold');
+      this.showSystemToast('PARTIDA RETOMADA', `Invasão restaurada no ${floorName}!`, 'gold');
       this.showHub();
       return;
     }
 
-    this.showSystemToast('SEM DADOS', 'Nenhuma partida salva encontrada no arquivo .json.', 'alert');
+    this.showSystemToast('SEM DADOS', 'Nenhuma invasão salva encontrada para esta conta.', 'alert');
   }
 
   checkUnlockNewLore(floorNumber) {

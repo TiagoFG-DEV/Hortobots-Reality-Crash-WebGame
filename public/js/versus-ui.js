@@ -72,6 +72,16 @@ function showTitle() {
   if (window.gameInstance && window.gameInstance.engine3D) {
     window.gameInstance.engine3D.initTitle3DBackground('title3DCanvasContainer');
   }
+
+  // Atualiza widgets da conta e save da tela de título
+  if (window.gameInstance) {
+    if (typeof window.gameInstance.updateTitleAccountWidget === 'function') {
+      window.gameInstance.updateTitleAccountWidget();
+    }
+    if (typeof window.gameInstance.checkSavedCheckpoint === 'function') {
+      window.gameInstance.checkSavedCheckpoint();
+    }
+  }
 }
 
 // ── Atualização Visual do Header do Piloto ────────────────────────────
@@ -104,7 +114,36 @@ function updateProfileHeader(acc) {
   try {
     localStorage.setItem('hortobots_pilot_account', JSON.stringify(acc));
   } catch (e) {}
+
+  if (window.gameInstance) {
+    if (typeof window.gameInstance.updateTitleAccountWidget === 'function') {
+      window.gameInstance.updateTitleAccountWidget();
+    }
+    if (typeof window.gameInstance.checkSavedCheckpoint === 'function') {
+      window.gameInstance.checkSavedCheckpoint();
+    }
+  }
 }
+
+// ── Funções Globais de Autenticação para Uso no Modo História e Título ─────────
+window.getLoggedAccount = () => {
+  if (account && (account.nickname || account.name)) return account;
+  const cached = localStorage.getItem('hortobots_pilot_account');
+  if (cached) {
+    try {
+      account = JSON.parse(cached);
+      return account;
+    } catch (e) {}
+  }
+  return null;
+};
+
+window.openLoginFromTitle = (targetScreen = 'versusLoginScreen') => {
+  $('titleScreen')?.classList.add('hidden');
+  getAudio().playBGM('versusLobby', 600);
+  clearAuthStatus();
+  showScreen(targetScreen);
+};
 
 window.enterVersusMode = () => {
   $('titleScreen')?.classList.add('hidden');
@@ -125,6 +164,39 @@ window.enterVersusMode = () => {
     showScreen('versusLoginScreen');
   }
 };
+
+// ── Handlers do Botão de Conta na Tela de Título ──────────────────────
+$('titleAccountAuthBtn')?.addEventListener('click', () => {
+  const acc = window.getLoggedAccount();
+  if (acc) {
+    updateProfileHeader(acc);
+    showScreen('versusModeSelectScreen');
+  } else {
+    window.openLoginFromTitle('versusLoginScreen');
+  }
+});
+
+$('titleAccountTapeBtn')?.addEventListener('click', () => {
+  if (window.gameInstance && typeof window.gameInstance.triggerTapeTransition === 'function') {
+    window.gameInstance.triggerTapeTransition($('titleAccountTapeBtn'), () => {
+      const acc = window.getLoggedAccount();
+      if (acc) {
+        updateProfileHeader(acc);
+        showScreen('versusModeSelectScreen');
+      } else {
+        window.openLoginFromTitle('versusLoginScreen');
+      }
+    });
+  } else {
+    const acc = window.getLoggedAccount();
+    if (acc) {
+      updateProfileHeader(acc);
+      showScreen('versusModeSelectScreen');
+    } else {
+      window.openLoginFromTitle('versusLoginScreen');
+    }
+  }
+});
 
 // Inicialização: garante 100% que todas as telas de VERSUS e História estejam ocultas e APENAS a tela de título esteja aberta!
 screens.forEach(s => $(s)?.classList.add('hidden'));
@@ -355,6 +427,14 @@ $('versusProfileLogoutBtn')?.addEventListener('click', () => {
   if ($('versusRegNick')) $('versusRegNick').value = '';
   if ($('versusRegPass')) $('versusRegPass').value = '';
   network.disconnect();
+  if (window.gameInstance) {
+    if (typeof window.gameInstance.updateTitleAccountWidget === 'function') {
+      window.gameInstance.updateTitleAccountWidget();
+    }
+    if (typeof window.gameInstance.checkSavedCheckpoint === 'function') {
+      window.gameInstance.checkSavedCheckpoint();
+    }
+  }
   showScreen('versusLoginScreen');
 });
 

@@ -84,8 +84,30 @@
           <span class="lore-msg">> PROTOCOLO MNEMOSYNE DETECTADO // SER DIGITAL DESCONTROLADO NA TORRE CENTRAL</span>
         </div>
 
+        <!-- BARRA DE STATUS DA CONTA NA TELA DE TÍTULO -->
+        <div class="title-account-bar" id="titleAccountBar">
+          <div class="title-account-info">
+            <span class="title-account-status-led" id="titleAccountStatusLed"></span>
+            <span class="title-account-text" id="titleAccountText">PILOTO: NÃO AUTENTICADO [MODO CONVIDADO]</span>
+          </div>
+          <button class="term-btn gold title-account-auth-btn" id="titleAccountAuthBtn" type="button">
+            [ ENTRAR / CRIAR CONTA ]
+          </button>
+        </div>
+
         <!-- MENU DE FITAS INTERATIVAS ESTILO FNAF -->
         <div class="title-fnaf-menu" id="titleCassetteMenu">
+          <!-- TAPE 00: CONTA DO PILOTO / AUTENTICAÇÃO -->
+          <div class="fnaf-tape-slot tape-account" id="titleAccountTapeBtn" data-action="account" role="button" tabindex="0">
+            <div class="tape-slot-bracket">[ ACC-00 ]</div>
+            <div class="tape-slot-body">
+              <span class="tape-cursor">></span>
+              <span class="tape-label" id="titleAccountTapeLabel">ENTRAR / CRIAR CONTA</span>
+              <span class="tape-sub" id="titleAccountTapeSub">[ SINCRONIZAR PROGRESSO NA NUVEM ]</span>
+            </div>
+            <div class="tape-indicator-led" id="titleAccountTapeLed"></div>
+          </div>
+
           <!-- TAPE 01: NOVA INVASÃO -->
           <div class="fnaf-tape-slot" id="termStartBtn" data-target="storyScreen" role="button" tabindex="0">
             <div class="tape-slot-bracket">[ REC-01 ]</div>
@@ -1152,6 +1174,43 @@
       </div>
       <div class="cold-start-terminal-log" id="coldStartLog">
         <span class="log-line">> Estabelecendo sinal com a nuvem...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE CONFIRMAÇÃO DE CONTA NO MODO HISTÓRIA -->
+  <div id="storyAuthPromptModal" class="story-auth-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="storyAuthModalTitle">
+    <div class="story-auth-modal-box">
+      <div class="story-auth-modal-scanlines"></div>
+      <div class="story-auth-modal-header">
+        <div class="story-auth-modal-tag">// PROTOCOLO MNEMOSYNE // SINCRONIZAÇÃO</div>
+        <button class="story-auth-close-btn" id="storyAuthModalCloseBtn" type="button" title="Fechar">&times;</button>
+      </div>
+      <div class="story-auth-modal-body">
+        <div class="story-auth-radar-icon">
+          <svg viewBox="0 0 24 24" width="42" height="42" fill="var(--term-gold, #ffd700)">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+          </svg>
+        </div>
+        <h3 class="story-auth-title" id="storyAuthModalTitle">Seu progresso pode ser salvo em uma conta. Logar?</h3>
+        <p class="story-auth-desc">
+          Ao vincular seu progresso a uma conta, suas vitórias, andares alcançados e robôs desbloqueados na Torre Virtual ficam permanentemente salvos na sua conta.
+        </p>
+        <div class="story-auth-warning-card">
+          <span class="warning-bracket">[ AVISO ]</span>
+          <span>Caso opte por seguir sem conta, nenhum progresso será salvo. Se a página for recarregada, todo o progresso será perdido.</span>
+        </div>
+      </div>
+      <div class="story-auth-btn-row">
+        <button class="term-btn gold story-auth-action-btn" id="storyAuthModalLoginBtn" type="button">
+          [ LOGAR CONTA ]
+        </button>
+        <button class="term-btn cyan story-auth-action-btn" id="storyAuthModalRegisterBtn" type="button">
+          [ CRIAR UMA CONTA ]
+        </button>
+        <button class="term-btn muted story-auth-action-btn" id="storyAuthModalGuestBtn" type="button">
+          [ SEGUIR SEM CONTA ]
+        </button>
       </div>
     </div>
   </div>

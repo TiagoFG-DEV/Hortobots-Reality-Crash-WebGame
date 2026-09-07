@@ -67,6 +67,7 @@ export async function initSupabase() {
         CREATE INDEX IF NOT EXISTS idx_accounts_email ON accounts(email);
         CREATE INDEX IF NOT EXISTS idx_accounts_google_email ON accounts(google_email);
         CREATE INDEX IF NOT EXISTS idx_accounts_ranking ON accounts(ranking_points DESC);
+        ALTER TABLE accounts ADD COLUMN IF NOT EXISTS story_save JSONB DEFAULT NULL;
       `);
       isSupabaseConnected = true;
       console.log('\n[SUPABASE] 🚀 Banco de dados PostgreSQL Conectado com Sucesso!');
@@ -96,6 +97,7 @@ function mapRowToAccount(row) {
     totalMedals: Number(row.total_medals) || 0,
     customBio: row.custom_bio || 'Piloto Cadastrado no Sistema Mnemosyne',
     avatarBadge: row.avatar_badge || 'quezas',
+    storySave: row.story_save || null,
     createdAt: Number(row.created_at) || Date.now(),
     lastSeen: Number(row.last_seen) || Date.now()
   };
@@ -368,4 +370,58 @@ export async function getLeaderboard(limit = 15) {
   return Object.values(local)
     .sort((a, b) => ((b.rankingPoints ?? 0) - (a.rankingPoints ?? 0)) || (b.wins - a.wins))
     .slice(0, limit);
+}
+
+// ── Persistência de Save do Modo História Vinculado à Conta ───────────
+
+export async function saveStoryToAccount(accountName, saveData) {
+  const cleanNick = (accountName || '').trim().toUpperCase();
+  if (!cleanNick) return false;
+
+  if (isSupabaseConnected) {
+    try {
+      await pool.query(
+        'UPDATE accounts SET story_save = $1, last_seen = $2 WHERE UPPER(name) = $3',
+        [saveData ? JSON.stringify(saveData) : null, Date.now(), cleanNick]
+      );
+    } catch (err) {
+      console.error('[SUPABASE] Erro saveStoryToAccount:', err.message);
+    }
+  }
+
+  // Fallback local
+  const accounts = readLocalAccounts();
+  const existingKey = Object.keys(accounts).find(k => k.toUpperCase() === cleanNick);
+  if (existingKey) {
+    accounts[existingKey].storySave = saveData;
+    accounts[existingKey].lastSeen = Date.now();
+    writeLocalAccounts(accounts);
+  }
+  return true;
+}
+
+export async function getStoryFromAccount(accountName) {
+  const cleanNick = (accountName || '').trim().toUpperCase();
+  if (!cleanNick) return null;
+
+  if (isSupabaseConnected) {
+    try {
+      const res = await pool.query('SELECT story_save FROM accounts WHERE UPPER(name) = $1 LIMIT 1', [cleanNick]);
+      if (res.rows.length > 0 && res.rows[0].story_save) {
+        return typeof res.rows[0].story_save === 'string'
+          ? JSON.parse(res.rows[0].story_save)
+          : res.rows[0].story_save;
+      }
+    } catch (err) {
+      console.error('[SUPABASE] Erro getStoryFromAccount:', err.message);
+    }
+  }
+
+  // Fallback local
+  const accounts = readLocalAccounts();
+  const existingKey = Object.keys(accounts).find(k => k.toUpperCase() === cleanNick);
+  if (existingKey && accounts[existingKey].storySave) {
+    return accounts[existingKey].storySave;
+  }
+  return null;
 }

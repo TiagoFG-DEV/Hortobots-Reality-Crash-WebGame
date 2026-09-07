@@ -7,7 +7,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
-import { initSupabase, getAccount, getAccountByEmail, createAccount, updateAccount, saveMatchResult, getLeaderboard, applyDraftPenalty as supabasePenalty } from './data/supabase.js';
+import { initSupabase, getAccount, getAccountByEmail, createAccount, updateAccount, saveMatchResult, getLeaderboard, applyDraftPenalty as supabasePenalty, saveStoryToAccount, getStoryFromAccount } from './data/supabase.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -291,47 +291,64 @@ app.get('/api/leaderboard', (req, res) => {
 
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // MODO HISTÃ“RIA â€” PersistÃªncia em Arquivo .JSON (story_save.json)
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-const STORY_SAVE_FILE = path.join(__dirname, 'data', 'story_save.json');
+// ══════════════════════════════════════════════════════════════════════
+// MODO HISTÓRIA — Persistência na Conta do Jogador (Supabase + Local)
+// ══════════════════════════════════════════════════════════════════════
 
-// GET /api/story-save â€” Retorna a partida salva em JSON
-app.get('/api/story-save', (req, res) => {
+// GET /api/story-save — Retorna o save vinculado à conta informada
+app.get('/api/story-save', async (req, res) => {
   try {
-    if (fs.existsSync(STORY_SAVE_FILE)) {
-      const raw = fs.readFileSync(STORY_SAVE_FILE, 'utf8');
-      return res.json(JSON.parse(raw));
+    const accountName = req.query.account || req.query.name;
+    if (!accountName) {
+      // Convidado / sem conta: nenhum save retornado (em conformidade com regra sem persistência)
+      return res.json({ saved: false, reason: 'unauthenticated' });
     }
-    res.json({ saved: false });
+    const save = await getStoryFromAccount(accountName);
+    if (save) {
+      return res.json({ saved: true, ...save });
+    }
+    return res.json({ saved: false });
   } catch (e) {
     res.json({ saved: false, error: e.message });
   }
 });
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// WEBSOCKET SERVER â€” Multiplayer Matchmaking
-// WS rodando no mesmo servidor HTTP que o Express (compatÃ­vel com Railway)
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// O WS Ã© anexado ao mesmo servidor HTTP que o Express.
-// Quando PORT === WS_PORT (Railway, Render, etc.) isso Ã© automÃ¡tico.
-// httpServer separado sÃ³ Ã© criado quando WS_PORT Ã© diferente de PORT.
-let _expressServer = null; // preenchido no app.listen
-const wss = new WebSocketServer({ noServer: true }); // inicializa sem server, vincula apÃ³s express.listen
-
-// POST /api/story-save â€” Salva o estado da partida em arquivo .json
-app.post('/api/story-save', (req, res) => {
+// POST /api/story-save — Salva progresso na conta logada
+app.post('/api/story-save', async (req, res) => {
   try {
-    const data = req.body;
-    if (!data || typeof data !== 'object') {
-      return res.status(400).json({ error: 'Payload de salvamento invÃ¡lido' });
+    const { accountName, save } = req.body;
+    if (!accountName) {
+      return res.status(400).json({ error: 'Nenhuma conta informada para salvar progresso' });
     }
-    data.savedAt = Date.now();
-    data.saved = true;
-    fs.writeFileSync(STORY_SAVE_FILE, JSON.stringify(data, null, 2), 'utf8');
-    res.json({ ok: true, savedAt: data.savedAt });
+    const saveData = (save && typeof save === 'object') ? save : { ...req.body };
+    delete saveData.accountName;
+    saveData.savedAt = Date.now();
+    saveData.saved = true;
+
+    await saveStoryToAccount(accountName, saveData);
+    res.json({ ok: true, savedAt: saveData.savedAt });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
+
+// DELETE /api/story-save — Deleta/reseta o save da conta logada
+app.delete('/api/story-save', async (req, res) => {
+  try {
+    const accountName = req.query.account || req.body?.accountName;
+    if (accountName) {
+      await saveStoryToAccount(accountName, null);
+    }
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// WEBSOCKET SERVER — Multiplayer Matchmaking
+// ══════════════════════════════════════════════════════════════════════
+const wss = new WebSocketServer({ noServer: true });
 
 // -- Server Info --
 app.get('/api/server-info', (req, res) => {
