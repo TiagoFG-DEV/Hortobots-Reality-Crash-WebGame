@@ -8124,9 +8124,9 @@ html, body {
 .pre-title-sys-tag {
   font-family: 'Share Tech Mono', monospace;
   font-size: 0.92rem;
-  color: #00ff88;
+  color: #00e5ff;
   letter-spacing: 2px;
-  text-shadow: 0 0 10px rgba(0, 255, 136, 0.65);
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.65);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -8136,35 +8136,35 @@ html, body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #ffd700;
-  box-shadow: 0 0 8px #ffd700;
+  background: #00e5ff;
+  box-shadow: 0 0 8px #00e5ff;
   animation: hudDotBlink 1.4s infinite ease-in-out;
   display: inline-block;
 }
 
 .hud-blink-dot.active {
-  background: #00ff88;
-  box-shadow: 0 0 12px #00ff88;
+  background: #38bdf8;
+  box-shadow: 0 0 12px #38bdf8;
 }
 
 .pre-title-status-tag {
   font-family: 'Share Tech Mono', monospace;
   font-size: 0.82rem;
-  color: #ffd700;
+  color: #38bdf8;
   letter-spacing: 1.5px;
-  border: 1px solid rgba(255, 215, 0, 0.45);
+  border: 1px solid rgba(56, 189, 248, 0.45);
   padding: 5px 14px;
   border-radius: 3px;
-  background: rgba(255, 215, 0, 0.08);
+  background: rgba(2, 24, 48, 0.65);
   text-transform: uppercase;
   transition: all 0.3s ease;
 }
 
 .pre-title-status-tag.synced {
-  color: #00ff88;
-  border-color: #00ff88;
-  background: rgba(0, 255, 136, 0.16);
-  box-shadow: 0 0 16px rgba(0, 255, 136, 0.5);
+  color: #00e5ff;
+  border-color: #00e5ff;
+  background: rgba(0, 229, 255, 0.16);
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.5);
 }
 
 .pre-title-center-core {
@@ -8179,8 +8179,8 @@ html, body {
 }
 
 .pre-title-center-core:hover .pre-title-action-badge {
-  border-color: #00ff88;
-  box-shadow: 0 0 28px rgba(0, 255, 136, 0.45);
+  border-color: #00e5ff;
+  box-shadow: 0 0 28px rgba(0, 229, 255, 0.45);
   transform: translateY(-2px);
 }
 
@@ -8197,7 +8197,7 @@ html, body {
 .reticle-ring-outer {
   position: absolute;
   inset: 0;
-  border: 2px dashed rgba(0, 255, 136, 0.55);
+  border: 2px dashed rgba(0, 229, 255, 0.55);
   border-radius: 50%;
   animation: reticleSpinClockwise 14s linear infinite;
 }
@@ -8205,7 +8205,7 @@ html, body {
 .reticle-ring-ticks {
   position: absolute;
   inset: 11px;
-  border: 1.5px dotted rgba(0, 229, 255, 0.7);
+  border: 1.5px dotted rgba(56, 189, 248, 0.7);
   border-radius: 50%;
   animation: reticleSpinCounter 9s linear infinite;
 }
@@ -8213,16 +8213,16 @@ html, body {
 .reticle-ring-inner {
   position: absolute;
   inset: 22px;
-  border: 1.5px solid rgba(0, 255, 136, 0.4);
+  border: 1.5px solid rgba(0, 229, 255, 0.4);
   border-radius: 50%;
 }
 
 .reticle-glyph {
-  color: #00ff88;
+  color: #00e5ff;
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.85));
+  filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.85));
   animation: reticlePulse 2.6s ease-in-out infinite;
 }
 
@@ -8236,10 +8236,10 @@ html, body {
   align-items: center;
   gap: 6px;
   padding: 14px 32px;
-  background: rgba(1, 18, 9, 0.82);
-  border: 1px solid rgba(0, 255, 136, 0.45);
+  background: rgba(2, 14, 28, 0.85);
+  border: 1px solid rgba(0, 229, 255, 0.45);
   border-radius: 4px;
-  box-shadow: 0 0 22px rgba(0, 255, 136, 0.25);
+  box-shadow: 0 0 22px rgba(0, 229, 255, 0.25);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   transition: all 0.25s ease;
@@ -8250,22 +8250,22 @@ html, body {
   font-family: 'Share Tech Mono', monospace;
   font-size: 1.28rem;
   font-weight: 700;
-  color: #00ff88;
+  color: #00e5ff;
   letter-spacing: 2.5px;
-  text-shadow: 0 0 14px rgba(0, 255, 136, 0.75);
+  text-shadow: 0 0 14px rgba(0, 229, 255, 0.75);
   transition: all 0.25s ease;
   text-align: center;
 }
 
 .pre-title-action-title.synced {
-  color: #00ff88;
-  text-shadow: 0 0 20px #00ff88;
+  color: #38bdf8;
+  text-shadow: 0 0 20px #38bdf8;
 }
 
 .pre-title-action-desc {
   font-family: 'Share Tech Mono', monospace;
   font-size: 0.82rem;
-  color: #00e5ff;
+  color: #7dd3fc;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   opacity: 0.92;
@@ -8286,6 +8286,12 @@ html, body {
   font-family: 'Share Tech Mono', monospace;
   font-size: 0.82rem;
   letter-spacing: 1.5px;
+  color: #7dd3fc;
+}
+
+.pre-title-blue-text {
+  color: #00e5ff;
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.6);
 }
 
 @keyframes reticleSpinClockwise {
@@ -8306,7 +8312,7 @@ html, body {
   50% {
     transform: scale(1.1);
     opacity: 1;
-    filter: drop-shadow(0 0 18px rgba(0, 255, 136, 1));
+    filter: drop-shadow(0 0 18px rgba(0, 229, 255, 1));
   }
 }
 
@@ -8318,7 +8324,7 @@ html, body {
   45% {
     transform: scale(1.35);
     filter: brightness(2.5);
-    box-shadow: 0 0 45px #00ff88;
+    box-shadow: 0 0 45px #00e5ff;
   }
   100% {
     transform: scale(2.0);

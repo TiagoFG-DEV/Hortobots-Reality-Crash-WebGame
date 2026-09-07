@@ -1518,334 +1518,188 @@ export class Terminal3DEngine {
   }
 
   // =========================================================================
-  // 6. TELA PRÉ-TÍTULO: TERMINAL 3D DE DADOS BINÁRIOS & SINCRONIZAÇÃO NEURAL
+  // 6. TELA PRÉ-TÍTULO: TERMINAL DE CHUVA DIGITAL BINÁRIA (ESTILO MATRIX RETO)
   // =========================================================================
-  _createVerticalBinaryChainTexture(digits) {
-    const canvas = document.createElement('canvas');
-    canvas.width = 64;
-    canvas.height = digits.length * 48;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return null;
-
-    // Fundo 100% transparente — SEM CAIXAS, SEM BORDAS, SEM NENHUMA PLACA
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Tipografia nítida e verde neon puro
-    ctx.font = 'bold 36px "Share Tech Mono", "Courier New", monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#00ff88'; // Apenas a cor verde
-    ctx.shadowColor = 'rgba(0, 255, 136, 0.9)';
-    ctx.shadowBlur = 12;
-
-    const rowH = 48;
-    for (let i = 0; i < digits.length; i++) {
-      const y = (i * rowH) + (rowH / 2);
-      ctx.fillText(String(digits[i]), canvas.width / 2, y);
-    }
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.minFilter = THREE.LinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-    this.preTitleTextures.push(texture);
-
-    return {
-      texture,
-      width: 0.9,
-      height: digits.length * 0.82
-    };
-  }
-
   initPreTitleBinary3D(canvasId = 'preTitle3DCanvas') {
     const canvas = document.getElementById(canvasId);
-    if (!canvas || typeof THREE === 'undefined') return;
+    if (!canvas) return;
 
     this.disposePreTitleBinary3D();
 
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    this.preTitleCanvas = canvas;
+    this.preTitleCtx = ctx;
+
     const parent = canvas.parentElement;
-    const width = parent ? (parent.clientWidth || window.innerWidth) : window.innerWidth;
-    const height = parent ? (parent.clientHeight || window.innerHeight) : window.innerHeight;
+    let width = parent ? (parent.clientWidth || window.innerWidth) : window.innerWidth;
+    let height = parent ? (parent.clientHeight || window.innerHeight) : window.innerHeight;
 
-    const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x010804, 0.016);
-    this.preTitleScene = scene;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
+    ctx.scale(dpr, dpr);
 
-    const aspect = width / height;
-    const camera = new THREE.PerspectiveCamera(52, aspect, 0.1, 500);
-    camera.position.set(0, 0, 30);
-    this.preTitleCamera = camera;
+    // Configuração das Colunas de Chuva Binária Matrix
+    // Retos, estritamente de cima para baixo, sem rotação, dígitos '0' e '1'
+    const colSpacing = 20; // Espaçamento horizontal entre colunas
+    const colCount = Math.ceil(width / colSpacing) + 2;
 
-    const renderer = new THREE.WebGLRenderer({
-      canvas: canvas,
-      antialias: true,
-      alpha: true,
-      powerPreference: 'high-performance'
-    });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(this._getPixelRatio());
-    renderer.setClearColor(0x000000, 0);
-    this.preTitleRenderer = renderer;
+    const streams = [];
 
-    // Padrões de correntes verticais de dígitos 0 e 1 (apenas verde, sem caixas)
-    const chainPatterns = [
-      [0, 0, 1, 0, 1, 1, 1],
-      [1, 1, 0, 1, 0, 0, 1, 0],
-      [0, 1, 0, 1, 1, 0, 1, 1, 0],
-      [1, 0, 0, 1, 1, 1, 0, 1],
-      [0, 0, 0, 1, 0, 1, 1, 0, 1, 1],
-      [1, 0, 1, 0, 0, 1, 0, 1],
-      [0, 1, 1, 1, 0, 0, 1],
-      [1, 1, 1, 0, 1, 0, 1, 0],
-      [0, 1, 0, 0, 1, 1, 0, 1, 1],
-      [1, 0, 1, 1, 0, 1, 0, 0, 1]
-    ];
+    const createStream = (colIndex, randomizeY = true) => {
+      // 3 camadas de profundidade: fundo (menor/mais lento), meio e primeiro plano (maior/mais rápido)
+      const depthRand = Math.random();
+      const depth = depthRand < 0.35 ? 'back' : (depthRand < 0.75 ? 'mid' : 'front');
+      let fontSize = 16;
+      let speed = 2.8 + Math.random() * 2.4;
+      let opacity = 0.85;
 
-    // Gerar texturas verticais translúcidas
-    const chainDataList = chainPatterns.map(pattern => this._createVerticalBinaryChainTexture(pattern));
-
-    // ── 1. ANÉIS ORBITAIS CONCÊNTRICOS DE CORRENTES BINÁRIAS (Girando em 3D e ondulando) ──
-    const ringsConfig = [
-      { radius: 9.0, count: 10, rotSpeed: 0.0075, tiltX: 0.45, tiltZ: -0.25, undFreq: 2.4, undAmp: 0.9 },
-      { radius: 15.0, count: 14, rotSpeed: -0.0055, tiltX: -0.6, tiltZ: 0.35, undFreq: 1.8, undAmp: 1.3 },
-      { radius: 21.5, count: 18, rotSpeed: 0.0040, tiltX: 0.75, tiltZ: -0.4, undFreq: 1.4, undAmp: 1.6 }
-    ];
-
-    const ringGroups = [];
-
-    ringsConfig.forEach((cfg, ringIdx) => {
-      const ringGroup = new THREE.Group();
-      ringGroup.rotation.x = cfg.tiltX;
-      ringGroup.rotation.z = cfg.tiltZ;
-      scene.add(ringGroup);
-
-      const items = [];
-      const step = (Math.PI * 2) / cfg.count;
-
-      for (let i = 0; i < cfg.count; i++) {
-        const angle = i * step;
-        const cData = chainDataList[(ringIdx * 3 + i) % chainDataList.length];
-        const planeGeo = new THREE.PlaneGeometry(cData.width, cData.height);
-        const mat = new THREE.MeshBasicMaterial({
-          map: cData.texture,
-          transparent: true,
-          opacity: 0.88,
-          blending: THREE.AdditiveBlending,
-          side: THREE.DoubleSide
-        });
-
-        const mesh = new THREE.Mesh(planeGeo, mat);
-        const x = Math.cos(angle) * cfg.radius;
-        const z = Math.sin(angle) * cfg.radius;
-        mesh.position.set(x, 0, z);
-
-        ringGroup.add(mesh);
-        items.push({
-          mesh,
-          baseAngle: angle,
-          radius: cfg.radius,
-          phase: i * 0.65
-        });
+      if (depth === 'back') {
+        fontSize = 13;
+        speed = 1.8 + Math.random() * 1.6;
+        opacity = 0.42;
+      } else if (depth === 'front') {
+        fontSize = 20;
+        speed = 4.6 + Math.random() * 3.2;
+        opacity = 0.98;
       }
 
-      ringGroups.push({
-        group: ringGroup,
-        cfg,
-        items
-      });
-    });
-
-    // ── 2. CORRENTES VERTICAIS DE DADOS EM CASCATA 3D (Subindo e descendo como chuva/fluxo) ──
-    const columnCount = 28;
-    const columns = [];
-
-    for (let c = 0; c < columnCount; c++) {
-      const colGroup = new THREE.Group();
-      const colX = (Math.random() - 0.5) * 64;
-      const colZ = -45 + Math.random() * 52;
-      const colBaseY = (Math.random() - 0.5) * 44;
-
-      // Evitar colocar colunas muito grudadas no centro para manter o retículo limpo
-      if (Math.abs(colX) < 4.0 && colZ > 10) continue;
-
-      colGroup.position.set(colX, colBaseY, colZ);
-      scene.add(colGroup);
-
-      const colSpeed = (Math.random() > 0.5 ? 1 : -1) * (0.07 + Math.random() * 0.10);
-      const cData = chainDataList[c % chainDataList.length];
-      const planeGeo = new THREE.PlaneGeometry(cData.width, cData.height);
-
-      const mat = new THREE.MeshBasicMaterial({
-        map: cData.texture,
-        transparent: true,
-        opacity: 0.7 + Math.random() * 0.28,
-        blending: THREE.AdditiveBlending,
-        side: THREE.DoubleSide
-      });
-      const mesh = new THREE.Mesh(planeGeo, mat);
-      colGroup.add(mesh);
-
-      // Adiciona um segundo segmento conectado para correntes mais longas em algumas colunas
-      if (Math.random() > 0.45) {
-        const cData2 = chainDataList[(c + 3) % chainDataList.length];
-        const planeGeo2 = new THREE.PlaneGeometry(cData2.width, cData2.height);
-        const mat2 = new THREE.MeshBasicMaterial({
-          map: cData2.texture,
-          transparent: true,
-          opacity: 0.6 + Math.random() * 0.3,
-          blending: THREE.AdditiveBlending,
-          side: THREE.DoubleSide
-        });
-        const mesh2 = new THREE.Mesh(planeGeo2, mat2);
-        mesh2.position.y = (colSpeed > 0 ? -1 : 1) * (cData.height + 0.5);
-        colGroup.add(mesh2);
+      const length = 10 + Math.floor(Math.random() * 20); // Entre 10 e 30 dígitos em corrente
+      const chars = [];
+      for (let i = 0; i < length; i++) {
+        chars.push(Math.random() > 0.5 ? '1' : '0');
       }
 
-      columns.push({
-        group: colGroup,
-        baseX: colX,
-        speed: colSpeed,
-        phase: Math.random() * Math.PI * 2
-      });
-    }
+      const charSpacing = fontSize * 1.25;
+      const startY = randomizeY
+        ? (Math.random() * (height + 400) - 200)
+        : (-Math.random() * 250 - (length * charSpacing));
 
-    // ── 3. GRADES DE PERSPECTIVA CYBERPUNK (Chão e Teto em Verde Matrix) ──
-    const gridBottom = new THREE.GridHelper(80, 36, 0x00ff88, 0x003318);
-    gridBottom.position.y = -15;
-    scene.add(gridBottom);
-
-    const gridTop = new THREE.GridHelper(80, 36, 0x00ff88, 0x003318);
-    gridTop.position.y = 15;
-    scene.add(gridTop);
-
-    // ── 4. PARTÍCULAS QUÂNTICAS DE BITS (Verde Matrix) ──
-    const particleCount = 200;
-    const particleGeo = new THREE.BufferGeometry();
-    const particlePositions = new Float32Array(particleCount * 3);
-
-    for (let i = 0; i < particleCount * 3; i += 3) {
-      particlePositions[i] = (Math.random() - 0.5) * 70;
-      particlePositions[i + 1] = (Math.random() - 0.5) * 40;
-      particlePositions[i + 2] = -40 + Math.random() * 65;
-    }
-
-    particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-    const particleMat = new THREE.PointsMaterial({
-      color: 0x00ff88,
-      size: 0.35,
-      transparent: true,
-      opacity: 0.6,
-      blending: THREE.AdditiveBlending
-    });
-    const particleField = new THREE.Points(particleGeo, particleMat);
-    scene.add(particleField);
-
-    // Iluminação Ambiental & Ponto Central (Verde)
-    const ambient = new THREE.AmbientLight(0x00ff88, 0.9);
-    scene.add(ambient);
-
-    const centerLight = new THREE.PointLight(0x00ff88, 2.2, 35);
-    centerLight.position.set(0, 0, 10);
-    scene.add(centerLight);
-
-    // ── 5. PARALLAX DO MOUSE ──
-    let targetCamX = 0;
-    let targetCamY = 0;
-
-    this.preTitleMouseMoveHandler = (e) => {
-      const normX = (e.clientX / window.innerWidth) - 0.5;
-      const normY = (e.clientY / window.innerHeight) - 0.5;
-      targetCamX = normX * 4.5;
-      targetCamY = -normY * 3.5;
+      return {
+        colIndex,
+        x: colIndex * colSpacing + (Math.random() * 4 - 2),
+        y: startY,
+        speed,
+        baseSpeed: speed,
+        length,
+        chars,
+        fontSize,
+        charSpacing,
+        opacity,
+        depth
+      };
     };
-    window.addEventListener('mousemove', this.preTitleMouseMoveHandler, { passive: true });
 
-    // ── 6. RESIZE RESPONSIVO ──
+    // Inicializar múltiplos fluxos por coluna para densidade orgânica contínua
+    for (let c = 0; c < colCount; c++) {
+      streams.push(createStream(c, true));
+      if (Math.random() > 0.35) {
+        streams.push(createStream(c, true));
+      }
+    }
+
+    this.preTitleStreams = streams;
+    this.preTitleIsWarping = false;
+
+    // Redimensionamento responsivo
     this.preTitleResizeHandler = () => {
-      if (!this.preTitleRenderer || !this.preTitleCamera) return;
-      const w = parent ? (parent.clientWidth || window.innerWidth) : window.innerWidth;
-      const h = parent ? (parent.clientHeight || window.innerHeight) : window.innerHeight;
-      this.preTitleCamera.aspect = w / h;
-      this.preTitleCamera.updateProjectionMatrix();
-      this.preTitleRenderer.setSize(w, h);
+      if (!this.preTitleCanvas || !this.preTitleCtx) return;
+      const p = this.preTitleCanvas.parentElement;
+      width = p ? (p.clientWidth || window.innerWidth) : window.innerWidth;
+      height = p ? (p.clientHeight || window.innerHeight) : window.innerHeight;
+      this.preTitleCanvas.width = Math.floor(width * dpr);
+      this.preTitleCanvas.height = Math.floor(height * dpr);
+      this.preTitleCtx.scale(dpr, dpr);
     };
     window.addEventListener('resize', this.preTitleResizeHandler);
 
-    // ── 7. LOOP DE ANIMAÇÃO ──
-    this.preTitleIsWarping = false;
-    let clock = new THREE.Clock();
+    // Loop de renderização 60 FPS
+    let lastTime = performance.now();
 
-    const animate = () => {
-      this.preTitleAnimId = requestAnimationFrame(animate);
+    const renderMatrixRain = (now) => {
+      this.preTitleAnimId = requestAnimationFrame(renderMatrixRain);
 
-      const delta = clock.getDelta();
-      const elapsed = clock.getElapsedTime();
+      const dt = Math.min((now - lastTime) / 1000, 0.1);
+      lastTime = now;
 
-      const speedMultiplier = this.preTitleIsWarping ? 7.0 : 1.0;
+      // Limpa a tela a cada quadro para dígitos 100% nítidos
+      ctx.clearRect(0, 0, width, height);
 
-      // Parallax suave da câmera
-      if (!this.preTitleIsWarping) {
-        camera.position.x += (targetCamX - camera.position.x) * 0.045;
-        camera.position.y += (targetCamY - camera.position.y) * 0.045;
-        camera.lookAt(0, 0, 0);
-      } else {
-        // Durante o Warp de Sincronização: avanço hiperdimensional da câmera para frente
-        camera.position.z -= 42 * delta;
-        camera.position.x *= 0.95;
-        camera.position.y *= 0.95;
-      }
+      const warpMultiplier = this.preTitleIsWarping ? 9.0 : 1.0;
 
-      // Animação dos Anéis 3D (Rotação e ondulação vertical)
-      ringGroups.forEach((rg) => {
-        rg.group.rotation.y += rg.cfg.rotSpeed * speedMultiplier;
+      for (let s = 0; s < streams.length; s++) {
+        const str = streams[s];
 
-        rg.items.forEach((item) => {
-          // Ondulação vertical senoidal individual
-          const undY = Math.sin(elapsed * rg.cfg.undFreq + item.phase) * rg.cfg.undAmp;
-          item.mesh.position.y = undY;
+        // Avanço reto e estrito de cima para baixo
+        str.y += str.speed * warpMultiplier * (dt * 60);
 
-          if (this.preTitleIsWarping) {
-            item.mesh.material.opacity = Math.max(0, item.mesh.material.opacity - delta * 1.5);
-          }
-        });
-      });
-
-      // Animação das Colunas Verticais de Dados (Indo para cima e para baixo)
-      columns.forEach((col) => {
-        col.group.position.y += col.speed * speedMultiplier;
-        col.group.position.x = col.baseX + Math.sin(elapsed * 1.2 + col.phase) * 0.6;
-
-        // Loop vertical contínuo
-        if (col.speed > 0 && col.group.position.y > 28) {
-          col.group.position.y = -28;
-        } else if (col.speed < 0 && col.group.position.y < -28) {
-          col.group.position.y = 28;
+        // Mutação aleatória de dígitos na corrente (efeito de código vivo)
+        if (Math.random() < 0.02) {
+          const randIdx = Math.floor(Math.random() * str.chars.length);
+          str.chars[randIdx] = str.chars[randIdx] === '0' ? '1' : '0';
         }
-      });
 
-      // Translação sutil das grades ao longo do tempo para sensação de túnel
-      gridBottom.position.z = (elapsed * 3.5 * speedMultiplier) % 4;
-      gridTop.position.z = (elapsed * 3.5 * speedMultiplier) % 4;
+        ctx.font = `bold ${str.fontSize}px "Share Tech Mono", "Courier New", monospace`;
+        ctx.textAlign = 'center';
 
-      // Movimentação sutil das partículas
-      const pos = particleGeo.attributes.position.array;
-      for (let i = 2; i < particleCount * 3; i += 3) {
-        pos[i] += (this.preTitleIsWarping ? 35 : 1.2) * delta;
-        if (pos[i] > 30) pos[i] = -40;
+        const totalH = str.length * str.charSpacing;
+
+        // Se toda a corrente saiu por baixo da tela, reinicia suavemente acima do topo
+        if (str.y - totalH > height + 40) {
+          str.y = -Math.random() * 180 - str.charSpacing;
+          str.speed = str.baseSpeed * (0.85 + Math.random() * 0.3);
+          for (let k = 0; k < str.chars.length; k++) {
+            str.chars[k] = Math.random() > 0.5 ? '1' : '0';
+          }
+          continue;
+        }
+
+        // Desenha cada dígito da corrente vertical
+        for (let i = 0; i < str.length; i++) {
+          const charY = str.y - (i * str.charSpacing);
+
+          // Pula se estiver fora dos limites visíveis
+          if (charY < -30 || charY > height + 30) continue;
+
+          const char = str.chars[i];
+
+          if (i === 0) {
+            // Cabeça da corrente: Branca/Verde-claro com forte brilho
+            ctx.fillStyle = '#f0fff4';
+            ctx.shadowColor = '#00ff88';
+            ctx.shadowBlur = 14;
+            ctx.fillText(char, str.x, charY);
+          } else if (i <= 2) {
+            // Logo atrás da cabeça: Verde brilhante
+            ctx.fillStyle = '#46ff9e';
+            ctx.shadowColor = '#00ff88';
+            ctx.shadowBlur = 8;
+            ctx.fillText(char, str.x, charY);
+          } else {
+            // Cauda da corrente: Verde neon que decai gradualmente em opacidade
+            const trailProgress = (i - 2) / (str.length - 2);
+            const alpha = Math.max(0.08, (1 - trailProgress) * str.opacity);
+            ctx.shadowBlur = 0; // Desativa sombra na cauda para máxima nitidez e performance
+            ctx.fillStyle = `rgba(0, 255, 136, ${alpha.toFixed(2)})`;
+            ctx.fillText(char, str.x, charY);
+          }
+        }
       }
-      particleGeo.attributes.position.needsUpdate = true;
 
-      renderer.render(scene, camera);
+      // Reseta shadowBlur global após renderizar
+      ctx.shadowBlur = 0;
     };
 
-    animate();
+    this.preTitleAnimId = requestAnimationFrame(renderMatrixRain);
   }
 
   triggerPreTitleWarp(onComplete) {
     if (this.preTitleIsWarping) return;
     this.preTitleIsWarping = true;
-    this.preTitleWarpStartTime = Date.now();
 
-    // Pulso de aceleração durante 750ms antes da transição completa
+    // Pulso de aceleração vertical por 700ms antes da transição para a tela de título
     setTimeout(() => {
       if (typeof onComplete === 'function') {
         onComplete();
@@ -1859,30 +1713,18 @@ export class Terminal3DEngine {
       this.preTitleAnimId = null;
     }
 
-    if (this.preTitleMouseMoveHandler) {
-      window.removeEventListener('mousemove', this.preTitleMouseMoveHandler);
-      this.preTitleMouseMoveHandler = null;
-    }
-
     if (this.preTitleResizeHandler) {
       window.removeEventListener('resize', this.preTitleResizeHandler);
       this.preTitleResizeHandler = null;
     }
 
-    if (this.preTitleTextures && this.preTitleTextures.length > 0) {
-      this.preTitleTextures.forEach(tex => {
-        if (tex && typeof tex.dispose === 'function') tex.dispose();
-      });
-      this.preTitleTextures = [];
+    if (this.preTitleCanvas && this.preTitleCtx) {
+      this.preTitleCtx.clearRect(0, 0, this.preTitleCanvas.width, this.preTitleCanvas.height);
     }
 
-    if (this.preTitleRenderer) {
-      this.preTitleRenderer.dispose();
-      this.preTitleRenderer = null;
-    }
-
-    this.preTitleScene = null;
-    this.preTitleCamera = null;
+    this.preTitleCanvas = null;
+    this.preTitleCtx = null;
+    this.preTitleStreams = null;
     this.preTitleIsWarping = false;
   }
 }
