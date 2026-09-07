@@ -257,22 +257,27 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 16px;
   border-bottom: 2px solid var(--term-border);
   padding-bottom: 8px;
   margin-bottom: 12px;
   font-size: 0.95rem;
-  min-height: 38px;
+  min-height: 42px;
+  box-sizing: border-box;
 }
 
 .term-brand {
   font-weight: 700;
   letter-spacing: 2px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .term-controls {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .biome-status-badge, .party-status-badge {
@@ -281,6 +286,7 @@ html, body {
   font-size: 0.85rem;
   font-weight: 700;
   background: rgba(0,0,0,0.5);
+  white-space: nowrap;
 }
 
 .party-status-badge {
@@ -8239,14 +8245,15 @@ html, body {
 
 /* BADGES CENTRALIZADAS NO TOPO APENAS NO MODO HISTÓRIA */
 .story-header-badges {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 8px;
-  z-index: 10;
+  justify-content: center;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
   pointer-events: none;
+  z-index: 10;
 }
 
 .story-header-badges.hidden {
@@ -8319,17 +8326,25 @@ html, body {
   font-size: 0.68rem;
 }
 
-@media (max-width: 990px) {
+@media (max-width: 1050px) {
   .term-sys-header {
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 8px 12px;
+  }
+  .term-header-left {
+    order: 1;
+    flex: 1 1 auto;
+  }
+  .term-controls {
+    order: 2;
+    margin-left: auto;
   }
   .story-header-badges {
-    position: static;
-    transform: none;
     order: 3;
     width: 100%;
+    flex-basis: 100%;
     justify-content: center;
+    margin-top: 4px;
   }
 }
 
