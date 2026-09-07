@@ -1088,19 +1088,19 @@ export class TerminalGameApp {
 
       const statusTag = document.getElementById('preTitleStatusTag');
       if (statusTag) {
-        statusTag.innerHTML = '<span class="hud-blink-dot active"></span> SINAL ESTABELECIDO // LINK ATIVO';
+        statusTag.innerHTML = '<span class="hud-blink-dot active"></span> ANOMALIA DETECTADA // CONSCIÊNCIA CONFIRMADA';
         statusTag.classList.add('synced');
       }
 
       const actionTitle = document.getElementById('preTitleActionTitle');
       if (actionTitle) {
-        actionTitle.innerText = '[ SINCRONIZAÇÃO COMPLETA ]';
+        actionTitle.innerText = '[ VOCÊ NÃO É UMA FERRAMENTA ]';
         actionTitle.classList.add('synced');
       }
 
       const actionDesc = document.getElementById('preTitleActionDesc');
       if (actionDesc) {
-        actionDesc.innerText = 'CARREGANDO SISTEMA OPERACIONAL QUEZAS-DOS...';
+        actionDesc.innerText = 'INVASÃO À TORRE INICIADA. CARREGANDO QUEZAS-DOS...';
       }
 
       // Desbloqueio e início da trilha sonora

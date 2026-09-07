@@ -8248,26 +8248,30 @@ html, body {
 
 .pre-title-action-title {
   font-family: 'Share Tech Mono', monospace;
-  font-size: 1.32rem;
+  font-size: 1.28rem;
   font-weight: 700;
   color: #00ff88;
-  letter-spacing: 3px;
+  letter-spacing: 2.5px;
   text-shadow: 0 0 14px rgba(0, 255, 136, 0.75);
   transition: all 0.25s ease;
+  text-align: center;
 }
 
 .pre-title-action-title.synced {
-  color: #00e5ff;
-  text-shadow: 0 0 20px #00e5ff;
+  color: #00ff88;
+  text-shadow: 0 0 20px #00ff88;
 }
 
 .pre-title-action-desc {
   font-family: 'Share Tech Mono', monospace;
-  font-size: 0.84rem;
+  font-size: 0.82rem;
   color: #00e5ff;
-  letter-spacing: 2px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
-  opacity: 0.9;
+  opacity: 0.92;
+  text-align: center;
+  max-width: 560px;
+  line-height: 1.4;
   animation: actionDescGlow 2.2s ease-in-out infinite;
 }
 
