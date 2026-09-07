@@ -50,14 +50,25 @@ export const AccountAPI = {
     return data;
   },
 
-  async start2FARegister(nickname, password, email) {
+  async registerDirect(nickname, password, birthDate = '') {
+    const res = await fetch(`${API_BASE}/auth/register-direct`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nickname, password, birthDate }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Falha ao cadastrar piloto');
+    return data;
+  },
+
+  async start2FARegister(nickname, password, email, birthDate = '') {
     const res = await fetch(`${API_BASE}/auth/register-2fa-start`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nickname, password, email }),
+      body: JSON.stringify({ nickname, password, email, birthDate }),
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Falha ao solicitar código 2FA');
+    if (!res.ok) throw new Error(data.error || 'Falha ao solicitar código de confirmação no Gmail');
     return data;
   },
 
@@ -68,7 +79,7 @@ export const AccountAPI = {
       body: JSON.stringify({ email, code }),
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Falha ao validar código 2FA');
+    if (!res.ok) throw new Error(data.error || 'Falha ao validar código de confirmação');
     return data;
   },
 
@@ -79,45 +90,52 @@ export const AccountAPI = {
       body: JSON.stringify({ email }),
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Falha ao reenviar código 2FA');
+    if (!res.ok) throw new Error(data.error || 'Falha ao reenviar código para o Gmail');
     return data;
   },
 
-  getPreviewEmailUrl(email) {
-    return `${API_BASE}/auth/preview-email/${encodeURIComponent(email || '')}`;
-  },
-
-  async register(nickname, password, email = '', googleEmail = null, googleLinked = false) {
-    const res = await fetch(`${API_BASE}/auth/register`, {
+  async googleVerify(credential) {
+    const res = await fetch(`${API_BASE}/auth/google-verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nickname, password, email, googleEmail, googleLinked }),
+      body: JSON.stringify({ credential }),
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Falha ao cadastrar piloto');
+    if (!res.ok) throw new Error(data.error || 'Falha na validação oficial da conta Google');
     return data;
   },
 
-
-  async googleAuth(googleEmail, nickname = null) {
-    const res = await fetch(`${API_BASE}/auth/google`, {
+  async googleLink(nickname, credential) {
+    const res = await fetch(`${API_BASE}/auth/google-link`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ googleEmail, nickname }),
+      body: JSON.stringify({ nickname, credential }),
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Falha na autenticação Google');
+    if (!res.ok) throw new Error(data.error || 'Falha ao vincular conta Google');
     return data;
   },
 
-  async updateProfile(nickname, profileData) {
-    const res = await fetch(`${API_BASE}/auth/profile`, {
+  async updateAccount(nickname, payload = {}) {
+    const bodyObj = typeof nickname === 'object' ? nickname : { nickname, ...payload };
+    const res = await fetch(`${API_BASE}/account`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nickname, ...profileData }),
+      body: JSON.stringify(bodyObj),
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Falha ao atualizar perfil');
+    if (!res.ok) throw new Error(data.error || 'Falha ao atualizar dados da conta');
+    return data;
+  },
+
+  async deleteAccount(nickname, password) {
+    const res = await fetch(`${API_BASE}/account`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nickname, password }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Falha ao excluir conta');
     return data;
   },
 

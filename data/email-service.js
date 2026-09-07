@@ -6,10 +6,6 @@ import nodemailer from 'nodemailer';
 // email -> { nickname, password, email, code, createdAt, expiresAt }
 export const pending2FARegistrations = new Map();
 
-// Armazenamento em memória do último e-mail renderizado para preview
-// email -> htmlString
-export const renderedEmails = new Map();
-
 // Validação estrita de e-mails Google (@gmail.com ou @googlemail.com)
 export function isGoogleEmail(email) {
   if (!email || typeof email !== 'string') return false;
@@ -234,13 +230,10 @@ export function generateCyberpunkEmailHTML({ nickname, email, code }) {
 </html>`;
 }
 
-// Envio de E-mail ou Fallback no Console
+// Envio de E-mail Real via SMTP
 export async function send2FAVerificationEmail({ nickname, email, code }) {
   const cleanEmail = email.trim().toLowerCase();
   const html = generateCyberpunkEmailHTML({ nickname, email: cleanEmail, code });
-
-  // Armazena para pré-visualização no jogo
-  renderedEmails.set(cleanEmail, html);
 
   const transporter = getTransporter();
   let emailSent = false;
@@ -249,42 +242,33 @@ export async function send2FAVerificationEmail({ nickname, email, code }) {
   if (transporter) {
     try {
       await transporter.sendMail({
-        from: `"HORTOBOTS" <${process.env.SMTP_FROM || process.env.GMAIL_USER || 'central@hortobots.game'}>`,
+        from: `"HORTOBOTS" <${process.env.SMTP_FROM || process.env.SMTP_USER || process.env.GMAIL_USER || 'central@hortobots.game'}>`,
         to: cleanEmail,
-        subject: `[HORTOBOTS] Código de Verificação: ${code}`,
-        text: `HORTOBOTS VERIFICAÇÃO\nPiloto: ${nickname}\nCódigo de Confirmação: ${code}\nValidade: 15 minutos.\nUse este código no jogo para ativar sua conta.`,
+        subject: `[HORTOBOTS] Código de Confirmação: ${code}`,
+        text: `HORTOBOTS VERIFICAÇÃO DE PILOTO\nPiloto: ${nickname}\nCódigo de Confirmação: ${code}\nValidade: 15 minutos.\nUse este código no jogo para ativar sua conta.`,
         html,
       });
       emailSent = true;
-      console.log(`[2FA] E-mail enviado com sucesso via SMTP para: ${cleanEmail}`);
+      console.log(`[2FA] ✅ E-mail de verificação real enviado com sucesso para: ${cleanEmail}`);
     } catch (err) {
       errorDetail = err.message;
-      console.warn(`[2FA] Falha no envio SMTP (${err.message}). Operando em modo de entrega segura em terminal.`);
+      console.error(`[2FA] ❌ Erro ao enviar e-mail via SMTP (${cleanEmail}):`, err.message);
+      throw new Error(`Falha no envio para o Gmail (${cleanEmail}): ${err.message}. Verifique as credenciais SMTP no arquivo .env.pvp.`);
     }
   } else {
-    console.log(`[2FA] SMTP não configurado no .env. Código registrado e disponível para prévia.`);
+    console.warn(`[2FA] ⚠️ SMTP não configurado (SMTP_USER / SMTP_PASS ausentes no .env.pvp).`);
+    throw new Error('Servidor de e-mail SMTP não configurado. Adicione SMTP_USER e SMTP_PASS no .env.pvp.');
   }
-
-  // Log destacado no console do servidor para visibilidade imediata do desenvolvedor/usuário
-  const separator = '═'.repeat(66);
-  console.log('\n' + separator);
-  console.log(' [HORTOBOTS 2FA // TRANSMISSÃO DE SEGURANÇA GOOGLE]');
-  console.log(` PILOTO ALVO : ${nickname} <${cleanEmail}>`);
-  console.log(` CÓDIGO 2FA   : [ ${code.slice(0, 3)} - ${code.slice(3)} ]  (ou ${code})`);
-  console.log(` EXPIRAÇÃO   : 15 minutos`);
-  console.log(` STATUS SMTP : ${emailSent ? 'ENVIADO POR E-MAIL REAL' : 'DISPONÍVEL VIA PREVIEW NO JOGO / CONSOLE'}`);
-  console.log(separator + '\n');
 
   return {
     success: true,
     sentRealEmail: emailSent,
-    errorDetail,
-    previewUrl: `/api/auth/preview-email/${encodeURIComponent(cleanEmail)}`,
+    message: `Código de verificação enviado para o seu e-mail Gmail (${cleanEmail}). Verifique sua caixa de entrada.`
   };
 }
 
 // Inicia o processo de registro com 2FA
-export async function start2FARegistration({ nickname, password, email, existingAccountsCheck }) {
+export async function start2FARegistration({ nickname, password, email, birthDate = '', existingAccountsCheck }) {
   const cleanEmail = (email || '').trim().toLowerCase();
   const cleanNick = (nickname || '').trim().replace(/[^a-zA-Z0-9_]/g, '').toUpperCase().slice(0, 16);
 
@@ -296,8 +280,12 @@ export async function start2FARegistration({ nickname, password, email, existing
     throw new Error('A senha de acesso deve conter no mínimo 8 dígitos.');
   }
 
+  if (!cleanEmail) {
+    throw new Error('O e-mail é obrigatório para envio do código de verificação.');
+  }
+
   if (!isGoogleEmail(cleanEmail)) {
-    throw new Error('Obrigatório utilizar uma conta Google válida (@gmail.com ou @googlemail.com).');
+    throw new Error('Obrigatório utilizar um e-mail Google válido (@gmail.com ou @googlemail.com).');
   }
 
   // Checa se conta já existe
@@ -320,12 +308,13 @@ export async function start2FARegistration({ nickname, password, email, existing
     nickname: cleanNick,
     password: String(password),
     email: cleanEmail,
+    birthDate: (birthDate || '').trim(),
     code,
     createdAt: now,
     expiresAt,
   });
 
-  const dispatch = await send2FAVerificationEmail({
+  await send2FAVerificationEmail({
     nickname: cleanNick,
     email: cleanEmail,
     code,
@@ -336,8 +325,7 @@ export async function start2FARegistration({ nickname, password, email, existing
     email: cleanEmail,
     nickname: cleanNick,
     expiresAt,
-    previewUrl: dispatch.previewUrl,
-    message: `Código de verificação enviado para ${cleanEmail}! Digite os 6 dígitos para validar.`,
+    message: `Código de verificação enviado para ${cleanEmail}! Abra seu Gmail para conferir os 6 dígitos.`,
   };
 }
 
@@ -361,7 +349,7 @@ export async function verify2FARegistration({ email, code, createAccountFn }) {
   }
 
   if (pending.code !== inputCode) {
-    throw new Error('Código de verificação inválido. Verifique os números e tente novamente.');
+    throw new Error('Código de verificação incorreto. Verifique no seu Gmail e digite novamente.');
   }
 
   // Cria a conta com email verificado e 2FA habilitado
@@ -370,6 +358,7 @@ export async function verify2FARegistration({ email, code, createAccountFn }) {
     nickname: pending.nickname,
     password: pending.password,
     email: pending.email,
+    birthDate: pending.birthDate || '',
     googleLinked: true,
     googleEmail: pending.email,
     emailVerified: true,
@@ -379,7 +368,7 @@ export async function verify2FARegistration({ email, code, createAccountFn }) {
     losses: 0,
     totalMatches: 0,
     totalMedals: 0,
-    customBio: `Piloto Certificado 2FA (${pending.email})`,
+    customBio: `Piloto Certificado Google (${pending.email})`,
     avatarBadge: 'quezas',
   };
 
@@ -394,7 +383,7 @@ export async function verify2FARegistration({ email, code, createAccountFn }) {
   return {
     ok: true,
     account: newAccount || accountData,
-    message: `Conta do piloto ${pending.nickname} ativada com sucesso com segurança 2FA Google!`,
+    message: `Conta do piloto ${pending.nickname} ativada com sucesso com segurança Google!`,
   };
 }
 
@@ -410,7 +399,7 @@ export async function resend2FACode({ email }) {
   pending.code = newCode;
   pending.expiresAt = Date.now() + 15 * 60 * 1000;
 
-  const dispatch = await send2FAVerificationEmail({
+  await send2FAVerificationEmail({
     nickname: pending.nickname,
     email: cleanEmail,
     code: newCode,
@@ -420,22 +409,6 @@ export async function resend2FACode({ email }) {
     ok: true,
     email: cleanEmail,
     expiresAt: pending.expiresAt,
-    previewUrl: dispatch.previewUrl,
-    message: 'Novo código de verificação enviado!',
+    message: 'Novo código de verificação enviado para o seu Gmail!',
   };
-}
-
-// Retorna HTML para pré-visualização
-export function getPreviewEmailHTML(email) {
-  const cleanEmail = (email || '').trim().toLowerCase();
-  if (renderedEmails.has(cleanEmail)) {
-    return renderedEmails.get(cleanEmail);
-  }
-
-  // Template demonstrativo caso nenhum e-mail tenha sido enviado ainda
-  return generateCyberpunkEmailHTML({
-    nickname: 'PILOTO_EXEMPLO',
-    email: cleanEmail || 'piloto.quezas@gmail.com',
-    code: '782941',
-  });
 }

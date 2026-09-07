@@ -25,7 +25,19 @@ let account     = null;
 
 // ── DOM Helpers ──────────────────────────────────────────────────────
 const $ = (id) => document.getElementById(id);
-const screens = ['versusLoginScreen', 'versusRegisterScreen', 'versusModeSelectScreen', 'versusCompetitiveScreen', 'versusArenaScreen'];
+const screens = ['accountScreen', 'versusModeSelectScreen', 'versusCompetitiveScreen', 'versusArenaScreen'];
+
+// Rastreamento dinâmico da tela de origem para o botão Voltar da tela de conta
+window.accountPreviousScreen = 'titleScreen';
+
+function getCurrentVisibleScreen() {
+  const all = ['titleScreen', 'storyScreen', 'elevatorScreen', 'battleScreen', 'endingScreen', 'versusModeSelectScreen', 'versusCompetitiveScreen', 'versusArenaScreen'];
+  for (const s of all) {
+    const el = $(s);
+    if (el && !el.classList.contains('hidden')) return s;
+  }
+  return 'titleScreen';
+}
 
 function showScreen(id) {
   screens.forEach(s => {
@@ -38,10 +50,17 @@ function showScreen(id) {
     });
     $('storyHeaderBadges')?.classList.add('hidden');
 
-    // O botão Home só aparece fora de duelos (ou seja, escondido na arena de duelo)
+    // Oculta barra de conta no cabeçalho durante combate PVP ou Batalha da História
+    const accountBar = $('titleAccountBar');
+    if (accountBar) {
+      const inCombat = id === 'versusArenaScreen' || id === 'battleScreen';
+      accountBar.style.display = inCombat ? 'none' : 'flex';
+    }
+
+    // O botão Home só aparece fora de duelos e fora da tela de conta
     const homeBtn = $('termHomeBtn');
     if (homeBtn) {
-      if (id === 'versusArenaScreen' || id === 'versusCompetitiveScreen') {
+      if (id === 'versusArenaScreen' || id === 'versusCompetitiveScreen' || id === 'accountScreen') {
         homeBtn.classList.add('hidden');
       } else {
         homeBtn.classList.remove('hidden');
@@ -57,6 +76,10 @@ function showTitle() {
   });
   $('storyHeaderBadges')?.classList.add('hidden');
   $('titleScreen')?.classList.remove('hidden');
+
+  const accountBar = $('titleAccountBar');
+  if (accountBar) accountBar.style.display = 'flex';
+
   getAudio().playBGM('title', 600);
 
   // Esconde o botão de início na tela de título
@@ -80,13 +103,12 @@ function showTitle() {
 
 // ── Atualização Visual do Header do Piloto ────────────────────────────
 function updateProfileHeader(acc) {
-  if (!acc) return;
-  const nick = acc.nickname || acc.name || 'PILOTO';
-  const rp = acc.rankingPoints !== undefined ? Math.min(999, Math.max(0, acc.rankingPoints)) : 0;
-  const wins = acc.wins || 0;
-  const matches = acc.totalMatches || 0;
-  const badge = acc.avatarBadge || '[QZ-01]';
-  const bio = acc.customBio || 'Piloto de Combate da Torre Central';
+  const nick = acc ? (acc.nickname || acc.name || 'PILOTO') : 'PILOTO';
+  const rp = acc && acc.rankingPoints !== undefined ? Math.min(999, Math.max(0, acc.rankingPoints)) : 0;
+  const wins = acc ? (acc.wins || 0) : 0;
+  const matches = acc ? (acc.totalMatches || 0) : 0;
+  const badge = acc ? (acc.avatarBadge || '[QZ-01]') : '[QZ-01]';
+  const bio = acc ? (acc.customBio || 'Piloto de Combate da Torre Central') : 'Piloto de Combate da Torre Central';
   const winrate = matches > 0 ? Math.round((wins / matches) * 100) : 0;
 
   const nickEl = $('versusProfileNickDisplay');
@@ -105,9 +127,15 @@ function updateProfileHeader(acc) {
   if (matchesEl) matchesEl.textContent = matches;
   if (rateEl) rateEl.textContent = `${winrate}%`;
 
-  try {
-    localStorage.setItem('hortobots_pilot_account', JSON.stringify(acc));
-  } catch (e) {}
+  if (acc) {
+    try {
+      localStorage.setItem('hortobots_pilot_account', JSON.stringify(acc));
+    } catch (e) {}
+  } else {
+    try {
+      localStorage.removeItem('hortobots_pilot_account');
+    } catch (e) {}
+  }
 
   if (window.gameInstance) {
     if (typeof window.gameInstance.updateTitleAccountWidget === 'function') {
@@ -132,67 +160,60 @@ window.getLoggedAccount = () => {
   return null;
 };
 
-window.openLoginFromTitle = (targetScreen = 'versusLoginScreen') => {
-  $('titleScreen')?.classList.add('hidden');
-  getAudio().playBGM('versusLobby', 600);
-  clearAuthStatus();
-  if (targetScreen === 'versusRegisterScreen') {
-    $('versusRegFormStep')?.classList.remove('hidden');
-    $('versus2FAStep')?.classList.add('hidden');
-  }
-  showScreen(targetScreen);
-};
-
-window.enterVersusMode = () => {
-  $('titleScreen')?.classList.add('hidden');
-  getAudio().playBGM('versusLobby', 600);
-
-  // Verifica se o piloto já possui sessão salva
-  if (!account) {
-    const cached = localStorage.getItem('hortobots_pilot_account');
-    if (cached) {
-      try { account = JSON.parse(cached); } catch (e) {}
+// Abre a Tela Central do Piloto guardando a tela de origem
+window.openAccountScreen = (origin = null) => {
+  if (origin && origin !== 'accountScreen') {
+    window.accountPreviousScreen = origin;
+  } else {
+    const cur = getCurrentVisibleScreen();
+    if (cur && cur !== 'accountScreen') {
+      window.accountPreviousScreen = cur;
     }
   }
-
-  if (account && (account.nickname || account.name)) {
-    updateProfileHeader(account);
-    showScreen('versusModeSelectScreen');
-  } else {
-    showScreen('versusLoginScreen');
-  }
+  showScreen('accountScreen');
+  renderAccountScreen();
+  getAudio().playKeyClack();
 };
 
-// ── Handlers do Botão de Conta na Tela de Título ──────────────────────
-$('titleAccountAuthBtn')?.addEventListener('click', () => {
+window.openLoginFromTitle = (targetScreen = null) => {
+  window.openAccountScreen('titleScreen');
+};
+
+// Entrada no Modo Versus: Exige conta logada obrigatoriamente
+window.enterVersusMode = () => {
   const acc = window.getLoggedAccount();
-  if (acc) {
-    updateProfileHeader(acc);
-    showScreen('versusModeSelectScreen');
-  } else {
-    window.openLoginFromTitle('versusLoginScreen');
+  if (!acc) {
+    // Redireciona para a tela de conta/login e exibe aviso claro
+    window.accountPreviousScreen = 'titleScreen';
+    window.openAccountScreen('titleScreen');
+    showAccountStatus('Acesso restrito ao Versus Online: Inicie sessão ou crie uma conta para duelar.', 'warning');
+    return;
   }
+
+  $('titleScreen')?.classList.add('hidden');
+  getAudio().playBGM('versusLobby', 600);
+  updateProfileHeader(acc);
+  showScreen('versusModeSelectScreen');
+};
+
+// ── Handlers do Cabeçalho para Acessar a Tela de Conta ────────────────
+$('titleAccountBar')?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  window.openAccountScreen();
+});
+
+$('titleAccountAuthBtn')?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  window.openAccountScreen();
 });
 
 $('titleAccountTapeBtn')?.addEventListener('click', () => {
   if (window.gameInstance && typeof window.gameInstance.triggerTapeTransition === 'function') {
     window.gameInstance.triggerTapeTransition($('titleAccountTapeBtn'), () => {
-      const acc = window.getLoggedAccount();
-      if (acc) {
-        updateProfileHeader(acc);
-        showScreen('versusModeSelectScreen');
-      } else {
-        window.openLoginFromTitle('versusLoginScreen');
-      }
+      window.openAccountScreen('titleScreen');
     });
   } else {
-    const acc = window.getLoggedAccount();
-    if (acc) {
-      updateProfileHeader(acc);
-      showScreen('versusModeSelectScreen');
-    } else {
-      window.openLoginFromTitle('versusLoginScreen');
-    }
+    window.openAccountScreen('titleScreen');
   }
 });
 
@@ -242,7 +263,9 @@ $('versusModeBotCard')?.addEventListener('click', (e) => {
 // Acesso ao Modo Competitivo em Tela Inteira
 $('versusRankedBtn')?.addEventListener('click', () => {
   if (!account || (!account.nickname && !account.name)) {
-    showScreen('versusLoginScreen');
+    window.accountPreviousScreen = 'versusModeSelectScreen';
+    window.openAccountScreen('versusModeSelectScreen');
+    showAccountStatus('Inicie sessão para acessar o modo competitivo ranqueado.', 'warning');
     return;
   }
   const pilotNick = account.nickname || account.name;
@@ -257,139 +280,372 @@ $('versusModeRankCard')?.addEventListener('click', (e) => {
   }
 });
 
-// ── Auth: Status Message Helper ──────────────────────────────────────
-function showAuthStatus(msg, isError = true) {
-  const boxes = [$('versusAuthStatusMsg'), $('versusRegStatusMsg')];
-  boxes.forEach(box => {
-    if (!box) return;
-    box.className = `versus-status-msg ${isError ? 'error' : 'success'}`;
-    box.textContent = msg;
-    box.classList.remove('hidden');
-  });
+// ════════════════════════════════════════════════════════════════════
+// GERENCIADOR CENTRAL DA TELA DE CONTA (LOGIN / PERFIL / GOOGLE / 2FA)
+// ════════════════════════════════════════════════════════════════════
+
+function showAccountStatus(msg, type = 'error') {
+  const box = $('accountStatusMsg');
+  if (!box) return;
+  box.className = `account-status-msg ${type}`;
+  box.textContent = msg;
+  box.classList.remove('hidden');
 }
 
-function clearAuthStatus() {
-  $('versusAuthStatusMsg')?.classList.add('hidden');
-  $('versusRegStatusMsg')?.classList.add('hidden');
+function clearAccountStatus() {
+  const box = $('accountStatusMsg');
+  if (!box) return;
+  box.className = 'account-status-msg hidden';
+  box.textContent = '';
 }
 
-// ── Auth: Login Tradicional ──────────────────────────────────────────
-$('versusAuthLoginBtn')?.addEventListener('click', async () => {
-  clearAuthStatus();
-  const nick = ($('versusLoginNick')?.value || '').trim();
-  const pass = ($('versusLoginPass')?.value || '').trim();
+let googleClientId = null;
+let pendingRegEmail = '';
+
+async function loadGoogleClientId() {
+  if (googleClientId) return googleClientId;
+  try {
+    const res = await fetch('/api/auth/google-config');
+    const data = await res.json();
+    googleClientId = data.clientId || '';
+  } catch (err) {
+    console.warn('Falha ao carregar Google Client ID:', err);
+  }
+  return googleClientId;
+}
+
+function showAccountLoginForm() {
+  $('accountLoginForm')?.classList.remove('hidden');
+  $('accountRegisterForm')?.classList.add('hidden');
+  $('account2FAForm')?.classList.add('hidden');
+  clearAccountStatus();
+}
+
+function showAccountRegisterForm() {
+  $('accountLoginForm')?.classList.add('hidden');
+  $('accountRegisterForm')?.classList.remove('hidden');
+  $('account2FAForm')?.classList.add('hidden');
+  clearAccountStatus();
+}
+
+function showAccount2FAForm(email) {
+  $('accountLoginForm')?.classList.add('hidden');
+  $('accountRegisterForm')?.classList.add('hidden');
+  $('account2FAForm')?.classList.remove('hidden');
+  if ($('account2FAEmailDisplay')) $('account2FAEmailDisplay').textContent = email;
+  if ($('account2FACodeInput')) {
+    $('account2FACodeInput').value = '';
+    $('account2FACodeInput').focus();
+  }
+  clearAccountStatus();
+}
+
+async function renderAccountScreen() {
+  clearAccountStatus();
+  const loggedView = $('accountLoggedView');
+  const guestView = $('accountGuestView');
+
+  if (account && (account.nickname || account.name)) {
+    // ── MODO LOGADO: Perfil, estatísticas, edição e exclusão ──────
+    if (guestView) guestView.classList.add('hidden');
+    if (loggedView) loggedView.classList.remove('hidden');
+
+    const nick = account.nickname || account.name;
+    if ($('accountNickVal')) $('accountNickVal').textContent = nick;
+    if ($('accountBioVal')) $('accountBioVal').textContent = account.customBio || 'Piloto Registrado no Sistema Mnemosyne';
+    if ($('accountEmailVal')) $('accountEmailVal').textContent = account.email || account.googleEmail || '(Nenhum e-mail registrado)';
+    if ($('accountBirthVal')) $('accountBirthVal').textContent = account.birthDate || '--/--/----';
+    if ($('accountAvatarBadge')) $('accountAvatarBadge').textContent = account.avatarBadge || '[QZ-01]';
+
+    // Telemetria de combate
+    const wins = account.wins || 0;
+    const losses = account.losses || 0;
+    const totalMatches = account.totalMatches || (wins + losses);
+    const winrate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
+    const rp = account.rankingPoints !== undefined ? account.rankingPoints : 0;
+
+    if ($('accountRPBadge')) $('accountRPBadge').textContent = `${rp} RP`;
+    if ($('accountWinsVal')) $('accountWinsVal').textContent = wins;
+    if ($('accountLossesVal')) $('accountLossesVal').textContent = losses;
+    if ($('accountMatchesVal')) $('accountMatchesVal').textContent = totalMatches;
+    if ($('accountWinrateVal')) $('accountWinrateVal').textContent = `${winrate}%`;
+
+    // Status de Vinculação com Google
+    const isGoogleLinked = Boolean(account.googleLinked);
+    const linkedBanner = $('accountGoogleLinkedBanner');
+    const unlinkedBanner = $('accountGoogleUnlinkedBanner');
+
+    if (isGoogleLinked) {
+      if (linkedBanner) linkedBanner.classList.remove('hidden');
+      if (unlinkedBanner) unlinkedBanner.classList.add('hidden');
+      if ($('accountGoogleEmailVal')) $('accountGoogleEmailVal').textContent = account.googleEmail || account.email || '--';
+    } else {
+      if (linkedBanner) linkedBanner.classList.add('hidden');
+      if (unlinkedBanner) unlinkedBanner.classList.remove('hidden');
+      // Renderiza botão oficial Google para vincular
+      initGoogleLinkButton();
+    }
+  } else {
+    // ── MODO VISITANTE: Formulário de Login / Cadastro ─────────────
+    if (loggedView) loggedView.classList.add('hidden');
+    if (guestView) guestView.classList.remove('hidden');
+
+    showAccountLoginForm();
+    initGoogleLoginButton();
+  }
+}
+
+// ── Botão Voltar da Tela de Conta ────────────────────────────────────
+$('accountBackBtn')?.addEventListener('click', () => {
+  getAudio().playKeyClack();
+  const prev = window.accountPreviousScreen || 'titleScreen';
+  if (prev === 'storyScreen') {
+    if (window.gameInstance && typeof window.gameInstance.showScreen === 'function') {
+      window.gameInstance.showScreen('storyScreen');
+      return;
+    }
+  }
+  if (prev === 'versusModeSelectScreen') {
+    if (account && (account.nickname || account.name)) {
+      showScreen('versusModeSelectScreen');
+    } else {
+      showTitle();
+    }
+    return;
+  }
+  showScreen(prev);
+});
+
+// ── Alternância entre Telas de Login e Cadastro ──────────────────────
+$('accountToggleToRegister')?.addEventListener('click', () => {
+  getAudio().playKeyClack();
+  showAccountRegisterForm();
+});
+
+$('accountToggleToLogin')?.addEventListener('click', () => {
+  getAudio().playKeyClack();
+  showAccountLoginForm();
+});
+
+// ── Login Tradicional (Usuário + Senha) ──────────────────────────────
+$('accountLoginSubmitBtn')?.addEventListener('click', async (e) => {
+  e.preventDefault();
+  clearAccountStatus();
+  const nick = ($('accountLoginNick')?.value || '').trim();
+  const pass = ($('accountLoginPass')?.value || '').trim();
 
   if (!nick || !pass) {
-    showAuthStatus('[AVISO] Informe seu Nickname e Senha para efetuar o login.');
+    showAccountStatus('Informe seu Nome de Usuário e Senha para continuar.', 'warning');
     return;
   }
 
-  const btn = $('versusAuthLoginBtn');
-  if (btn) btn.textContent = '[ AUTENTICANDO... ]';
+  const btn = $('accountLoginSubmitBtn');
+  if (btn) btn.textContent = 'AUTENTICANDO...';
 
   try {
     const res = await AccountAPI.login(nick, pass);
     account = res.account || res;
     if (account) account.nickname = account.nickname || account.name;
-    showAuthStatus(`[SUCESSO] Piloto ${account.nickname} autenticado com sucesso!`, false);
     updateProfileHeader(account);
+    showAccountStatus(`Sessão iniciada com sucesso! Bem-vindo, ${account.nickname}.`, 'success');
+    getAudio().playKeyClack();
     setTimeout(() => {
-      showScreen('versusModeSelectScreen');
-    }, 600);
+      renderAccountScreen();
+    }, 450);
   } catch (err) {
-    showAuthStatus(`[FALHA] ${err.message || 'Erro ao autenticar piloto'}`);
+    showAccountStatus(`[FALHA] ${err.message || 'Erro ao autenticar piloto'}`);
   } finally {
-    if (btn) btn.textContent = '[ ENTRAR NA CONTA ]';
+    if (btn) btn.textContent = 'ENTRAR';
   }
 });
 
-// ── Auth: Checkbox Vínculo Google ────────────────────────────────────
-$('versusRegGoogleLinkCheck')?.addEventListener('change', (e) => {
-  const grp = $('versusRegGoogleEmailGroup');
-  if (grp) {
-    grp.classList.toggle('hidden', !e.target.checked);
+// ── Google Sign-In & Link com Google Identity Services (GSI) ─────────
+async function initGoogleLoginButton() {
+  const clientId = await loadGoogleClientId();
+  if (!clientId || !window.google?.accounts?.id) return;
+  const container = $('gsiLoginButtonWrapper');
+  if (!container) return;
+  container.innerHTML = '';
+
+  try {
+    window.google.accounts.id.initialize({
+      client_id: clientId,
+      callback: handleGoogleLoginResponse,
+      auto_select: false,
+      cancel_on_tap_outside: true
+    });
+
+    window.google.accounts.id.renderButton(container, {
+      type: 'standard',
+      theme: 'filled_black',
+      size: 'large',
+      text: 'signin_with',
+      shape: 'rectangular',
+      logo_alignment: 'left',
+      width: 280
+    });
+  } catch (e) {
+    console.error('Erro ao renderizar botão Google Sign-In:', e);
   }
-});
-
-// ── Auth: Cadastro de Nova Conta com 2FA Google Obrigatório ───────────
-let pendingRegEmail = '';
-
-function isGoogleEmailClient(email) {
-  if (!email || typeof email !== 'string') return false;
-  return /^[a-zA-Z0-9._%+-]+@(gmail\.com|googlemail\.com)$/i.test(email.trim());
 }
 
-// ETAPA 1: Iniciar Registro e Transmitir Código 2FA
-$('versusAuthRegBtn')?.addEventListener('click', async () => {
-  clearAuthStatus();
-  const nick = ($('versusRegNick')?.value || '').trim();
-  const pass = ($('versusRegPass')?.value || '').trim();
-  const email = ($('versusRegEmail')?.value || '').trim().toLowerCase();
+async function handleGoogleLoginResponse(response) {
+  if (!response || !response.credential) {
+    showAccountStatus('Falha ao obter credencial oficial do Google.', 'error');
+    return;
+  }
+
+  try {
+    showAccountStatus('Verificando vínculo da conta Google...', 'info');
+    const res = await AccountAPI.googleVerify(response.credential);
+    account = res.account || res;
+    if (account) account.nickname = account.nickname || account.name;
+    updateProfileHeader(account);
+    showAccountStatus(`Acesso concedido! Piloto: ${account.nickname}`, 'success');
+    getAudio().playKeyClack();
+    setTimeout(() => {
+      renderAccountScreen();
+    }, 500);
+  } catch (err) {
+    // Rejeição rigorosa caso a conta não esteja previamente vinculada
+    showAccountStatus(`[ACESSO RECUSADO] ${err.message || 'Conta Google não vinculada'}`, 'error');
+  }
+}
+
+async function initGoogleLinkButton() {
+  const clientId = await loadGoogleClientId();
+  if (!clientId || !window.google?.accounts?.id) return;
+  const container = $('gsiLinkBtnWrapper');
+  if (!container) return;
+  container.innerHTML = '';
+
+  try {
+    window.google.accounts.id.initialize({
+      client_id: clientId,
+      callback: handleGoogleLinkResponse,
+      auto_select: false,
+      cancel_on_tap_outside: true
+    });
+
+    window.google.accounts.id.renderButton(container, {
+      type: 'standard',
+      theme: 'outline',
+      size: 'medium',
+      text: 'continue_with',
+      shape: 'rectangular',
+      logo_alignment: 'left',
+      width: 280
+    });
+  } catch (e) {
+    console.error('Erro ao renderizar botão de vínculo Google:', e);
+  }
+}
+
+async function handleGoogleLinkResponse(response) {
+  if (!response || !response.credential || !account) return;
+
+  try {
+    showAccountStatus('Vinculando sua conta Google oficial...', 'info');
+    const res = await AccountAPI.googleLink(account.nickname || account.name, response.credential);
+    account = res.account || res;
+    if (account) account.nickname = account.nickname || account.name;
+    updateProfileHeader(account);
+    showAccountStatus('Conta Google vinculada com sucesso!', 'success');
+    getAudio().playKeyClack();
+    setTimeout(() => {
+      renderAccountScreen();
+    }, 500);
+  } catch (err) {
+    showAccountStatus(`Erro ao vincular Google: ${err.message}`, 'error');
+  }
+}
+
+// ── Cadastro de Nova Conta com Gmail Oficial (2FA) ou Registro Direto ─
+$('accountRegSubmitBtn')?.addEventListener('click', async (e) => {
+  e.preventDefault();
+  clearAccountStatus();
+  const nick = ($('accountRegNick')?.value || '').trim();
+  const birth = ($('accountRegBirth')?.value || '').trim();
+  const googleEmail = ($('accountRegGoogleEmail')?.value || '').trim().toLowerCase();
+  const pass = ($('accountRegPass')?.value || '').trim();
 
   if (!nick || nick.length < 2) {
-    showAuthStatus('[AVISO] O Nickname deve conter no mínimo 2 caracteres alfanuméricos.');
+    showAccountStatus('O nome de usuário deve conter no mínimo 2 caracteres.', 'warning');
+    return;
+  }
+
+  if (!birth) {
+    showAccountStatus('Informe a data de nascimento.', 'warning');
     return;
   }
 
   if (!pass || pass.length < 8) {
-    showAuthStatus('[AVISO] A senha de acesso deve conter no mínimo 8 dígitos.');
+    showAccountStatus('A senha de acesso deve ter pelo menos 8 dígitos.', 'warning');
     return;
   }
 
-  if (!isGoogleEmailClient(email)) {
-    showAuthStatus('[OBRIGATÓRIO] É necessário utilizar um endereço de e-mail do Google (@gmail.com ou @googlemail.com).');
-    return;
-  }
+  const btn = $('accountRegSubmitBtn');
 
-  const btn = $('versusAuthRegBtn');
-  if (btn) btn.textContent = '[ ENVIANDO TRANSMISSÃO 2FA... ]';
-
-  try {
-    const res = await AccountAPI.start2FARegister(nick, pass, email);
-    pendingRegEmail = email;
-
-    // Transiciona para a Etapa 2 (Código 2FA)
-    $('versusRegFormStep')?.classList.add('hidden');
-    $('versus2FAStep')?.classList.remove('hidden');
-
-    const emailDisplay = $('versus2FAEmailDisplay');
-    if (emailDisplay) emailDisplay.textContent = email;
-
-    const modalRecipient = $('emailPreviewRecipient');
-    if (modalRecipient) modalRecipient.textContent = email;
-
-    const codeInput = $('versus2FACodeInput');
-    if (codeInput) {
-      codeInput.value = '';
-      codeInput.focus();
+  // Caso 1: E-mail Google fornecido -> Inicia 2FA com envio real para o Gmail
+  if (googleEmail) {
+    if (!/^[a-zA-Z0-9._%+-]+@(gmail\.com|googlemail\.com)$/i.test(googleEmail)) {
+      showAccountStatus('Por favor, utilize um endereço válido do Gmail (@gmail.com).', 'warning');
+      return;
     }
 
-    showAuthStatus(`Código enviado para ${email}.`, false);
-    getAudio().playKeyClack();
-  } catch (err) {
-    showAuthStatus(err.message || 'Erro ao iniciar registro');
-  } finally {
-    if (btn) btn.textContent = 'CRIAR CONTA';
+    if (btn) btn.textContent = 'ENVIANDO E-MAIL AO GMAIL...';
+
+    try {
+      await AccountAPI.start2FARegister(nick, pass, googleEmail, birth);
+      pendingRegEmail = googleEmail;
+      showAccount2FAForm(googleEmail);
+      showAccountStatus(`Código de 6 dígitos transmitido ao seu Gmail (${googleEmail}).`, 'info');
+      getAudio().playKeyClack();
+    } catch (err) {
+      showAccountStatus(err.message || 'Erro ao enviar código de verificação');
+    } finally {
+      if (btn) btn.textContent = 'CONCLUIR CADASTRO';
+    }
+  } else {
+    // Caso 2: Sem e-mail Google no momento -> Registro direto (vinculação posterior obrigatória para login Google)
+    if (btn) btn.textContent = 'CRIANDO CONTA...';
+
+    try {
+      const res = await AccountAPI.registerDirect(nick, pass, birth);
+      account = res.account || res;
+      if (account) account.nickname = account.nickname || account.name;
+      updateProfileHeader(account);
+      showAccountStatus(`Conta criada com sucesso! Piloto: ${account.nickname}`, 'success');
+      getAudio().playKeyClack();
+      setTimeout(() => {
+        renderAccountScreen();
+      }, 500);
+    } catch (err) {
+      showAccountStatus(err.message || 'Erro ao criar conta');
+    } finally {
+      if (btn) btn.textContent = 'CONCLUIR CADASTRO';
+    }
   }
 });
 
-// ETAPA 2: Confirmar Código 2FA e Ativar Conta
+// ── Confirmação de Código 2FA Recebido no Gmail ──────────────────────
 async function handleConfirm2FACode() {
-  clearAuthStatus();
-  const code = ($('versus2FACodeInput')?.value || '').replace(/\D/g, '').trim();
+  clearAccountStatus();
+  const code = ($('account2FACodeInput')?.value || '').replace(/\D/g, '').trim();
 
   if (!code || code.length !== 6) {
-    showAuthStatus('Digite o código de 6 dígitos.');
+    showAccountStatus('Digite o código de 6 dígitos que recebeu em seu Gmail.', 'warning');
     return;
   }
 
   if (!pendingRegEmail) {
-    showAuthStatus('Sessão expirada. Tente novamente.');
+    showAccountStatus('Sessão de cadastro expirada. Preencha os dados novamente.', 'warning');
+    showAccountRegisterForm();
     return;
   }
 
-  const btn = $('versus2FAConfirmBtn');
-  if (btn) btn.textContent = 'VALIDANDO...';
+  const btn = $('account2FAConfirmBtn');
+  if (btn) btn.textContent = 'VALIDANDO CÓDIGO...';
 
   try {
     const res = await AccountAPI.verify2FARegister(pendingRegEmail, code);
@@ -398,215 +654,199 @@ async function handleConfirm2FACode() {
       account.nickname = account.nickname || account.name;
       account.googleLinked = true;
       account.emailVerified = true;
-      account.twoFactorEnabled = true;
-      localStorage.setItem('hortobots_pilot_account', JSON.stringify(account));
     }
-    showAuthStatus(`Conta ativada com sucesso! Piloto: ${account.nickname}`, false);
     updateProfileHeader(account);
+    showAccountStatus(`Conta ativada e verificada com sucesso! Piloto: ${account.nickname}`, 'success');
     getAudio().playKeyClack();
     setTimeout(() => {
-      showScreen('versusModeSelectScreen');
-    }, 750);
+      renderAccountScreen();
+    }, 600);
   } catch (err) {
-    showAuthStatus(err.message || 'Código incorreto ou expirado');
+    showAccountStatus(err.message || 'Código incorreto ou expirado');
   } finally {
-    if (btn) btn.textContent = 'CONFIRMAR';
+    if (btn) btn.textContent = 'CONFIRMAR CÓDIGO';
   }
 }
 
-$('versus2FAConfirmBtn')?.addEventListener('click', handleConfirm2FACode);
+$('account2FAConfirmBtn')?.addEventListener('click', handleConfirm2FACode);
 
-$('versus2FACodeInput')?.addEventListener('keydown', (e) => {
+$('account2FACodeInput')?.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
     e.preventDefault();
     handleConfirm2FACode();
   }
 });
 
-// Reenviar Código 2FA
-$('versus2FAResendBtn')?.addEventListener('click', async () => {
+$('account2FAResendBtn')?.addEventListener('click', async () => {
   if (!pendingRegEmail) return;
-  const btn = $('versus2FAResendBtn');
+  const btn = $('account2FAResendBtn');
   if (btn) btn.textContent = 'REENVIANDO...';
   try {
     await AccountAPI.resend2FACode(pendingRegEmail);
-    showAuthStatus('Novo código enviado!', false);
+    showAccountStatus(`Novo código enviado ao Gmail (${pendingRegEmail}).`, 'info');
     getAudio().playKeyClack();
   } catch (err) {
-    showAuthStatus(err.message || 'Erro ao reenviar o código');
+    showAccountStatus(err.message || 'Erro ao reenviar código');
   } finally {
     if (btn) btn.textContent = 'REENVIAR CÓDIGO';
   }
 });
 
-// Abrir Modal com Visualização do E-mail Estilizado
-$('versus2FAPreviewBtn')?.addEventListener('click', () => {
-  if (!pendingRegEmail) return;
-  const modal = $('emailPreviewModal');
-  const iframe = $('emailPreviewIframe');
-  const recipient = $('emailPreviewRecipient');
+$('account2FACancelBtn')?.addEventListener('click', () => {
+  pendingRegEmail = '';
+  showAccountRegisterForm();
+  getAudio().playKeyClack();
+});
 
-  if (recipient) recipient.textContent = pendingRegEmail;
-  if (iframe) {
-    iframe.src = AccountAPI.getPreviewEmailUrl(pendingRegEmail) + '?t=' + Date.now();
+// ── Modais de Edição de Conta (Nickname, Senha, Exclusão) ─────────────
+
+// 1. Nickname
+$('accountTriggerEditNickBtn')?.addEventListener('click', () => {
+  if (!account) return;
+  if ($('accountNewNickInput')) $('accountNewNickInput').value = account.nickname || account.name || '';
+  if ($('accountConfirmPassForNick')) $('accountConfirmPassForNick').value = '';
+  $('accountEditNickModal')?.classList.remove('hidden');
+  getAudio().playKeyClack();
+});
+
+$('accountCancelNickBtn')?.addEventListener('click', () => {
+  $('accountEditNickModal')?.classList.add('hidden');
+  getAudio().playKeyClack();
+});
+
+$('accountSaveNickBtn')?.addEventListener('click', async () => {
+  if (!account) return;
+  const newNick = ($('accountNewNickInput')?.value || '').trim();
+  const currentPass = ($('accountConfirmPassForNick')?.value || '').trim();
+
+  if (!newNick || newNick.length < 2) {
+    showAccountStatus('O novo nickname deve conter pelo menos 2 caracteres.', 'warning');
+    return;
   }
-  if (modal) modal.classList.remove('hidden');
-  getAudio().playKeyClack();
-});
+  if (!currentPass) {
+    showAccountStatus('Digite sua senha atual para confirmar a alteração.', 'warning');
+    return;
+  }
 
-// Fechar Modal de E-mail
-$('closeEmailPreviewBtn')?.addEventListener('click', () => {
-  $('emailPreviewModal')?.classList.add('hidden');
-  getAudio().playKeyClack();
-});
-
-$('closeEmailPreviewFooterBtn')?.addEventListener('click', () => {
-  $('emailPreviewModal')?.classList.add('hidden');
-  getAudio().playKeyClack();
-});
-
-// Voltar à etapa de dados de registro
-$('versus2FABackBtn')?.addEventListener('click', () => {
-  $('versus2FAStep')?.classList.add('hidden');
-  $('versusRegFormStep')?.classList.remove('hidden');
-  clearAuthStatus();
-  getAudio().playKeyClack();
-});
-
-// ── Auth: Fluxo de Login com Google ──────────────────────────────────
-$('versusAuthGoogleBtn')?.addEventListener('click', () => {
-  $('versusGoogleModal')?.classList.remove('hidden');
-});
-
-$('versusCancelGoogleBtn')?.addEventListener('click', () => {
-  $('versusGoogleModal')?.classList.add('hidden');
-});
-
-// Seleção de conta rápida na lista Google
-document.querySelectorAll('.google-account-option').forEach(opt => {
-  opt.addEventListener('click', () => {
-    document.querySelectorAll('.google-account-option').forEach(o => o.classList.remove('active'));
-    opt.classList.add('active');
-    const customInp = $('versusGoogleCustomEmail');
-    if (customInp) customInp.value = opt.getAttribute('data-email') || '';
-  });
-});
-
-$('versusConfirmGoogleBtn')?.addEventListener('click', async () => {
-  const customInp = ($('versusGoogleCustomEmail')?.value || '').trim();
-  const selectedOpt = document.querySelector('.google-account-option.active');
-  const chosenEmail = customInp || (selectedOpt ? selectedOpt.getAttribute('data-email') : 'piloto.principal@gmail.com');
-
-  $('versusGoogleModal')?.classList.add('hidden');
-  clearAuthStatus();
-
-  const loginNickHint = ($('versusLoginNick')?.value || '').trim() || null;
+  const btn = $('accountSaveNickBtn');
+  if (btn) btn.textContent = 'SALVANDO...';
 
   try {
-    const res = await AccountAPI.googleAuth(chosenEmail, loginNickHint);
-    account = res.account || res;
-    if (account) account.nickname = account.nickname || account.name;
-    showAuthStatus(`[GOOGLE] Acesso concedido para: ${account.nickname} (${account.googleEmail || chosenEmail})`, false);
-    updateProfileHeader(account);
-    setTimeout(() => {
-      showScreen('versusModeSelectScreen');
-    }, 600);
-  } catch (err) {
-    showAuthStatus(`[GOOGLE] ${err.message || 'Falha ao autenticar com Google'}`);
-  }
-});
-
-// ── Auth: Navegação entre Login e Registro ───────────────────────────
-$('versusGoToRegisterBtn')?.addEventListener('click', () => {
-  clearAuthStatus();
-  $('versusRegFormStep')?.classList.remove('hidden');
-  $('versus2FAStep')?.classList.add('hidden');
-  showScreen('versusRegisterScreen');
-  getAudio().playKeyClack();
-});
-
-$('versusGoToLoginBtn')?.addEventListener('click', () => {
-  clearAuthStatus();
-  showScreen('versusLoginScreen');
-  getAudio().playKeyClack();
-});
-
-// ── Auth: Voltar ao Menu Principal ───────────────────────────────────
-$('versusLoginBackBtn')?.addEventListener('click', showTitle);
-$('versusRegisterBackBtn')?.addEventListener('click', showTitle);
-
-// ── Perfil: Logout / Trocar Conta ────────────────────────────────────
-$('versusProfileLogoutBtn')?.addEventListener('click', () => {
-  account = null;
-  localStorage.removeItem('hortobots_pilot_account');
-  clearAuthStatus();
-  if ($('versusLoginNick')) $('versusLoginNick').value = '';
-  if ($('versusLoginPass')) $('versusLoginPass').value = '';
-  if ($('versusRegNick')) $('versusRegNick').value = '';
-  if ($('versusRegPass')) $('versusRegPass').value = '';
-  network.disconnect();
-  if (window.gameInstance) {
-    if (typeof window.gameInstance.updateTitleAccountWidget === 'function') {
-      window.gameInstance.updateTitleAccountWidget();
-    }
-    if (typeof window.gameInstance.checkSavedCheckpoint === 'function') {
-      window.gameInstance.checkSavedCheckpoint();
-    }
-  }
-  showScreen('versusLoginScreen');
-});
-
-// ── Perfil: Modal de Edição ──────────────────────────────────────────
-let selectedProfileBadge = '[QZ-01]';
-
-$('versusProfileEditBtn')?.addEventListener('click', () => {
-  if (!account) return;
-  const modal = $('versusProfileModal');
-  if (!modal) return;
-
-  selectedProfileBadge = account.avatarBadge || '[QZ-01]';
-  const bioInp = $('versusEditBioInput');
-  const passInp = $('versusEditNewPassInput');
-  if (bioInp) bioInp.value = account.customBio || '';
-  if (passInp) passInp.value = '';
-
-  document.querySelectorAll('.avatar-pick-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.getAttribute('data-badge') === selectedProfileBadge);
-  });
-
-  modal.classList.remove('hidden');
-});
-
-document.querySelectorAll('.avatar-pick-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.avatar-pick-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    selectedProfileBadge = btn.getAttribute('data-badge') || '[QZ-01]';
-  });
-});
-
-$('versusCancelProfileBtn')?.addEventListener('click', () => {
-  $('versusProfileModal')?.classList.add('hidden');
-});
-
-$('versusSaveProfileBtn')?.addEventListener('click', async () => {
-  if (!account) return;
-  const bio = ($('versusEditBioInput')?.value || '').trim();
-  const newPass = ($('versusEditNewPassInput')?.value || '').trim();
-
-  try {
-    const res = await AccountAPI.updateProfile(account.nickname || account.name, {
-      bio: bio || account.customBio,
-      avatarBadge: selectedProfileBadge,
-      newPassword: newPass || undefined
+    const res = await AccountAPI.updateAccount(account.nickname || account.name, {
+      newNickname: newNick,
+      currentPassword: currentPass
     });
     account = res.account || res;
     if (account) account.nickname = account.nickname || account.name;
     updateProfileHeader(account);
-    $('versusProfileModal')?.classList.add('hidden');
+    $('accountEditNickModal')?.classList.add('hidden');
+    showAccountStatus('Nickname alterado com sucesso!', 'success');
+    getAudio().playKeyClack();
+    renderAccountScreen();
   } catch (err) {
-    alert(`Erro ao salvar perfil: ${err.message}`);
+    showAccountStatus(err.message || 'Erro ao alterar nickname');
+  } finally {
+    if (btn) btn.textContent = 'SALVAR NOVO NICK';
   }
+});
+
+// 2. Senha
+$('accountTriggerChangePassBtn')?.addEventListener('click', () => {
+  if (!account) return;
+  if ($('accountCurrentPassInput')) $('accountCurrentPassInput').value = '';
+  if ($('accountNewPassInput')) $('accountNewPassInput').value = '';
+  $('accountEditPassModal')?.classList.remove('hidden');
+  getAudio().playKeyClack();
+});
+
+$('accountCancelPassBtn')?.addEventListener('click', () => {
+  $('accountEditPassModal')?.classList.add('hidden');
+  getAudio().playKeyClack();
+});
+
+$('accountSavePassBtn')?.addEventListener('click', async () => {
+  if (!account) return;
+  const curPass = ($('accountCurrentPassInput')?.value || '').trim();
+  const newPass = ($('accountNewPassInput')?.value || '').trim();
+
+  if (!curPass) {
+    showAccountStatus('Informe a senha atual.', 'warning');
+    return;
+  }
+  if (!newPass || newPass.length < 8) {
+    showAccountStatus('A nova senha deve possuir no mínimo 8 caracteres.', 'warning');
+    return;
+  }
+
+  const btn = $('accountSavePassBtn');
+  if (btn) btn.textContent = 'ATUALIZANDO...';
+
+  try {
+    await AccountAPI.updateAccount(account.nickname || account.name, {
+      currentPassword: curPass,
+      newPassword: newPass
+    });
+    $('accountEditPassModal')?.classList.add('hidden');
+    showAccountStatus('Senha atualizada com sucesso!', 'success');
+    getAudio().playKeyClack();
+  } catch (err) {
+    showAccountStatus(err.message || 'Erro ao atualizar senha');
+  } finally {
+    if (btn) btn.textContent = 'ATUALIZAR SENHA';
+  }
+});
+
+// 3. Exclusão de Conta (Wipe Total no Banco de Dados)
+$('accountTriggerDeleteBtn')?.addEventListener('click', () => {
+  if (!account) return;
+  if ($('accountDeletePassInput')) $('accountDeletePassInput').value = '';
+  $('accountDeleteModal')?.classList.remove('hidden');
+  getAudio().playKeyClack();
+});
+
+$('accountCancelDeleteBtn')?.addEventListener('click', () => {
+  $('accountDeleteModal')?.classList.add('hidden');
+  getAudio().playKeyClack();
+});
+
+$('accountConfirmDeleteBtn')?.addEventListener('click', async () => {
+  if (!account) return;
+  const pass = ($('accountDeletePassInput')?.value || '').trim();
+
+  if (!pass) {
+    showAccountStatus('Digite sua senha para confirmar a exclusão da conta.', 'warning');
+    return;
+  }
+
+  const btn = $('accountConfirmDeleteBtn');
+  if (btn) btn.textContent = 'EXCLUINDO CONTA...';
+
+  try {
+    await AccountAPI.deleteAccount(account.nickname || account.name, pass);
+    account = null;
+    localStorage.removeItem('hortobots_pilot_account');
+    $('accountDeleteModal')?.classList.add('hidden');
+    updateProfileHeader(null);
+    showAccountStatus('Conta e registros apagados permanentemente do banco de dados.', 'info');
+    getAudio().playKeyClack();
+    renderAccountScreen();
+  } catch (err) {
+    showAccountStatus(err.message || 'Erro ao excluir conta');
+  } finally {
+    if (btn) btn.textContent = 'SIM, APAGAR DEFINITIVAMENTE';
+  }
+});
+
+// 4. Logout (Desconectar)
+$('accountLogoutBtn')?.addEventListener('click', () => {
+  account = null;
+  localStorage.removeItem('hortobots_pilot_account');
+  clearAccountStatus();
+  network.disconnect();
+  updateProfileHeader(null);
+  getAudio().playKeyClack();
+  showAccountStatus('Sessão encerrada com sucesso.', 'info');
+  renderAccountScreen();
 });
 
 // ════════════════════════════════════════════════════════════════════
@@ -1027,6 +1267,22 @@ function toggleDraftRobot(id) {
 function updateDraftUI() {
   const counter = $('versusPickCounter');
   if (counter) counter.textContent = `(${selectedRobotIds.length}/3)`;
+
+  // Atualiza barra de identificação e prontidão do piloto no draft
+  const pName = (account?.nickname || account?.name || 'PILOTO').toUpperCase();
+  const draftPilotName = $('draftPlayerPilotName');
+  if (draftPilotName) draftPilotName.textContent = pName;
+
+  const draftStatus = $('draftPlayerStatusTag');
+  if (draftStatus) {
+    if (selectedRobotIds.length === 3) {
+      draftStatus.textContent = '[ STATUS: ESCALAÇÃO PRONTA ]';
+      draftStatus.className = 'draft-status-tag ready';
+    } else {
+      draftStatus.textContent = `[ STATUS: SELECIONANDO (${selectedRobotIds.length}/3) ]`;
+      draftStatus.className = 'draft-status-tag';
+    }
+  }
 
   ROBOT_KEYS.forEach(id => {
     const card = $(`draft-card-${id}`);
@@ -2196,6 +2452,39 @@ function updateArenaHUD() {
 
   renderMedalDots($('versusPlayerMedals'), engine.medals.PLAYER);
   renderMedalDots($('versusEnemyMedals'), engine.medals.ENEMY);
+
+  // Nome do Piloto e do Adversário na HUD
+  const pName = (account?.nickname || account?.name || 'PILOTO').toUpperCase();
+  const hudPlayerName = $('versusHudPlayerName');
+  if (hudPlayerName) hudPlayerName.textContent = pName;
+
+  const enemyName = currentMode === 'bot' ? 'SIMULADOR IA DA TORRE' : (engine.enemyName || 'OPONENTE RANKED').toUpperCase();
+  const hudEnemyName = $('versusHudEnemyName');
+  if (hudEnemyName) hudEnemyName.textContent = enemyName;
+
+  // Sinalização de Prontidão nos Rounds de Combate
+  const readyTag = $('versusPlayerReadyTag');
+  if (readyTag) {
+    if (isClashRunning) {
+      readyTag.textContent = '[ EM COMBATE ]';
+      readyTag.className = 'versus-round-ready-tag ready';
+    } else {
+      const allActionChosen = engine.playerTeam && engine.playerTeam.length > 0 && engine.playerTeam.every(r => !r.isAlive || r.action);
+      if (allActionChosen) {
+        readyTag.textContent = '[ PRONTO ]';
+        readyTag.className = 'versus-round-ready-tag ready';
+      } else {
+        readyTag.textContent = '[ AGUARDANDO COMANDOS ]';
+        readyTag.className = 'versus-round-ready-tag';
+      }
+    }
+  }
+
+  const enemyReadyTag = $('versusEnemyReadyTag');
+  if (enemyReadyTag) {
+    enemyReadyTag.textContent = '[ PRONTO ]';
+    enemyReadyTag.className = 'versus-round-ready-tag ready';
+  }
 
   const initBadge = $('versusInitiativeBadge');
   if (initBadge && engine.initiative) {

@@ -9060,6 +9060,754 @@ body.graphics-low svg {
   filter: none !important;
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   CENTRAL DO PILOTO // TELA DE CONTA, LOGIN ESTILIZADO & 2FA
+   ══════════════════════════════════════════════════════════════════════ */
+.account-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  background: #020704;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  padding: 16px 24px;
+}
+
+.account-screen-backdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 20%, rgba(0, 255, 136, 0.05) 0%, transparent 70%);
+  z-index: 0;
+}
+
+.account-screen-container {
+  position: relative;
+  z-index: 1;
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Header */
+.account-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0, 255, 136, 0.25);
+}
+
+.account-system-tag {
+  font-size: 0.68rem;
+  letter-spacing: 2px;
+  color: #00e5ff;
+  text-transform: uppercase;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.account-title {
+  margin: 2px 0 0 0;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #00ff88;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
+}
+
+.account-back-btn {
+  font-size: 0.8rem;
+  padding: 6px 14px;
+  letter-spacing: 1px;
+}
+
+/* Mensagens de Feedback */
+.account-status-msg {
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  border-radius: 3px;
+  font-family: 'Share Tech Mono', monospace;
+  animation: accountFadeIn 0.3s ease;
+}
+
+.account-status-msg.error {
+  background: rgba(255, 68, 85, 0.12);
+  border: 1px solid #ff4455;
+  color: #ff6b78;
+}
+
+.account-status-msg.success {
+  background: rgba(0, 255, 136, 0.12);
+  border: 1px solid #00ff88;
+  color: #00ff88;
+}
+
+.account-status-msg.warning {
+  background: rgba(255, 170, 0, 0.12);
+  border: 1px solid #ffaa00;
+  color: #ffd700;
+}
+
+@keyframes accountFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   ESTADO 1: LOGADO
+   ────────────────────────────────────────────────────────────────── */
+.account-logged-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .account-logged-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.account-card {
+  background: rgba(5, 18, 10, 0.88);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.account-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 255, 136, 0.15);
+  padding-bottom: 8px;
+}
+
+.card-tag {
+  font-size: 0.7rem;
+  letter-spacing: 1.5px;
+  color: #88c5a4;
+  font-weight: 700;
+}
+
+.account-status-pill {
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  letter-spacing: 1px;
+}
+
+.account-status-pill.online {
+  background: rgba(0, 255, 136, 0.15);
+  border: 1px solid #00ff88;
+  color: #00ff88;
+}
+
+.account-identity-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.account-avatar-frame {
+  width: 52px;
+  height: 52px;
+  border: 2px solid #00ff88;
+  background: #001a0d;
+  color: #00ff88;
+  font-weight: 800;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 10px rgba(0, 255, 136, 0.2);
+}
+
+.account-identity-text {
+  flex: 1;
+}
+
+.account-nick-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.account-nick-label {
+  font-size: 0.75rem;
+  color: #88c5a4;
+}
+
+.account-nick-val {
+  font-size: 1.15rem;
+  color: #00ff88;
+  letter-spacing: 1px;
+}
+
+.account-mini-action-btn {
+  background: transparent;
+  border: 1px solid rgba(0, 229, 255, 0.5);
+  color: #00e5ff;
+  font-size: 0.62rem;
+  padding: 1px 6px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: 0.15s ease;
+}
+
+.account-mini-action-btn:hover {
+  background: #00e5ff;
+  color: #000;
+}
+
+.account-bio-val {
+  font-size: 0.75rem;
+  color: #a3e6c3;
+  margin-top: 2px;
+}
+
+.account-fields-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: rgba(0, 10, 5, 0.5);
+  padding: 10px;
+  border: 1px solid rgba(0, 255, 136, 0.12);
+}
+
+.account-field-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+}
+
+.account-field-item .field-lbl {
+  color: #88c5a4;
+}
+
+.account-field-item .field-val {
+  color: #ffffff;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+/* Banner de Vinculação Google */
+.account-google-status-box {
+  margin-top: 4px;
+}
+
+.account-google-banner {
+  padding: 10px 12px;
+  border-radius: 2px;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.account-google-banner.linked {
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid #00e5ff;
+  color: #00e5ff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.account-google-banner .google-dot {
+  color: #00ff88;
+}
+
+.account-google-banner.unlinked {
+  background: rgba(255, 170, 0, 0.08);
+  border: 1px solid #ffaa00;
+  color: #ffcc66;
+}
+
+.google-warning-title {
+  font-weight: 800;
+  color: #ffd700;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.google-warning-desc {
+  margin: 0;
+  font-size: 0.74rem;
+  color: #e0d0b0;
+}
+
+/* Stats */
+.account-rp-badge {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #ffd700;
+  background: rgba(255, 215, 0, 0.12);
+  border: 1px solid #ffd700;
+  padding: 2px 8px;
+  letter-spacing: 1px;
+}
+
+.account-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.stat-box {
+  background: rgba(0, 15, 8, 0.7);
+  border: 1px solid rgba(0, 255, 136, 0.15);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  text-align: center;
+}
+
+.stat-box-lbl {
+  font-size: 0.65rem;
+  letter-spacing: 1.5px;
+  color: #88c5a4;
+}
+
+.stat-box-num {
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.stat-box-num.green { color: #00ff88; }
+.stat-box-num.red   { color: #ff4455; }
+.stat-box-num.cyan  { color: #00e5ff; }
+.stat-box-num.gold  { color: #ffd700; }
+
+.account-actions-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.account-action-btn {
+  width: 100%;
+  padding: 9px;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+.term-btn.red-danger {
+  background: rgba(255, 68, 85, 0.12);
+  border: 1px solid #ff4455;
+  color: #ff6b78;
+}
+
+.term-btn.red-danger:hover {
+  background: #ff4455;
+  color: #000000;
+  box-shadow: 0 0 12px rgba(255, 68, 85, 0.5);
+}
+
+/* Modais da Conta */
+.account-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(4px);
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.account-modal-card {
+  background: #05140b;
+  border: 2px solid #00ff88;
+  box-shadow: 0 0 25px rgba(0, 255, 136, 0.3);
+  max-width: 440px;
+  width: 100%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.account-modal-card.danger-card {
+  border-color: #ff4455;
+  box-shadow: 0 0 25px rgba(255, 68, 85, 0.3);
+}
+
+.account-modal-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #00ff88;
+  letter-spacing: 1px;
+}
+
+.account-modal-title.danger {
+  color: #ff4455;
+}
+
+.account-modal-desc {
+  font-size: 0.78rem;
+  color: #a3e6c3;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.account-modal-desc.danger {
+  color: #ff8899;
+}
+
+.account-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.account-modal-actions button {
+  flex: 1;
+  padding: 8px;
+  font-size: 0.78rem;
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   ESTADO 2: DESLOGADO (SPLIT VIEW ELEGANTE)
+   ────────────────────────────────────────────────────────────────── */
+.account-guest-split {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 20px;
+  align-items: stretch;
+}
+
+@media (max-width: 768px) {
+  .account-guest-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+.account-guest-brand-panel {
+  background: rgba(3, 14, 7, 0.85);
+  border: 1px solid rgba(0, 255, 136, 0.25);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  box-shadow: inset 0 0 20px rgba(0, 255, 136, 0.05);
+}
+
+.brand-panel-tag {
+  font-size: 0.68rem;
+  letter-spacing: 2px;
+  color: #00e5ff;
+}
+
+.brand-ascii-art {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: #00ff88;
+  letter-spacing: 2px;
+  white-space: pre;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+  padding: 10px 0;
+  border-top: 1px solid rgba(0, 255, 136, 0.2);
+  border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+}
+
+.brand-panel-title {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #ffffff;
+  letter-spacing: 1px;
+}
+
+.brand-panel-desc {
+  font-size: 0.78rem;
+  color: #92d1af;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.brand-feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.feature-item {
+  font-size: 0.74rem;
+  color: #7bb897;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.feature-dot {
+  width: 6px;
+  height: 6px;
+  background: #00ff88;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Painel de Formulários */
+.account-guest-form-panel {
+  background: rgba(5, 18, 10, 0.92);
+  border: 1px solid rgba(0, 255, 136, 0.35);
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.7);
+  padding: 24px;
+}
+
+.account-form-header {
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+}
+
+.form-title {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #00ff88;
+  letter-spacing: 2px;
+}
+
+.form-sub {
+  font-size: 0.65rem;
+  color: #88c5a4;
+  letter-spacing: 1.5px;
+}
+
+.account-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.account-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #88c5a4;
+  letter-spacing: 1px;
+}
+
+.account-input {
+  background: #001208;
+  border: 1px solid rgba(0, 255, 136, 0.4);
+  color: #00ff88;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.88rem;
+  padding: 8px 12px;
+  border-radius: 2px;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+.account-input:focus {
+  border-color: #00e5ff;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+}
+
+.account-input.date-input {
+  color-scheme: dark;
+}
+
+.account-input.code-input {
+  font-size: 1.5rem;
+  letter-spacing: 8px;
+  text-align: center;
+  font-weight: 800;
+}
+
+.account-field-note {
+  font-size: 0.68rem;
+  color: #ffd700;
+  line-height: 1.3;
+  margin-top: 2px;
+}
+
+.account-submit-btn {
+  width: 100%;
+  padding: 10px;
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  font-weight: 800;
+}
+
+/* Legenda Solicitada: "Não possui conta? Crie uma!" */
+.account-switch-caption {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #88c5a4;
+  letter-spacing: 1px;
+}
+
+.account-link-action {
+  color: #00e5ff;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 700;
+  transition: 0.15s ease;
+}
+
+.account-link-action:hover {
+  color: #ffffff;
+  text-shadow: 0 0 8px #00e5ff;
+}
+
+/* Divisor de Sessão com Linha */
+.account-auth-divider {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 255, 136, 0.4) 50%, transparent 100%);
+  margin: 18px 0 14px 0;
+}
+
+/* Sessão Google Auth */
+.account-google-login-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.google-auth-restriction-note {
+  font-size: 0.65rem;
+  color: #ffd700;
+  letter-spacing: 1px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.gsi-btn-container,
+.gsi-link-btn-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+}
+
+/* 2FA Form Styles */
+.account-2fa-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.account-2fa-instructions {
+  font-size: 0.8rem;
+  color: #a3e6c3;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.account-2fa-notice {
+  font-size: 0.75rem;
+  color: #ffd700;
+  background: rgba(255, 215, 0, 0.08);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  padding: 8px 10px;
+  border-radius: 2px;
+}
+
+.account-2fa-aux-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.account-2fa-aux-row button {
+  flex: 1;
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   TAGS DE STATUS DO PILOTO NO DRAFT PVP E ARENA
+   ────────────────────────────────────────────────────────────────── */
+.draft-pilot-status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0, 15, 8, 0.85);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  padding: 6px 12px;
+  margin-bottom: 8px;
+}
+
+.draft-pilot-tag {
+  font-size: 0.75rem;
+  color: #88c5a4;
+  letter-spacing: 1px;
+}
+
+.draft-pilot-tag strong {
+  color: #00ff88;
+}
+
+.draft-status-tag {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #ffd700;
+}
+
+.draft-status-tag.ready {
+  color: #00ff88;
+}
+
+.versus-player-status.ready-tag {
+  display: inline-block;
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 2px;
+  margin-top: 2px;
+  background: rgba(0, 255, 136, 0.12);
+  border: 1px solid #00ff88;
+  color: #00ff88;
+}
+
+.versus-player-status.waiting-tag {
+  display: inline-block;
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 2px;
+  margin-top: 2px;
+  background: rgba(255, 170, 0, 0.12);
+  border: 1px solid #ffaa00;
+  color: #ffd700;
+}
+
+.versus-round-ready-tag {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(255, 215, 0, 0.12);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  color: #ffd700;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.versus-round-ready-tag.ready {
+  background: rgba(0, 255, 136, 0.15);
+  border-color: #00ff88;
+  color: #00ff88;
+}
+
+
 
 
 

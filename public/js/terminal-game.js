@@ -1125,29 +1125,25 @@ export class TerminalGameApp {
 
   // ─── Widgets de Conta e Autenticação na Tela de Título ───
   initTitleAccountWidget() {
+    const bar = document.getElementById('titleAccountBar');
     const authBtn = document.getElementById('titleAccountAuthBtn');
-    if (authBtn) {
-      authBtn.onclick = (e) => {
-        e.stopPropagation();
-        this.audio.playKeyClack();
-        const acc = typeof window.getLoggedAccount === 'function' ? window.getLoggedAccount() : null;
-        if (acc && typeof window.openLoginFromTitle === 'function') {
-          window.openLoginFromTitle('versusModeSelectScreen');
-        } else if (typeof window.openLoginFromTitle === 'function') {
-          window.openLoginFromTitle('versusLoginScreen');
-        }
-      };
-    }
+    const openAccount = (e) => {
+      if (e) e.stopPropagation();
+      if (this.audio) this.audio.playKeyClack();
+      if (typeof window.openAccountScreen === 'function') {
+        window.openAccountScreen();
+      }
+    };
+
+    if (bar) bar.onclick = openAccount;
+    if (authBtn) authBtn.onclick = openAccount;
 
     const tapeBtn = document.getElementById('titleAccountTapeBtn');
     if (tapeBtn) {
       tapeBtn.onclick = () => {
         this.triggerTapeTransition(tapeBtn, () => {
-          const acc = typeof window.getLoggedAccount === 'function' ? window.getLoggedAccount() : null;
-          if (acc && typeof window.openLoginFromTitle === 'function') {
-            window.openLoginFromTitle('versusModeSelectScreen');
-          } else if (typeof window.openLoginFromTitle === 'function') {
-            window.openLoginFromTitle('versusLoginScreen');
+          if (typeof window.openAccountScreen === 'function') {
+            window.openAccountScreen();
           }
         });
       };
@@ -1168,20 +1164,20 @@ export class TerminalGameApp {
     const tapeLed = document.getElementById('titleAccountTapeLed');
 
     if (isLogged) {
-      const nick = account.nickname || account.name;
+      const nick = (account.nickname || account.name || 'PILOTO').toUpperCase();
       const rp = account.rankingPoints !== undefined ? Math.min(999, Math.max(0, account.rankingPoints)) : 0;
       if (led) {
         led.classList.remove('guest');
         led.classList.add('logged');
       }
       if (text) {
-        text.textContent = `${nick.toUpperCase()} (${rp} RP)`;
+        text.textContent = `[${nick}]`;
       }
       if (btn) {
-        btn.textContent = 'CONTA';
+        btn.textContent = `[${nick}]`;
       }
       if (tapeLabel) {
-        tapeLabel.textContent = `PILOTO: ${nick.toUpperCase()}`;
+        tapeLabel.textContent = `PILOTO: [${nick}]`;
       }
       if (tapeSub) {
         tapeSub.textContent = `[ ${rp} RP ]`;
@@ -1195,7 +1191,7 @@ export class TerminalGameApp {
         led.classList.add('guest');
       }
       if (text) {
-        text.textContent = 'CONVIDADO';
+        text.textContent = 'INICIAR SESSÃO';
       }
       if (btn) {
         btn.textContent = 'INICIAR SESSÃO';
@@ -1245,8 +1241,8 @@ export class TerminalGameApp {
     if (loginBtn) {
       loginBtn.onclick = () => {
         closeModal();
-        if (typeof window.openLoginFromTitle === 'function') {
-          window.openLoginFromTitle('versusLoginScreen');
+        if (typeof window.openAccountScreen === 'function') {
+          window.openAccountScreen('storyScreen');
         }
       };
     }
@@ -1255,8 +1251,10 @@ export class TerminalGameApp {
     if (regBtn) {
       regBtn.onclick = () => {
         closeModal();
-        if (typeof window.openLoginFromTitle === 'function') {
-          window.openLoginFromTitle('versusRegisterScreen');
+        if (typeof window.openAccountScreen === 'function') {
+          window.openAccountScreen('storyScreen');
+          const toggleReg = document.getElementById('accountToggleToRegister');
+          if (toggleReg) toggleReg.click();
         }
       };
     }

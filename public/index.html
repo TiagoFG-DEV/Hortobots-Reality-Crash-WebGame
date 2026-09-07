@@ -10,6 +10,7 @@
   <link rel="apple-touch-icon" href="/img/cara-icon.png">
   <link rel="stylesheet" href="/css/terminal.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
 <body>
@@ -508,155 +509,321 @@
        VERSUS MODE SCREENS (DENTRO DO CRT MONITOR)
   ═══════════════════════════════════════════════════════════ -->
 
-    <!-- TELA: Autenticação / Login VERSUS -->
-    <div id="versusLoginScreen" class="term-screen versus-term-screen versus-auth-screen hidden">
-      <div class="versus-diamond-racing-grid"></div>
-      <div class="versus-screen-inner versus-auth-inner">
-        <div class="versus-arcade-header">
-          <div class="versus-logo">
-            <span class="versus-logo-v">V</span><span class="versus-logo-s">ERSUS</span>
+    <!-- ═══════════════════════════════════════════════════════════
+       TELA CENTRAL DO PILOTO / GERENCIAMENTO DE CONTA & LOGIN
+  ═══════════════════════════════════════════════════════════ -->
+    <div id="accountScreen" class="term-screen account-screen hidden">
+      <div class="account-screen-backdrop"></div>
+      <div class="account-screen-container">
+        <!-- HEADER DA TELA DE CONTA -->
+        <div class="account-header">
+          <div class="account-header-info">
+            <span class="account-system-tag">MNEMOSYNE // CENTRAL DE PILOTO</span>
+            <h2 class="account-title" id="accountTitleHeader">> GERENCIAMENTO DE CONTA</h2>
           </div>
-          <div class="versus-circuit-tag">AUTENTICAÇÃO</div>
+          <button class="term-btn ghost account-back-btn" id="accountBackBtn" type="button">
+            ← VOLTAR
+          </button>
         </div>
 
-        <div class="versus-auth-card">
-          <div class="versus-auth-section">
-            <div class="versus-auth-section-title">INICIAR SESSÃO</div>
-            <div class="versus-input-grid">
-              <div class="versus-input-group">
-                <label class="versus-label" for="versusLoginNick">NICKNAME</label>
-                <input type="text" id="versusLoginNick" class="versus-input" placeholder="Ex: QUEZAS_01" maxlength="16"
-                  autocomplete="off" />
+        <!-- MENSAGEM DE STATUS / ALERTA -->
+        <div id="accountStatusMsg" class="account-status-msg hidden"></div>
+
+        <!-- ──────────────────────────────────────────────────────────
+             ESTADO 1: USUÁRIO LOGADO (INFORMAÇÕES & EDIÇÃO COMPLETA)
+        ────────────────────────────────────────────────────────── -->
+        <div id="accountLoggedView" class="account-view-section hidden">
+          <div class="account-logged-grid">
+            <!-- CARTÃO DE IDENTIDADE E PERFIL -->
+            <div class="account-card profile-card">
+              <div class="account-card-header">
+                <span class="card-tag">IDENTIFICAÇÃO DE PILOTO</span>
+                <span class="account-status-pill online">SESSÃO ATIVA</span>
               </div>
-              <div class="versus-input-group">
-                <label class="versus-label" for="versusLoginPass">SENHA</label>
-                <input type="password" id="versusLoginPass" class="versus-input" placeholder="Digite sua senha..."
-                  maxlength="32" />
+
+              <div class="account-identity-row">
+                <div class="account-avatar-frame" id="accountAvatarBadge">[QZ-01]</div>
+                <div class="account-identity-text">
+                  <div class="account-nick-row">
+                    <span class="account-nick-label">PILOTO:</span>
+                    <strong class="account-nick-val" id="accountNickVal">PILOTO</strong>
+                    <button class="account-mini-action-btn" id="accountTriggerEditNickBtn" type="button" title="Alterar Nickname">EDITAR</button>
+                  </div>
+                  <div class="account-bio-val" id="accountBioVal">Piloto Registrado no Sistema Mnemosyne</div>
+                </div>
               </div>
-            </div>
 
-            <div class="versus-btn-row" style="margin-top: 6px;">
-              <button class="versus-action-btn primary" id="versusAuthLoginBtn" type="button">ENTRAR</button>
-              <button class="versus-action-btn google" id="versusAuthGoogleBtn" type="button">
-                <svg class="google-icon" viewBox="0 0 24 24" width="16" height="16">
-                  <path fill="#00e5ff"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="#00ff88"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="#ffd700"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                  <path fill="#00e5ff"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                </svg>
-                CONTINUAR COM GOOGLE
-              </button>
-            </div>
-          </div>
-
-          <!-- SEPARADOR / NAVEGAÇÃO -->
-          <div class="versus-auth-divider">
-            <span>NOVO NO CIRCUITO?</span>
-          </div>
-
-          <div class="versus-btn-row">
-            <button class="versus-action-btn cyan" id="versusGoToRegisterBtn" type="button">CRIAR NOVA CONTA</button>
-            <button class="versus-action-btn ghost" id="versusLoginBackBtn" type="button">MENU</button>
-          </div>
-
-          <!-- FEEDBACK DE STATUS / ERRO -->
-          <div id="versusAuthStatusMsg" class="versus-status-msg hidden"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TELA: Registro de Novo Piloto VERSUS -->
-    <div id="versusRegisterScreen" class="term-screen versus-term-screen versus-auth-screen hidden">
-      <div class="versus-diamond-racing-grid"></div>
-      <div class="versus-screen-inner versus-auth-inner">
-        <div class="versus-arcade-header">
-          <div class="versus-logo">
-            <span class="versus-logo-v">V</span><span class="versus-logo-s">ERSUS</span>
-          </div>
-          <div class="versus-circuit-tag">REGISTRO DE NOVO PILOTO</div>
-        </div>
-
-        <div class="versus-auth-card">
-          <!-- ETAPA 1: Formulário de Registro (Google Obrigatório) -->
-          <div class="versus-auth-section secondary" id="versusRegFormStep">
-            <div class="versus-auth-section-title">CRIAR CONTA</div>
-            <div class="versus-input-grid">
-              <div class="versus-input-group">
-                <label class="versus-label" for="versusRegNick">NICKNAME</label>
-                <input type="text" id="versusRegNick" class="versus-input" placeholder="Seu Nickname..." minlength="2"
-                  maxlength="16" autocomplete="off" />
+              <div class="account-fields-list">
+                <div class="account-field-item">
+                  <span class="field-lbl">E-MAIL:</span>
+                  <span class="field-val" id="accountEmailVal">--</span>
+                </div>
+                <div class="account-field-item">
+                  <span class="field-lbl">NASCIMENTO:</span>
+                  <span class="field-val" id="accountBirthVal">--</span>
+                </div>
               </div>
-              <div class="versus-input-group">
-                <label class="versus-label" for="versusRegPass">SENHA</label>
-                <input type="password" id="versusRegPass" class="versus-input" placeholder="Mínimo 8 caracteres..."
-                  minlength="8" maxlength="32" />
+
+              <!-- ALERTA / STATUS DA VINCULAÇÃO GOOGLE -->
+              <div class="account-google-status-box" id="accountGoogleStatusBox">
+                <!-- Se vinculado -->
+                <div id="accountGoogleLinkedBanner" class="account-google-banner linked hidden">
+                  <span class="google-dot">●</span>
+                  <span>CONTA GOOGLE VINCULADA: <strong id="accountGoogleEmailVal">--</strong></span>
+                </div>
+                <!-- Se não vinculado (ALERTA OBRIGATÓRIO SOLICITADO PELO USUÁRIO) -->
+                <div id="accountGoogleUnlinkedBanner" class="account-google-banner unlinked">
+                  <div class="google-warning-title">⚠️ CONTA GOOGLE NÃO VINCULADA</div>
+                  <p class="google-warning-desc">
+                    É necessário vincular uma conta Google oficial para utilizar a opção rápida <strong>"Entrar com Google"</strong> na tela de login.
+                  </p>
+                  <div id="gsiLinkBtnWrapper" class="gsi-link-btn-wrapper" style="margin-top: 8px;"></div>
+                </div>
               </div>
             </div>
 
-            <div class="versus-input-group" style="margin-top: 6px;">
-              <label class="versus-label" for="versusRegEmail"><span style="color: #00ff88;">●</span> E-MAIL (@GMAIL.COM)</label>
-              <input type="email" id="versusRegEmail" class="versus-input" placeholder="seu-email@gmail.com"
-                autocomplete="email" required />
-            </div>
+            <!-- CARTÃO DE ESTATÍSTICAS DE COMBATE -->
+            <div class="account-card stats-card">
+              <div class="account-card-header">
+                <span class="card-tag">TELEMETRIA DE COMBATE</span>
+                <span class="account-rp-badge" id="accountRPBadge">0 RP</span>
+              </div>
 
-            <div class="versus-2fa-badge-banner">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="var(--term-accent, #00ff88)" style="flex-shrink: 0;">
-                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
-              </svg>
-              <span class="badge-text">Um código de 6 dígitos será enviado ao seu e-mail para validar a conta.</span>
-            </div>
+              <div class="account-stats-grid">
+                <div class="stat-box">
+                  <span class="stat-box-lbl">VITÓRIAS</span>
+                  <strong class="stat-box-num green" id="accountWinsVal">0</strong>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-box-lbl">DERROTAS</span>
+                  <strong class="stat-box-num red" id="accountLossesVal">0</strong>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-box-lbl">PARTIDAS</span>
+                  <strong class="stat-box-num cyan" id="accountMatchesVal">0</strong>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-box-lbl">WINRATE</span>
+                  <strong class="stat-box-num gold" id="accountWinrateVal">0%</strong>
+                </div>
+              </div>
 
-            <div class="versus-btn-row" style="margin-top: 8px;">
-              <button class="versus-action-btn cyan" id="versusAuthRegBtn" type="button">CRIAR CONTA</button>
+              <!-- AÇÕES GERAIS DA CONTA -->
+              <div class="account-actions-stack">
+                <button class="term-btn cyan account-action-btn" id="accountTriggerChangePassBtn" type="button">
+                  ALTERAR SENHA
+                </button>
+                <button class="term-btn ghost account-action-btn" id="accountLogoutBtn" type="button">
+                  DESCONECTAR DA CONTA
+                </button>
+                <button class="term-btn red-danger account-action-btn" id="accountTriggerDeleteBtn" type="button">
+                  EXCLUIR CONTA DEFINITIVAMENTE
+                </button>
+              </div>
             </div>
           </div>
 
-          <!-- ETAPA 2: Validação de Chave 2FA -->
-          <div class="versus-auth-section secondary hidden" id="versus2FAStep">
-            <div class="versus-auth-section-title">CONFIRMAÇÃO POR E-MAIL</div>
+          <!-- MODAL: ALTERAR NICKNAME -->
+          <div id="accountEditNickModal" class="account-modal-overlay hidden">
+            <div class="account-modal-card">
+              <div class="account-modal-title">> ALTERAR NICKNAME DE PILOTO</div>
+              <p class="account-modal-desc">Escolha seu novo identificador alfanumérico (2 a 16 caracteres):</p>
+              <div class="account-input-group">
+                <label class="account-label" for="accountNewNickInput">NOVO NICKNAME</label>
+                <input type="text" id="accountNewNickInput" class="account-input" maxlength="16" placeholder="Novo Nick..." autocomplete="off" />
+              </div>
+              <div class="account-input-group" style="margin-top: 8px;">
+                <label class="account-label" for="accountConfirmPassForNick">SENHA ATUAL (CONFIRMAÇÃO)</label>
+                <input type="password" id="accountConfirmPassForNick" class="account-input" placeholder="Digite sua senha..." />
+              </div>
+              <div class="account-modal-actions">
+                <button class="term-btn cyan" id="accountSaveNickBtn" type="button">SALVAR NOVO NICK</button>
+                <button class="term-btn ghost" id="accountCancelNickBtn" type="button">CANCELAR</button>
+              </div>
+            </div>
+          </div>
 
-            <div class="versus-2fa-panel">
-              <div class="versus-2fa-status-badge">CÓDIGO ENVIADO</div>
-              <p class="versus-2fa-text">
-                Código enviado para: <strong id="versus2FAEmailDisplay" class="highlight-cyan">...</strong>
+          <!-- MODAL: ALTERAR SENHA -->
+          <div id="accountEditPassModal" class="account-modal-overlay hidden">
+            <div class="account-modal-card">
+              <div class="account-modal-title">> ALTERAR SENHA DE ACESSO</div>
+              <div class="account-input-group">
+                <label class="account-label" for="accountCurrentPassInput">SENHA ATUAL</label>
+                <input type="password" id="accountCurrentPassInput" class="account-input" placeholder="Senha atual..." />
+              </div>
+              <div class="account-input-group" style="margin-top: 8px;">
+                <label class="account-label" for="accountNewPassInput">NOVA SENHA (MÍNIMO 8 DÍGITOS)</label>
+                <input type="password" id="accountNewPassInput" class="account-input" placeholder="Nova senha..." minlength="8" />
+              </div>
+              <div class="account-modal-actions">
+                <button class="term-btn cyan" id="accountSavePassBtn" type="button">ATUALIZAR SENHA</button>
+                <button class="term-btn ghost" id="accountCancelPassBtn" type="button">CANCELAR</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODAL: CONFIRMAR EXCLUSÃO DE CONTA -->
+          <div id="accountDeleteModal" class="account-modal-overlay hidden">
+            <div class="account-modal-card danger-card">
+              <div class="account-modal-title danger">> EXCLUSÃO DEFINITIVA DE CONTA</div>
+              <p class="account-modal-desc danger">
+                ATENÇÃO: Esta ação é irreversível. Todos os registros, pontos de ranking, histórico e saves serão permanentemente apagados do banco de dados.
               </p>
-
-              <div class="versus-input-group">
-                <label class="versus-label" for="versus2FACodeInput">CÓDIGO DE 6 DÍGITOS</label>
-                <input type="text" id="versus2FACodeInput" class="versus-input versus-2fa-input" placeholder="000000"
-                  maxlength="6" inputmode="numeric" autocomplete="one-time-code" />
+              <div class="account-input-group">
+                <label class="account-label" for="accountDeletePassInput">CONFIRME SUA SENHA PARA APAGAR</label>
+                <input type="password" id="accountDeletePassInput" class="account-input" placeholder="Digite sua senha..." />
               </div>
-
-              <div class="versus-btn-row" style="margin-top: 10px;">
-                <button class="versus-action-btn cyan" id="versus2FAConfirmBtn" type="button">CONFIRMAR</button>
-              </div>
-
-              <div class="versus-btn-row versus-2fa-aux-row" style="margin-top: 6px;">
-                <button class="versus-action-btn ghost" id="versus2FAResendBtn" type="button">REENVIAR CÓDIGO</button>
-                <button class="versus-action-btn ghost" id="versus2FAPreviewBtn" type="button">VER E-MAIL</button>
-                <button class="versus-action-btn ghost" id="versus2FABackBtn" type="button">VOLTAR</button>
+              <div class="account-modal-actions">
+                <button class="term-btn red-danger" id="accountConfirmDeleteBtn" type="button">SIM, APAGAR DEFINITIVAMENTE</button>
+                <button class="term-btn ghost" id="accountCancelDeleteBtn" type="button">CANCELAR</button>
               </div>
             </div>
           </div>
-
-
-          <!-- SEPARADOR / NAVEGAÇÃO -->
-          <div class="versus-auth-divider">
-            <span>JÁ POSSUI CONTA?</span>
-          </div>
-
-          <div class="versus-btn-row">
-            <button class="versus-action-btn primary" id="versusGoToLoginBtn" type="button">LOGIN</button>
-            <button class="versus-action-btn ghost" id="versusRegisterBackBtn" type="button">MENU</button>
-          </div>
-
-          <!-- FEEDBACK DE STATUS / ERRO -->
-          <div id="versusRegStatusMsg" class="versus-status-msg hidden"></div>
         </div>
+
+        <!-- ──────────────────────────────────────────────────────────
+             ESTADO 2: DESLOGADO (LOGIN ESTILIZADO DIVIDIDO COM GOOGLE)
+        ────────────────────────────────────────────────────────── -->
+        <div id="accountGuestView" class="account-view-section hidden">
+          <div class="account-guest-split">
+            <!-- COLUNA ESQUERDA: APRESENTAÇÃO / DIAGNÓSTICO RETRO -->
+            <div class="account-guest-brand-panel">
+              <div class="brand-panel-tag">TERMINAL CENTRAL // ID MNEMOSYNE</div>
+              <div class="brand-ascii-art">
+  [ HORTOBOTS ]
+  REALITY CLASH
+              </div>
+              <h3 class="brand-panel-title">AUTENTICAÇÃO DE PILOTO</h3>
+              <p class="brand-panel-desc">
+                Inicie sua sessão ou cadastre sua credencial para sincronizar seu save na Torre Virtual, registrar pontos de ranking (RP) e combater na Arena Versus.
+              </p>
+              <div class="brand-feature-list">
+                <div class="feature-item"><span class="feature-dot"></span> Sincronização em Nuvem Supabase</div>
+                <div class="feature-item"><span class="feature-dot"></span> Circuito Ranqueado PvP</div>
+                <div class="feature-item"><span class="feature-dot"></span> Segurança de Acesso</div>
+              </div>
+            </div>
+
+            <!-- COLUNA DIREITA: FORMULÁRIOS DE ACESSO -->
+            <div class="account-guest-form-panel">
+
+              <!-- 1. FORMULÁRIO DE LOGIN -->
+              <div id="accountLoginForm" class="account-form-box">
+                <div class="account-form-header">
+                  <h3 class="form-title">INICIAR SESSÃO</h3>
+                  <span class="form-sub">DIGITE SUAS CREDENCIAIS</span>
+                </div>
+
+                <form id="accountLoginActualForm" onsubmit="return false;">
+                  <div class="account-input-group">
+                    <label class="account-label" for="accountLoginNick">NOME DE USUÁRIO</label>
+                    <input type="text" id="accountLoginNick" class="account-input" placeholder="Seu nome de usuário..." maxlength="16" autocomplete="username" required />
+                  </div>
+
+                  <div class="account-input-group" style="margin-top: 10px;">
+                    <label class="account-label" for="accountLoginPass">SENHA</label>
+                    <input type="password" id="accountLoginPass" class="account-input" placeholder="Digite sua senha..." maxlength="32" autocomplete="current-password" required />
+                  </div>
+
+                  <button class="term-btn gold account-submit-btn" id="accountLoginSubmitBtn" type="submit" style="margin-top: 14px;">
+                    ENTRAR
+                  </button>
+                </form>
+
+                <!-- LEGENDA EXATA SOLICITADA PELO USUÁRIO -->
+                <div class="account-switch-caption" style="margin-top: 12px;">
+                  Não possui conta? <a id="accountToggleToRegister" href="javascript:void(0);" class="account-link-action">Crie uma!</a>
+                </div>
+
+                <!-- DIVISÃO DE SESSÃO COM LINHA -->
+                <hr class="account-auth-divider" />
+
+                <!-- OPÇÃO ENTRAR COM GOOGLE (SOMENTE CONTAS VINCULADAS) -->
+                <div class="account-google-login-section">
+                  <div class="google-auth-restriction-note">
+                    SOMENTE CONTAS VINCULADAS PODEM USAR ESTA FUNÇÃO
+                  </div>
+                  <div id="gsiLoginButtonWrapper" class="gsi-btn-container"></div>
+                </div>
+              </div>
+
+              <!-- 2. FORMULÁRIO DE CRIAR CONTA -->
+              <div id="accountRegisterForm" class="account-form-box hidden">
+                <div class="account-form-header">
+                  <h3 class="form-title">CRIAR CONTA</h3>
+                  <span class="form-sub">REGISTRO DE NOVO PILOTO</span>
+                </div>
+
+                <form id="accountRegActualForm" onsubmit="return false;">
+                  <div class="account-input-group">
+                    <label class="account-label" for="accountRegNick">NOME DE USUÁRIO</label>
+                    <input type="text" id="accountRegNick" class="account-input" placeholder="Seu nome de usuário (ex: QUEZAS_01)" minlength="2" maxlength="16" autocomplete="off" required />
+                  </div>
+
+                  <div class="account-input-group" style="margin-top: 8px;">
+                    <label class="account-label" for="accountRegBirth">DATA DE NASCIMENTO</label>
+                    <input type="date" id="accountRegBirth" class="account-input date-input" required />
+                  </div>
+
+                  <div class="account-input-group" style="margin-top: 8px;">
+                    <label class="account-label" for="accountRegGoogleEmail">CONTA GOOGLE PARA VINCULAR (OPCIONAL)</label>
+                    <input type="email" id="accountRegGoogleEmail" class="account-input" placeholder="seu-email@gmail.com (opcional)" />
+                    <div class="account-field-note">
+                      * Se preenchido, enviaremos um código para seu Gmail para validação. Se deixado em branco, você pode vincular depois na tela de informações da conta.
+                    </div>
+                  </div>
+
+                  <div class="account-input-group" style="margin-top: 8px;">
+                    <label class="account-label" for="accountRegPass">SENHA (MÍNIMO 8 CARACTERES)</label>
+                    <input type="password" id="accountRegPass" class="account-input" placeholder="Mínimo 8 dígitos..." minlength="8" maxlength="32" autocomplete="new-password" required />
+                  </div>
+
+                  <button class="term-btn cyan account-submit-btn" id="accountRegSubmitBtn" type="submit" style="margin-top: 14px;">
+                    CONCLUIR CADASTRO
+                  </button>
+                </form>
+
+                <div class="account-switch-caption" style="margin-top: 12px;">
+                  Já possui conta? <a id="accountToggleToLogin" href="javascript:void(0);" class="account-link-action">Entrar</a>
+                </div>
+              </div>
+
+              <!-- 3. CONFIRMAÇÃO DO CÓDIGO NO GMAIL (SEM DEBUG, VERDADEIRO E DIRETO) -->
+              <div id="account2FAForm" class="account-form-box hidden">
+                <div class="account-form-header">
+                  <h3 class="form-title">VERIFICAÇÃO DE E-MAIL</h3>
+                  <span class="form-sub">CÓDIGO ENVIADO AO GMAIL</span>
+                </div>
+
+                <div class="account-2fa-card">
+                  <p class="account-2fa-instructions">
+                    Enviamos um código de confirmação para o endereço:<br>
+                    <strong id="account2FAEmailDisplay" class="highlight-cyan">...</strong>
+                  </p>
+                  <div class="account-2fa-notice">
+                    Abra o seu <strong>Gmail</strong> (caixa de entrada ou spam) e insira o código de 6 dígitos recebido:
+                  </div>
+
+                  <div class="account-input-group" style="margin: 16px 0;">
+                    <label class="account-label" for="account2FACodeInput">CÓDIGO DE 6 DÍGITOS</label>
+                    <input type="text" id="account2FACodeInput" class="account-input code-input" placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="one-time-code" />
+                  </div>
+
+                  <button class="term-btn cyan account-submit-btn" id="account2FAConfirmBtn" type="button">
+                    CONFIRMAR CÓDIGO
+                  </button>
+
+                  <div class="account-2fa-aux-row">
+                    <button class="term-btn ghost small" id="account2FAResendBtn" type="button">REENVIAR CÓDIGO</button>
+                    <button class="term-btn ghost small" id="account2FACancelBtn" type="button">CANCELAR</button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -691,13 +858,6 @@
               <span class="stat-label">WINRATE:</span>
               <strong id="versusProfileWinrateDisplay">0%</strong>
             </div>
-          </div>
-
-          <div class="versus-profile-actions">
-            <button class="versus-action-btn small cyan" id="versusProfileEditBtn" type="button">[ EDITAR PERFIL
-              ]</button>
-            <button class="versus-action-btn small ghost" id="versusProfileLogoutBtn" type="button">[ TROCAR CONTA
-              ]</button>
           </div>
         </div>
 
@@ -840,85 +1000,7 @@
       </div>
     </div>
 
-    <!-- MODAL: EDIÇÃO DE PERFIL DO PILOTO -->
-    <div id="versusProfileModal" class="versus-modal-overlay hidden">
-      <div class="versus-modal-card">
-        <div class="versus-modal-header">
-          <span class="modal-tag">[ TERMINAL DE PILOTO ]</span>
-          <h3 class="modal-title">> EDITAR PERFIL DE COMBATE</h3>
-        </div>
 
-        <div class="versus-modal-body">
-          <div class="versus-input-group">
-            <label class="versus-label">INSÍGNIA DE AVATAR</label>
-            <div class="versus-avatar-picker" id="versusAvatarPicker">
-              <button type="button" class="avatar-pick-btn active" data-badge="[QZ-01]">[QZ-01] Quezas</button>
-              <button type="button" class="avatar-pick-btn" data-badge="[DB-01]">[DB-01] Dino-Byte</button>
-              <button type="button" class="avatar-pick-btn" data-badge="[CP-02]">[CP-02] Cowputer</button>
-              <button type="button" class="avatar-pick-btn" data-badge="[PL-03]">[PL-03] Penlinux</button>
-              <button type="button" class="avatar-pick-btn" data-badge="[TV-04]">[TV-04] Tigervex</button>
-              <button type="button" class="avatar-pick-btn" data-badge="[PB-05]">[PB-05] Pavabyte</button>
-            </div>
-          </div>
-
-          <div class="versus-input-group" style="margin-top: 14px;">
-            <label class="versus-label" for="versusEditBioInput">FRASE / LEMA DE COMBATE</label>
-            <input type="text" id="versusEditBioInput" class="versus-input"
-              placeholder="Ex: Piloto Implacável da Torre Central" maxlength="40" />
-          </div>
-
-          <div class="versus-input-group" style="margin-top: 14px;">
-            <label class="versus-label" for="versusEditNewPassInput">ALTERAR SENHA (OPCIONAL)</label>
-            <input type="password" id="versusEditNewPassInput" class="versus-input"
-              placeholder="Nova senha (deixe em branco para manter)" maxlength="32" />
-          </div>
-        </div>
-
-        <div class="versus-modal-footer">
-          <button class="versus-action-btn primary" id="versusSaveProfileBtn" type="button">[ SALVAR ALTERAÇÕES
-            ]</button>
-          <button class="versus-action-btn ghost" id="versusCancelProfileBtn" type="button">[ CANCELAR ]</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- MODAL: SELETOR / AUTENTICAÇÃO COM GOOGLE -->
-    <div id="versusGoogleModal" class="versus-modal-overlay hidden">
-      <div class="versus-modal-card google-modal">
-        <div class="versus-modal-header">
-          <span class="modal-tag">[ AUTENTICAÇÃO SEGURA GOOGLE ]</span>
-          <h3 class="modal-title">> CONTINUAR COM A CONTA GOOGLE</h3>
-        </div>
-
-        <div class="versus-modal-body">
-          <p style="color: #ccc; font-size: 0.88rem; line-height: 1.5; margin-bottom: 16px;">
-            Selecione uma conta Google ativa ou informe seu e-mail Google para vincular e acessar seu progresso no
-            circuito:
-          </p>
-
-          <div class="google-accounts-list">
-            <button type="button" class="google-account-option active" data-email="piloto.principal@gmail.com">
-              <div class="google-acc-circle">G</div>
-              <div class="google-acc-info">
-                <div class="google-acc-name">Piloto Oficial</div>
-                <div class="google-acc-email">piloto.principal@gmail.com</div>
-              </div>
-            </button>
-          </div>
-
-          <div class="versus-input-group" style="margin-top: 14px;">
-            <label class="versus-label" for="versusGoogleCustomEmail">OU DIGITE OUTRO E-MAIL GOOGLE</label>
-            <input type="email" id="versusGoogleCustomEmail" class="versus-input" placeholder="seu-email@gmail.com" />
-          </div>
-        </div>
-
-        <div class="versus-modal-footer">
-          <button class="versus-action-btn google" id="versusConfirmGoogleBtn" type="button">AUTORIZAR COM
-            GOOGLE</button>
-          <button class="versus-action-btn ghost" id="versusCancelGoogleBtn" type="button">CANCELAR</button>
-        </div>
-      </div>
-    </div>
 
     <!-- TELA PRINCIPAL: ARENA UNIFICADA VERSUS -->
     <div id="versusArenaScreen" class="term-screen versus-unified-screen hidden">
@@ -928,6 +1010,7 @@
           <div class="versus-hud-name-box">
             <span class="versus-side-tag">PILOTO</span>
             <strong id="versusHudPlayerName">PLAYER</strong>
+            <span class="versus-round-ready-tag" id="versusPlayerReadyTag">[ AGUARDANDO COMANDOS ]</span>
           </div>
           <div class="versus-medals-badge">
             <span>MEDALHAS:</span> <strong id="versusPlayerMedalCount">0</strong>/10
@@ -952,6 +1035,7 @@
           <div class="versus-hud-name-box">
             <span class="versus-side-tag">ADVERSÁRIO</span>
             <strong id="versusHudEnemyName">BOT</strong>
+            <span class="versus-round-ready-tag ready" id="versusEnemyReadyTag">[ PRONTO ]</span>
           </div>
           <div class="versus-player-status" id="versusEnemyStatus"></div>
         </div>
@@ -969,6 +1053,11 @@
 
           <!-- DECK 1: RECRUTAMENTO (Draft inicial) -->
           <div class="versus-deck-section" id="versusDraftSection">
+            <!-- Barra de Status do Piloto na Seleção de Campeões -->
+            <div class="draft-pilot-status-bar" id="draftPilotStatusBar">
+              <span class="draft-pilot-tag" id="draftPlayerPilotTag">[ PILOTO: <strong id="draftPlayerPilotName">PILOTO</strong> ]</span>
+              <span class="draft-status-tag" id="draftPlayerStatusTag">[ STATUS: SELECIONANDO (0/3) ]</span>
+            </div>
             <div class="versus-compact-draft-grid" id="versusRobotGrid"></div>
 
             <!-- Inspetor Holográfico 3D do Robô em Foco -->

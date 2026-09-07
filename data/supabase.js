@@ -70,6 +70,7 @@ export async function initSupabase() {
         ALTER TABLE accounts ADD COLUMN IF NOT EXISTS story_save JSONB DEFAULT NULL;
         ALTER TABLE accounts ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT false;
         ALTER TABLE accounts ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT false;
+        ALTER TABLE accounts ADD COLUMN IF NOT EXISTS birth_date VARCHAR(20) DEFAULT '';
       `);
       isSupabaseConnected = true;
       console.log('\n[SUPABASE] 🚀 Banco de dados PostgreSQL Conectado com Sucesso!');
@@ -90,6 +91,7 @@ function mapRowToAccount(row) {
     nickname: row.name,
     password: row.password || '',
     email: row.email || '',
+    birthDate: row.birth_date || '',
     googleLinked: !!row.google_linked,
     googleEmail: row.google_email || '',
     emailVerified: !!row.email_verified,
@@ -151,8 +153,9 @@ export async function createAccount(data) {
   const cleanNick = (data.name || data.nickname || '').trim().toUpperCase();
   const now = Date.now();
   const cleanEmail = (data.email || data.googleEmail || '').trim().toLowerCase();
-  const emailVerified = data.emailVerified !== undefined ? !!data.emailVerified : true;
-  const twoFactorEnabled = data.twoFactorEnabled !== undefined ? !!data.twoFactorEnabled : true;
+  const birthDate = (data.birthDate || '').trim();
+  const emailVerified = data.emailVerified !== undefined ? !!data.emailVerified : false;
+  const twoFactorEnabled = data.twoFactorEnabled !== undefined ? !!data.twoFactorEnabled : false;
 
   if (isSupabaseConnected) {
     try {
@@ -161,8 +164,8 @@ export async function createAccount(data) {
           name, password, email, google_linked, google_email,
           ranking_points, wins, losses, total_matches, total_medals,
           custom_bio, avatar_badge, created_at, last_seen,
-          email_verified, two_factor_enabled
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+          email_verified, two_factor_enabled, birth_date
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
         RETURNING *;
       `;
       const values = [
@@ -170,7 +173,7 @@ export async function createAccount(data) {
         data.password || '',
         cleanEmail,
         !!data.googleLinked,
-        data.googleLinked ? cleanEmail : '',
+        data.googleLinked ? (data.googleEmail || cleanEmail) : '',
         0, // Inicia em 0 RP
         0,
         0,
@@ -181,7 +184,8 @@ export async function createAccount(data) {
         now,
         now,
         emailVerified,
-        twoFactorEnabled
+        twoFactorEnabled,
+        birthDate
       ];
       const res = await pool.query(query, values);
       const acc = mapRowToAccount(res.rows[0]);
@@ -204,8 +208,9 @@ export async function createAccount(data) {
     nickname: cleanNick,
     password: data.password || '',
     email: cleanEmail,
+    birthDate,
     googleLinked: !!data.googleLinked,
-    googleEmail: data.googleLinked ? cleanEmail : '',
+    googleEmail: data.googleLinked ? (data.googleEmail || cleanEmail) : '',
     emailVerified,
     twoFactorEnabled,
     rankingPoints: 0,
@@ -227,31 +232,67 @@ export async function updateAccount(name, updates) {
   const cleanNick = (name || '').trim().toUpperCase();
   const now = Date.now();
 
+  const current = await getAccount(cleanNick);
+  if (!current) return null;
+
+  let targetNick = cleanNick;
+  if (updates.newNickname) {
+    const candidate = updates.newNickname.trim().toUpperCase().replace(/[^A-Z0-9_]/g, '').slice(0, 16);
+    if (candidate && candidate !== cleanNick) {
+      const existing = await getAccount(candidate);
+      if (existing) {
+        throw new Error(`O Nickname "${candidate}" já está em uso por outro piloto.`);
+      }
+      targetNick = candidate;
+    }
+  }
+
+  const newPass = updates.password !== undefined ? updates.password : current.password;
+  const newEmail = updates.email !== undefined ? updates.email.trim().toLowerCase() : current.email;
+  const newBirth = updates.birthDate !== undefined ? updates.birthDate.trim() : current.birthDate;
+  const newBio = updates.customBio !== undefined ? updates.customBio : current.customBio;
+  const newBadge = updates.avatarBadge !== undefined ? updates.avatarBadge : current.avatarBadge;
+  const newGoogleLinked = updates.googleLinked !== undefined ? !!updates.googleLinked : current.googleLinked;
+  const newGoogleEmail = updates.googleEmail !== undefined ? updates.googleEmail.trim().toLowerCase() : current.googleEmail;
+  const newEmailVerified = updates.emailVerified !== undefined ? !!updates.emailVerified : current.emailVerified;
+
   if (isSupabaseConnected) {
     try {
-      const current = await getAccount(cleanNick);
-      if (!current) return null;
-
-      const newPass = updates.password !== undefined ? updates.password : current.password;
-      const newBio = updates.customBio !== undefined ? updates.customBio : current.customBio;
-      const newBadge = updates.avatarBadge !== undefined ? updates.avatarBadge : current.avatarBadge;
-
       const query = `
         UPDATE accounts
-        SET password = $1, custom_bio = $2, avatar_badge = $3, last_seen = $4
-        WHERE UPPER(name) = $5
+        SET name = $1, password = $2, email = $3, birth_date = $4,
+            custom_bio = $5, avatar_badge = $6, google_linked = $7,
+            google_email = $8, email_verified = $9, last_seen = $10
+        WHERE UPPER(name) = $11
         RETURNING *;
       `;
-      const res = await pool.query(query, [newPass, newBio, newBadge, now, cleanNick]);
+      const values = [
+        targetNick,
+        newPass,
+        newEmail,
+        newBirth,
+        newBio,
+        newBadge,
+        newGoogleLinked,
+        newGoogleEmail,
+        newEmailVerified,
+        now,
+        cleanNick
+      ];
+      const res = await pool.query(query, values);
       if (res.rows.length > 0) {
         const acc = mapRowToAccount(res.rows[0]);
         const local = readLocalAccounts();
-        local[cleanNick] = acc;
+        if (targetNick !== cleanNick) {
+          delete local[cleanNick];
+        }
+        local[targetNick] = acc;
         writeLocalAccounts(local);
         return acc;
       }
     } catch (err) {
       console.error('[SUPABASE] Erro updateAccount:', err.message);
+      throw err;
     }
   }
 
@@ -260,14 +301,63 @@ export async function updateAccount(name, updates) {
   const existingKey = Object.keys(local).find(k => k.toUpperCase() === cleanNick);
   if (existingKey) {
     const acc = local[existingKey];
-    if (updates.customBio !== undefined) acc.customBio = updates.customBio;
-    if (updates.avatarBadge !== undefined) acc.avatarBadge = updates.avatarBadge;
-    if (updates.password !== undefined) acc.password = updates.password;
+    acc.name = targetNick;
+    acc.nickname = targetNick;
+    acc.password = newPass;
+    acc.email = newEmail;
+    acc.birthDate = newBirth;
+    acc.customBio = newBio;
+    acc.avatarBadge = newBadge;
+    acc.googleLinked = newGoogleLinked;
+    acc.googleEmail = newGoogleEmail;
+    acc.emailVerified = newEmailVerified;
     acc.lastSeen = now;
+
+    if (targetNick !== cleanNick) {
+      delete local[existingKey];
+      local[targetNick] = acc;
+    }
     writeLocalAccounts(local);
     return acc;
   }
   return null;
+}
+
+export async function deleteAccount(name) {
+  const cleanNick = (name || '').trim().toUpperCase();
+  if (!cleanNick) return false;
+
+  if (isSupabaseConnected) {
+    try {
+      await pool.query('DELETE FROM accounts WHERE UPPER(name) = $1', [cleanNick]);
+      console.log(`[SUPABASE] 🗑️ Conta ${cleanNick} excluída do PostgreSQL com sucesso.`);
+    } catch (err) {
+      console.error('[SUPABASE] Erro deleteAccount:', err.message);
+    }
+  }
+
+  const local = readLocalAccounts();
+  const key = Object.keys(local).find(k => k.toUpperCase() === cleanNick);
+  if (key) {
+    delete local[key];
+    writeLocalAccounts(local);
+    console.log(`[LOCAL_STORAGE] 🗑️ Conta ${cleanNick} removida de accounts.json.`);
+  }
+  return true;
+}
+
+export async function clearAllAccounts() {
+  if (isSupabaseConnected) {
+    try {
+      await pool.query('TRUNCATE TABLE accounts CASCADE;');
+      console.log('[SUPABASE] 🗑️ Todas as contas apagadas do PostgreSQL.');
+    } catch (err) {
+      console.error('[SUPABASE] Erro clearAllAccounts:', err.message);
+    }
+  }
+  writeLocalAccounts({});
+  console.log('[LOCAL_STORAGE] 🗑️ accounts.json limpo com sucesso.');
+  return true;
 }
 
 export async function saveMatchResult(winnerName, loserName, hpPercentRemaining = 50, turns = 3, medals = 10) {

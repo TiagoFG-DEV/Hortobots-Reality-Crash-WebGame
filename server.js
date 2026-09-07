@@ -7,8 +7,8 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
-import { initSupabase, getAccount, getAccountByEmail, createAccount, updateAccount, saveMatchResult, getLeaderboard, applyDraftPenalty as supabasePenalty, saveStoryToAccount, getStoryFromAccount } from './data/supabase.js';
-import { isGoogleEmail, start2FARegistration, verify2FARegistration, resend2FACode, getPreviewEmailHTML } from './data/email-service.js';
+import { initSupabase, getAccount, getAccountByEmail, createAccount, updateAccount, deleteAccount, clearAllAccounts, saveMatchResult, getLeaderboard, applyDraftPenalty as supabasePenalty, saveStoryToAccount, getStoryFromAccount } from './data/supabase.js';
+import { isGoogleEmail, start2FARegistration, verify2FARegistration, resend2FACode } from './data/email-service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -76,14 +76,20 @@ function sanitizeNick(raw) {
   return (raw || '').trim().replace(/[^a-zA-Z0-9_]/g, '').toUpperCase().slice(0, 16);
 }
 
-// ── AUTH 2FA: Início do Registro com E-mail Google Obrigatório ───────────
+// ── AUTH: Configurações Públicas do Google Client ID ───────────────────
+app.get('/api/auth/google-config', (req, res) => {
+  res.json({ clientId: process.env.GOOGLE_CLIENT_ID || '' });
+});
+
+// ── AUTH 2FA: Início do Registro com Envio de E-mail Real (Gmail) ────────
 app.post('/api/auth/register-2fa-start', async (req, res) => {
   try {
-    const { nickname, password, email } = req.body;
+    const { nickname, password, email, birthDate } = req.body;
     const result = await start2FARegistration({
       nickname,
       password,
       email,
+      birthDate,
       existingAccountsCheck: async (cleanNick, cleanEmail) => {
         const accDb = await getAccount(cleanNick);
         const emailDb = await getAccountByEmail(cleanEmail);
@@ -122,7 +128,7 @@ app.post('/api/auth/register-2fa-verify', async (req, res) => {
   }
 });
 
-// ── AUTH 2FA: Reenviar Código ──────────────────────────────────────────
+// ── AUTH 2FA: Reenviar Código ao Gmail ─────────────────────────────────
 app.post('/api/auth/register-2fa-resend', async (req, res) => {
   try {
     const { email } = req.body;
@@ -133,159 +139,232 @@ app.post('/api/auth/register-2fa-resend', async (req, res) => {
   }
 });
 
-// ── AUTH 2FA: Prévia do E-mail Estilizado Cyberpunk ────────────────────
-app.get(['/api/auth/preview-email', '/api/auth/preview-email/:email'], (req, res) => {
-  const targetEmail = req.params.email || req.query.email;
-  const html = getPreviewEmailHTML(targetEmail);
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.send(html);
+// ── AUTH: Cadastro Direto (Quando e-mail Google é deixado em branco) ───
+app.post('/api/auth/register-direct', async (req, res) => {
+  try {
+    const { nickname, password, birthDate } = req.body;
+    const cleanNick = sanitizeNick(nickname);
+    if (!cleanNick || cleanNick.length < 2) {
+      return res.status(400).json({ error: 'O NickName deve conter no mínimo 2 caracteres alfanuméricos.' });
+    }
+    if (!password || String(password).length < 8) {
+      return res.status(400).json({ error: 'A senha de acesso deve conter no mínimo 8 dígitos.' });
+    }
+
+    const existingAccount = await getAccount(cleanNick);
+    const accounts = readAccounts();
+    const existingKey = Object.keys(accounts).find(k => k.toUpperCase() === cleanNick);
+    if (existingAccount || existingKey) {
+      return res.status(409).json({ error: 'Esse NickName já está em uso por outro piloto.' });
+    }
+
+    const newAccount = await createAccount({
+      name: cleanNick,
+      nickname: cleanNick,
+      password: String(password),
+      birthDate: (birthDate || '').trim(),
+      email: '',
+      googleLinked: false,
+      googleEmail: '',
+      emailVerified: false,
+      twoFactorEnabled: false,
+      rankingPoints: 0,
+      wins: 0,
+      losses: 0,
+      totalMatches: 0,
+      totalMedals: 0,
+      customBio: 'Piloto Cadastrado no Sistema Mnemosyne',
+      avatarBadge: 'quezas',
+    });
+
+    res.status(201).json({ ok: true, account: newAccount, message: `Conta do piloto ${cleanNick} criada com sucesso!` });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
-// POST /api/auth/register — Cadastro de Conta (com Validação Google Obrigatória)
-app.post('/api/auth/register', async (req, res) => {
-  const { nickname, password, email, googleEmail, googleLinked } = req.body;
-  const cleanNick = sanitizeNick(nickname);
-  if (!cleanNick || cleanNick.length < 2) {
-    return res.status(400).json({ error: 'O NickName deve conter no mínimo 2 caracteres alfanuméricos.' });
+// ── AUTH: Login Padrão (Usuário e Senha) ────────────────────────────────
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { nickname, password } = req.body;
+    const cleanNick = sanitizeNick(nickname);
+    if (!cleanNick) {
+      return res.status(400).json({ error: 'Informe o NickName de piloto.' });
+    }
+
+    let acc = await getAccount(cleanNick);
+    if (!acc) {
+      return res.status(404).json({ error: 'Piloto não encontrado. Crie sua conta para começar.' });
+    }
+
+    if (acc.password && acc.password.length > 0 && String(acc.password) !== String(password || '')) {
+      return res.status(401).json({ error: 'Senha incorreta para este piloto.' });
+    }
+
+    acc = await updateAccount(cleanNick, { lastSeen: Date.now() });
+    res.json(acc);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-
-  if (!password || String(password).length < 8) {
-    return res.status(400).json({ error: 'A senha de acesso deve conter no mínimo 8 dígitos.' });
-  }
-
-  const primaryEmail = (email || googleEmail || '').trim().toLowerCase();
-  if (!isGoogleEmail(primaryEmail)) {
-    return res.status(400).json({ error: 'Obrigatório utilizar um e-mail do Google (@gmail.com ou @googlemail.com) para vincular à conta.' });
-  }
-
-  const existingAccount = await getAccount(cleanNick);
-  const accounts = readAccounts();
-  const existingKey = Object.keys(accounts).find(k => k.toUpperCase() === cleanNick);
-  if (existingAccount || existingKey) {
-    return res.status(409).json({ error: 'Esse NickName já está em uso por outro piloto.' });
-  }
-
-  const existingEmail = await getAccountByEmail(primaryEmail);
-  const emailInUse = Object.keys(accounts).find(k => (accounts[k].email === primaryEmail || accounts[k].googleEmail === primaryEmail));
-  if (existingEmail || emailInUse) {
-    return res.status(409).json({ error: 'Esse e-mail já está vinculado a outro piloto cadastrado.' });
-  }
-
-  const newAccount = await createAccount({
-    name: cleanNick,
-    nickname: cleanNick,
-    password: String(password),
-    email: primaryEmail,
-    googleLinked: true,
-    googleEmail: primaryEmail,
-    emailVerified: true,
-    twoFactorEnabled: true,
-    rankingPoints: 0, // Toda conta inicia obrigatoriamente com 0 RP
-    wins: 0,
-    losses: 0,
-    totalMatches: 0,
-    totalMedals: 0,
-    customBio: `Piloto Google Verificado (${primaryEmail})`,
-    avatarBadge: 'quezas',
-  });
-
-  res.status(201).json(newAccount);
 });
 
-app.post('/api/auth/login', (req, res) => {
-  const { nickname, password } = req.body;
-  const cleanNick = sanitizeNick(nickname);
-  if (!cleanNick) {
-    return res.status(400).json({ error: 'Informe o NickName de piloto.' });
-  }
+// ── AUTH: Login Oficial com Google (RESTRITO: Apenas Contas já VINCULADAS)
+app.post('/api/auth/google-verify', async (req, res) => {
+  try {
+    const { credential } = req.body;
+    if (!credential) {
+      return res.status(400).json({ error: 'Credencial Google ausente. Faça o login na janela oficial do Google.' });
+    }
 
-  const accounts = readAccounts();
-  const existingKey = Object.keys(accounts).find(k => k.toUpperCase() === cleanNick);
-  if (!existingKey) {
-    return res.status(404).json({ error: 'Piloto nÃ£o encontrado. Crie sua conta abaixo.' });
-  }
+    // Validação oficial do token com os servidores do Google
+    const googleRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`);
+    if (!googleRes.ok) {
+      return res.status(401).json({ error: 'Falha na validação do token oficial do Google.' });
+    }
 
-  const acc = accounts[existingKey];
-  // Se a conta tem senha cadastrada, valida
-  if (acc.password && acc.password.length > 0 && String(acc.password) !== String(password || '')) {
-    return res.status(401).json({ error: 'Senha incorreta para este piloto.' });
-  }
+    const tokenInfo = await googleRes.json();
+    const googleEmail = (tokenInfo.email || '').trim().toLowerCase();
+    if (!googleEmail) {
+      return res.status(400).json({ error: 'E-mail não identificado na conta Google.' });
+    }
 
-  acc.lastSeen = Date.now();
-  if (acc.rankingPoints === undefined) acc.rankingPoints = 0;
-  writeAccounts(accounts);
-  res.json(acc);
+    // Busca pela conta vinculada a esse e-mail Google
+    const acc = await getAccountByEmail(googleEmail);
+    if (!acc || !acc.googleLinked) {
+      return res.status(403).json({
+        error: `A conta Google (${googleEmail}) NÃO está vinculada a nenhum piloto. Apenas contas vinculadas podem usar esta função. Inicie sessão com usuário e senha para vincular sua conta Google na Central de Conta.`
+      });
+    }
+
+    res.json({
+      account: acc,
+      message: `Login com Google realizado com sucesso para o piloto ${acc.nickname || acc.name}!`
+    });
+  } catch (err) {
+    console.error('[AUTH_GOOGLE] Erro na verificação Google:', err.message);
+    res.status(500).json({ error: 'Erro ao verificar conta Google: ' + err.message });
+  }
 });
 
-// POST /api/auth/google â€” Login / VÃ­nculo com Conta Google
-app.post('/api/auth/google', (req, res) => {
-  const { googleEmail, googleName, desiredNick } = req.body;
-  const cleanEmail = (googleEmail || '').trim().toLowerCase();
-  if (!isValidEmail(cleanEmail)) {
-    return res.status(400).json({ error: 'E-mail Google inválido.' });
+// ── AUTH: Vincular Conta Google à Sessão Ativa ──────────────────────────
+app.post('/api/auth/google-link', async (req, res) => {
+  try {
+    const { nickname, credential } = req.body;
+    const cleanNick = sanitizeNick(nickname);
+    if (!cleanNick) return res.status(400).json({ error: 'Piloto não informado.' });
+    if (!credential) return res.status(400).json({ error: 'Credencial Google ausente.' });
+
+    const googleRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`);
+    if (!googleRes.ok) {
+      return res.status(401).json({ error: 'Token Google inválido.' });
+    }
+
+    const tokenInfo = await googleRes.json();
+    const googleEmail = (tokenInfo.email || '').trim().toLowerCase();
+    if (!googleEmail) return res.status(400).json({ error: 'E-mail não identificado no Google.' });
+
+    // Verifica se outra conta já usa esse e-mail Google
+    const existing = await getAccountByEmail(googleEmail);
+    if (existing && existing.name.toUpperCase() !== cleanNick) {
+      return res.status(409).json({ error: `O e-mail Google (${googleEmail}) já está vinculado ao piloto ${existing.name}.` });
+    }
+
+    const updated = await updateAccount(cleanNick, {
+      googleLinked: true,
+      googleEmail: googleEmail,
+      email: googleEmail,
+      emailVerified: true
+    });
+
+    res.json({
+      account: updated,
+      message: `Conta Google (${googleEmail}) vinculada com sucesso ao piloto ${cleanNick}!`
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-
-  const accounts = readAccounts();
-  // 1. Procura se alguma conta já está vinculada a esse email Google
-  const linkedKey = Object.keys(accounts).find(k => accounts[k].googleEmail === cleanEmail || accounts[k].email === cleanEmail);
-  if (linkedKey) {
-    const acc = accounts[linkedKey];
-    acc.lastSeen = Date.now();
-    if (acc.rankingPoints === undefined) acc.rankingPoints = 0;
-    acc.rankingPoints = Math.min(999, Math.max(0, acc.rankingPoints));
-    writeAccounts(accounts);
-    return res.json({ account: acc, isNew: false, message: `Login com Google realizado para ${acc.name}!` });
-  }
-
-  // 2. Cria nova conta
-  let candidateNick = sanitizeNick(desiredNick || googleName || cleanEmail.split('@')[0]);
-  if (!candidateNick || candidateNick.length < 2) candidateNick = `PILOT_${Date.now().toString().slice(-4)}`;
-
-  let finalNick = candidateNick;
-  let counter = 1;
-  while (Object.keys(accounts).some(k => k.toUpperCase() === finalNick)) {
-    finalNick = `${candidateNick.slice(0, 12)}_${counter++}`;
-  }
-
-  const newAcc = {
-    name: finalNick,
-    password: '',
-    email: cleanEmail,
-    googleLinked: true,
-    googleEmail: cleanEmail,
-    rankingPoints: 0, // Inicia em 0 RP
-    wins: 0,
-    losses: 0,
-    totalMatches: 0,
-    totalMedals: 0,
-    customBio: `Piloto vinculado via Google (${cleanEmail})`,
-    avatarBadge: 'quezas',
-    createdAt: Date.now(),
-    lastSeen: Date.now()
-  };
-
-  accounts[finalNick] = newAcc;
-  writeAccounts(accounts);
-  res.status(201).json({ account: newAcc, isNew: true, message: `Conta criada e vinculada ao Google: ${finalNick}!` });
 });
 
-app.put('/api/auth/profile', (req, res) => {
-  const { nickname, customBio, avatarBadge, newPassword } = req.body;
-  const cleanNick = sanitizeNick(nickname);
-  const accounts = readAccounts();
-  const existingKey = Object.keys(accounts).find(k => k.toUpperCase() === cleanNick);
-  if (!existingKey) {
-    return res.status(404).json({ error: 'Conta nÃ£o encontrada.' });
+// ── CONTA: Editar Dados da Conta (Nick, Senha, E-mail, Nascimento, etc.) ─
+app.put('/api/account', async (req, res) => {
+  try {
+    const targetNick = req.body.currentNick || req.body.nickname || req.body.name;
+    const cleanNick = sanitizeNick(targetNick);
+    if (!cleanNick) return res.status(400).json({ error: 'Identificação da conta ausente.' });
+
+    const acc = await getAccount(cleanNick);
+    if (!acc) return res.status(404).json({ error: 'Conta de piloto não encontrada.' });
+
+    // Validação de senha atual para alteração de dados sensíveis
+    if (acc.password && acc.password.length > 0) {
+      const sentPass = req.body.currentPassword !== undefined ? req.body.currentPassword : req.body.password;
+      if (String(acc.password) !== String(sentPass || '')) {
+        return res.status(401).json({ error: 'Senha atual incorreta. A confirmação de segurança é necessária para alterar os dados.' });
+      }
+    }
+
+    const updates = {};
+    const effectiveNewNick = req.body.newNick || req.body.newNickname;
+    if (effectiveNewNick && sanitizeNick(effectiveNewNick) !== cleanNick) {
+      updates.newNickname = sanitizeNick(effectiveNewNick);
+    }
+    const effectivePass = req.body.newPassword !== undefined ? req.body.newPassword : (req.body.password !== undefined && req.body.newNickname ? undefined : req.body.password);
+    if (effectivePass !== undefined && String(effectivePass).trim().length > 0) {
+      if (String(effectivePass).length < 8) {
+        return res.status(400).json({ error: 'A nova senha deve possuir no mínimo 8 dígitos.' });
+      }
+      updates.password = String(effectivePass);
+    }
+    if (req.body.email !== undefined) updates.email = String(req.body.email).trim().toLowerCase();
+    if (req.body.birthDate !== undefined) updates.birthDate = String(req.body.birthDate).trim();
+    if (req.body.customBio !== undefined) updates.customBio = String(req.body.customBio).slice(0, 80);
+    if (req.body.bio !== undefined) updates.customBio = String(req.body.bio).slice(0, 80);
+    if (req.body.avatarBadge !== undefined) updates.avatarBadge = String(req.body.avatarBadge).slice(0, 20);
+
+    const updatedAcc = await updateAccount(cleanNick, updates);
+    res.json({
+      account: updatedAcc,
+      message: 'Dados da conta atualizados com sucesso!'
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
+});
 
-  const acc = accounts[existingKey];
-  if (customBio !== undefined) acc.customBio = String(customBio).slice(0, 80);
-  if (avatarBadge) acc.avatarBadge = String(avatarBadge).slice(0, 20);
-  if (newPassword) acc.password = String(newPassword);
-  acc.lastSeen = Date.now();
+// ── CONTA: Deletar Conta Definitivamente (Apagar Registros) ─────────────
+app.delete('/api/account', async (req, res) => {
+  try {
+    const { nickname, password } = req.body;
+    const cleanNick = sanitizeNick(nickname);
+    if (!cleanNick) return res.status(400).json({ error: 'Identificação da conta ausente.' });
 
-  writeAccounts(accounts);
-  res.json(acc);
+    const acc = await getAccount(cleanNick);
+    if (!acc) return res.status(404).json({ error: 'Conta não encontrada.' });
+
+    if (acc.password && acc.password.length > 0) {
+      if (String(acc.password) !== String(password || '')) {
+        return res.status(401).json({ error: 'Senha incorreta para confirmar a exclusão definitiva da conta.' });
+      }
+    }
+
+    await deleteAccount(cleanNick);
+    res.json({
+      success: true,
+      message: `Conta do piloto ${cleanNick} e todos os seus registros foram excluídos permanentemente.`
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── ADMIN: Limpeza de Todas as Contas do Banco ──────────────────────────
+app.post('/api/admin/clear-all-accounts', async (req, res) => {
+  try {
+    await clearAllAccounts();
+    res.json({ success: true, message: 'Todas as contas foram limpas com sucesso do banco de dados.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // POST /api/accounts/match-result â€” Salvar resultado e atualizar Ranking
@@ -331,29 +410,32 @@ app.post('/api/accounts/match-result', (req, res) => {
   });
 });
 
-// GET /api/accounts/:name â€” busca dados da conta (compatibilidade)
-app.get('/api/accounts/:name', (req, res) => {
+// GET /api/accounts/:name — busca dados da conta (compatibilidade)
+app.get('/api/accounts/:name', async (req, res) => {
   const name = sanitizeNick(req.params.name);
   if (!name) return res.status(400).json({ error: 'Invalid name' });
 
-  const accounts = readAccounts();
-  const existingKey = Object.keys(accounts).find(k => k.toUpperCase() === name);
-  if (existingKey) {
-    const acc = accounts[existingKey];
+  const acc = await getAccount(name);
+  if (acc) {
     if (acc.rankingPoints === undefined) acc.rankingPoints = 0;
     return res.json(acc);
   }
 
-  res.status(404).json({ error: 'Conta nÃ£o encontrada' });
+  res.status(404).json({ error: 'Conta não encontrada' });
 });
 
-// GET /api/leaderboard â€” ranking ordenado por Ranking Points (RP) e vitÃ³rias
-app.get('/api/leaderboard', (req, res) => {
-  const accounts = readAccounts();
-  const sorted = Object.values(accounts)
-    .sort((a, b) => ((b.rankingPoints ?? 0) - (a.rankingPoints ?? 0)) || (b.wins - a.wins))
-    .slice(0, 15);
-  res.json(sorted);
+// GET /api/leaderboard — ranking ordenado por Ranking Points (RP) e vitórias
+app.get('/api/leaderboard', async (req, res) => {
+  try {
+    const list = await getLeaderboard(15);
+    res.json(list);
+  } catch {
+    const accounts = readAccounts();
+    const sorted = Object.values(accounts)
+      .sort((a, b) => ((b.rankingPoints ?? 0) - (a.rankingPoints ?? 0)) || (b.wins - a.wins))
+      .slice(0, 15);
+    res.json(sorted);
+  }
 });
 
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
