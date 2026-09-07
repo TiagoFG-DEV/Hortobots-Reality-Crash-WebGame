@@ -36,10 +36,7 @@ function showScreen(id) {
     ['titleScreen', 'storyScreen', 'elevatorScreen', 'battleScreen', 'endingScreen'].forEach(s => {
       $(s)?.classList.add('hidden');
     });
-    const biomeBadge = $('termBiomeBadge');
-    if (biomeBadge) biomeBadge.innerText = '[ MODO: VERSUS ]';
-    const partyBadge = $('termPartyBadge');
-    if (partyBadge) partyBadge.innerText = '[ EQUIPE: 3 ROBÔS ]';
+    $('storyHeaderBadges')?.classList.add('hidden');
 
     // O botão Home só aparece fora de duelos (ou seja, escondido na arena de duelo)
     const homeBtn = $('termHomeBtn');
@@ -58,10 +55,7 @@ function showTitle() {
   ['storyScreen', 'elevatorScreen', 'battleScreen', 'endingScreen'].forEach(s => {
     $(s)?.classList.add('hidden');
   });
-  const biomeBadge = $('termBiomeBadge');
-  if (biomeBadge) biomeBadge.innerText = '[ SETOR: FLORESTA DIGITAL ]';
-  const partyBadge = $('termPartyBadge');
-  if (partyBadge) partyBadge.innerText = '[ PARTY: 1/5 ]';
+  $('storyHeaderBadges')?.classList.add('hidden');
   $('titleScreen')?.classList.remove('hidden');
   getAudio().playBGM('title', 600);
 

@@ -1043,6 +1043,17 @@ export class TerminalGameApp {
         homeBtn.classList.remove('hidden');
       }
     }
+
+    // Badges de setor e equipe: só aparecem centralizadas no topo no modo história (storyScreen, elevatorScreen, battleScreen, endingScreen)
+    const storyBadges = document.getElementById('storyHeaderBadges');
+    const isStoryScreen = ['storyScreen', 'elevatorScreen', 'battleScreen', 'endingScreen'].includes(screenId);
+    if (storyBadges) {
+      if (isStoryScreen) {
+        storyBadges.classList.remove('hidden');
+      } else {
+        storyBadges.classList.add('hidden');
+      }
+    }
   }
 
   // ─── OVERLAY PRÉ-TÍTULO (Desbloqueio de Áudio ao primeiro input do usuário) ───
@@ -1164,16 +1175,16 @@ export class TerminalGameApp {
         led.classList.add('logged');
       }
       if (text) {
-        text.textContent = `PILOTO: ${nick.toUpperCase()} [${rp} RP] // CONECTADO`;
+        text.textContent = `PILOTO: ${nick.toUpperCase()} // ${rp} RP`;
       }
       if (btn) {
-        btn.textContent = '[ PERFIL / TROCAR CONTA ]';
+        btn.textContent = 'CONTA';
       }
       if (tapeLabel) {
         tapeLabel.textContent = `PILOTO: ${nick.toUpperCase()}`;
       }
       if (tapeSub) {
-        tapeSub.textContent = `[ CONECTADO // ${rp} RP // NUVEM ATIVA ]`;
+        tapeSub.textContent = `[ CONECTADO // ${rp} RP ]`;
       }
       if (tapeLed) {
         tapeLed.classList.add('active');
@@ -1184,16 +1195,16 @@ export class TerminalGameApp {
         led.classList.add('guest');
       }
       if (text) {
-        text.textContent = 'PILOTO: NÃO AUTENTICADO [MODO CONVIDADO]';
+        text.textContent = 'CONVIDADO';
       }
       if (btn) {
-        btn.textContent = '[ ENTRAR / CRIAR CONTA ]';
+        btn.textContent = 'INICIAR SESSÃO';
       }
       if (tapeLabel) {
-        tapeLabel.textContent = 'ENTRAR / CRIAR CONTA';
+        tapeLabel.textContent = 'INICIAR SESSÃO';
       }
       if (tapeSub) {
-        tapeSub.textContent = '[ SINCRONIZAR PROGRESSO NA NUVEM ]';
+        tapeSub.textContent = '[ SALVAR PROGRESSO ]';
       }
       if (tapeLed) {
         tapeLed.classList.remove('active');
