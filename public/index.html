@@ -14,52 +14,44 @@
 </head>
 
 <body>
+  <!-- CORTINA PRETA DE INICIALIZAÇÃO (CARREGA EM TELA PRETA E FAZ FADE OUT DEMORADO) -->
+  <div id="initialBootCurtain" class="initial-boot-curtain" style="position:fixed;inset:0;width:100vw;height:100vh;background:#000000;z-index:999999;pointer-events:none;"></div>
   <div class="crt-scanlines"></div>
   <div class="crt-vignette"></div>
   <div class="crt-fisheye-overlay"></div>
   <div class="crt-glass-glare"></div>
 
   <div class="crt-monitor-container">
-    <!-- OVERLAY PRÉ-TÍTULO CIBERNÉTICO 3D (TERMINAL DE DADOS BINÁRIOS & RESISTÊNCIA DO MUNDO REAL) -->
+    <!-- OVERLAY PRÉ-TÍTULO CIBERNÉTICO 3D (TERMINAL DE DADOS BINÁRIOS & SINCRONIZAÇÃO NEURAL) -->
     <div id="pressSpaceOverlay" class="press-space-overlay">
       <canvas id="preTitle3DCanvas" class="pre-title-3d-canvas"></canvas>
 
       <div class="pre-title-hud">
         <div class="pre-title-hud-top">
           <div class="pre-title-sys-tag">
-            <span class="hud-blink-dot"></span> [ TORRE DA GRANDE INTELIGÊNCIA // VIGILÂNCIA ]
+            <span class="hud-blink-dot"></span> [ TORRE DA GRANDE INTELIGÊNCIA ]
           </div>
           <div class="pre-title-status-tag" id="preTitleStatusTag">
-            STATUS: BUSCANDO SINAIS DE CONSCIÊNCIA HUMANA
+            STANDBY // AGUARDANDO SINCRONIZAÇÃO
           </div>
         </div>
 
         <div class="pre-title-center-core">
-          <div class="pre-title-reticle" id="preTitleReticle">
-            <div class="reticle-ring-outer"></div>
-            <div class="reticle-ring-ticks"></div>
-            <div class="reticle-ring-inner"></div>
-            <div class="reticle-glyph">
-              <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M12 2v3m0 14v3M2 12h3m14 0h3"></path>
-                <path d="m4.93 4.93 2.12 2.12m9.9 9.9 2.12 2.12M4.93 19.07l2.12-2.12m9.9-9.9 2.12-2.12"></path>
-              </svg>
-            </div>
-          </div>
 
           <div class="pre-title-action-badge">
-            <div class="pre-title-action-title" id="preTitleActionTitle">[ LEMBRAR QUE VOCÊ É REAL ]</div>
-            <div class="pre-title-action-desc" id="preTitleActionDesc">TOQUE QUALQUER TECLA PARA NÃO SER APENAS MAIS UMA LINHA DE CÓDIGO</div>
+            <div class="pre-title-action-desc" id="preTitleActionDesc">CLIQUE NA TELA PARA CONTINUAR</div>
           </div>
+
         </div>
+
+
 
         <div class="pre-title-hud-bottom">
           <div class="pre-title-metric">
-            <span class="term-dim">REDE:</span> <span class="pre-title-blue-text">MENTES DOMINADAS EM CONFORMIDADE</span>
+            <span class="term-dim">CANAL DE DADOS:</span> <span class="term-cyan">0x7F-QUANTUM</span>
           </div>
           <div class="pre-title-metric">
-            <span class="term-dim">MISSÃO:</span> <span class="pre-title-blue-text">RESGATAR O MUNDO REAL</span>
+            <span class="term-dim">SINAL:</span> <span class="term-gold">ATIVO (99.8%)</span>
           </div>
         </div>
       </div>
@@ -157,7 +149,8 @@
           </div>
 
           <!-- TAPE 02: CONTINUAR INVASÃO (SUBORDINADO / MENOS FOCO) -->
-          <div class="fnaf-tape-slot tape-compact-resume" id="termResumeBtn" data-target="elevatorScreen" role="button" tabindex="0">
+          <div class="fnaf-tape-slot tape-compact-resume" id="termResumeBtn" data-target="elevatorScreen" role="button"
+            tabindex="0">
             <div class="tape-slot-bracket">[ REC-02 ]</div>
             <div class="tape-slot-body">
               <span class="tape-cursor">></span>
@@ -291,7 +284,8 @@
 
             <!-- CARD CENTRAL DE AÇÃO E AVANÇO -->
             <div class="hub-next-action-card">
-              <div style="font-size: 0.85rem; color: var(--term-dim); letter-spacing: 2px; font-weight: 700;">CABINE DE COMANDO</div>
+              <div style="font-size: 0.85rem; color: var(--term-dim); letter-spacing: 2px; font-weight: 700;">CABINE DE
+                COMANDO</div>
               <div style="font-size: 1.1rem; color: var(--term-fg); margin: 6px 0 14px 0;">
                 Avance com sua equipe para o próximo setor da Torre Virtual.
               </div>
@@ -530,13 +524,13 @@
       <div class="result-content-card defeat">
         <div class="result-sys-tag alert">DERROTA</div>
         <h1 class="result-main-title defeat">SISTEMA EM COLAPSO</h1>
-            <p style="color: #ff3344; font-size: 1.15rem;">Sua equipe foi derrotada.</p>
-            <div class="result-badge-row">
-              <span class="result-badge alert">RETORNANDO AO PONTO SEGURO</span>
-            </div>
-            <div class="result-timer-bar">
-              <div class="result-timer-progress defeat" id="defeatTimerProgress"></div>
-            </div>
+        <p style="color: #ff3344; font-size: 1.15rem;">Sua equipe foi derrotada.</p>
+        <div class="result-badge-row">
+          <span class="result-badge alert">RETORNANDO AO PONTO SEGURO</span>
+        </div>
+        <div class="result-timer-bar">
+          <div class="result-timer-progress defeat" id="defeatTimerProgress"></div>
+        </div>
       </div>
     </div>
 
@@ -582,7 +576,8 @@
                   <div class="account-nick-row">
                     <span class="account-nick-label">PILOTO:</span>
                     <strong class="account-nick-val" id="accountNickVal">PILOTO</strong>
-                    <button class="account-mini-action-btn" id="accountTriggerEditNickBtn" type="button" title="Alterar Nickname">EDITAR</button>
+                    <button class="account-mini-action-btn" id="accountTriggerEditNickBtn" type="button"
+                      title="Alterar Nickname">EDITAR</button>
                   </div>
                   <div class="account-bio-val" id="accountBioVal">Piloto Registrado no Sistema Mnemosyne</div>
                 </div>
@@ -610,7 +605,8 @@
                 <div id="accountGoogleUnlinkedBanner" class="account-google-banner unlinked">
                   <div class="google-warning-title">⚠️ CONTA GOOGLE NÃO VINCULADA</div>
                   <p class="google-warning-desc">
-                    É necessário vincular uma conta Google oficial para utilizar a opção rápida <strong>"Entrar com Google"</strong> na tela de login.
+                    É necessário vincular uma conta Google oficial para utilizar a opção rápida <strong>"Entrar com
+                      Google"</strong> na tela de login.
                   </p>
                   <div id="gsiLinkBtnWrapper" class="gsi-link-btn-wrapper" style="margin-top: 8px;"></div>
                 </div>
@@ -665,11 +661,13 @@
               <p class="account-modal-desc">Escolha seu novo identificador alfanumérico (2 a 16 caracteres):</p>
               <div class="account-input-group">
                 <label class="account-label" for="accountNewNickInput">NOVO NICKNAME</label>
-                <input type="text" id="accountNewNickInput" class="account-input" maxlength="16" placeholder="Novo Nick..." autocomplete="off" />
+                <input type="text" id="accountNewNickInput" class="account-input" maxlength="16"
+                  placeholder="Novo Nick..." autocomplete="off" />
               </div>
               <div class="account-input-group" style="margin-top: 8px;">
                 <label class="account-label" for="accountConfirmPassForNick">SENHA ATUAL (CONFIRMAÇÃO)</label>
-                <input type="password" id="accountConfirmPassForNick" class="account-input" placeholder="Digite sua senha..." />
+                <input type="password" id="accountConfirmPassForNick" class="account-input"
+                  placeholder="Digite sua senha..." />
               </div>
               <div class="account-modal-actions">
                 <button class="term-btn cyan" id="accountSaveNickBtn" type="button">SALVAR NOVO NICK</button>
@@ -684,11 +682,13 @@
               <div class="account-modal-title">> ALTERAR SENHA DE ACESSO</div>
               <div class="account-input-group">
                 <label class="account-label" for="accountCurrentPassInput">SENHA ATUAL</label>
-                <input type="password" id="accountCurrentPassInput" class="account-input" placeholder="Senha atual..." />
+                <input type="password" id="accountCurrentPassInput" class="account-input"
+                  placeholder="Senha atual..." />
               </div>
               <div class="account-input-group" style="margin-top: 8px;">
                 <label class="account-label" for="accountNewPassInput">NOVA SENHA (MÍNIMO 8 DÍGITOS)</label>
-                <input type="password" id="accountNewPassInput" class="account-input" placeholder="Nova senha..." minlength="8" />
+                <input type="password" id="accountNewPassInput" class="account-input" placeholder="Nova senha..."
+                  minlength="8" />
               </div>
               <div class="account-modal-actions">
                 <button class="term-btn cyan" id="accountSavePassBtn" type="button">ATUALIZAR SENHA</button>
@@ -702,14 +702,17 @@
             <div class="account-modal-card danger-card">
               <div class="account-modal-title danger">> EXCLUSÃO DEFINITIVA DE CONTA</div>
               <p class="account-modal-desc danger">
-                ATENÇÃO: Esta ação é irreversível. Todos os registros, pontos de ranking, histórico e saves serão permanentemente apagados do banco de dados.
+                ATENÇÃO: Esta ação é irreversível. Todos os registros, pontos de ranking, histórico e saves serão
+                permanentemente apagados do banco de dados.
               </p>
               <div class="account-input-group">
                 <label class="account-label" for="accountDeletePassInput">CONFIRME SUA SENHA PARA APAGAR</label>
-                <input type="password" id="accountDeletePassInput" class="account-input" placeholder="Digite sua senha..." />
+                <input type="password" id="accountDeletePassInput" class="account-input"
+                  placeholder="Digite sua senha..." />
               </div>
               <div class="account-modal-actions">
-                <button class="term-btn red-danger" id="accountConfirmDeleteBtn" type="button">SIM, APAGAR DEFINITIVAMENTE</button>
+                <button class="term-btn red-danger" id="accountConfirmDeleteBtn" type="button">SIM, APAGAR
+                  DEFINITIVAMENTE</button>
                 <button class="term-btn ghost" id="accountCancelDeleteBtn" type="button">CANCELAR</button>
               </div>
             </div>
@@ -725,12 +728,13 @@
             <div class="account-guest-brand-panel">
               <div class="brand-panel-tag">TERMINAL CENTRAL // ID MNEMOSYNE</div>
               <div class="brand-ascii-art">
-  [ HORTOBOTS ]
-  REALITY CLASH
+                [ HORTOBOTS ]
+                REALITY CLASH
               </div>
               <h3 class="brand-panel-title">AUTENTICAÇÃO DE PILOTO</h3>
               <p class="brand-panel-desc">
-                Inicie sua sessão ou cadastre sua credencial para sincronizar seu save na Torre Virtual, registrar pontos de ranking (RP) e combater na Arena Versus.
+                Inicie sua sessão ou cadastre sua credencial para sincronizar seu save na Torre Virtual, registrar
+                pontos de ranking (RP) e combater na Arena Versus.
               </p>
               <div class="brand-feature-list">
                 <div class="feature-item"><span class="feature-dot"></span> Sincronização em Nuvem Supabase</div>
@@ -752,22 +756,26 @@
                 <form id="accountLoginActualForm" onsubmit="return false;">
                   <div class="account-input-group">
                     <label class="account-label" for="accountLoginNick">NOME DE USUÁRIO</label>
-                    <input type="text" id="accountLoginNick" class="account-input" placeholder="Seu nome de usuário..." maxlength="16" autocomplete="username" required />
+                    <input type="text" id="accountLoginNick" class="account-input" placeholder="Seu nome de usuário..."
+                      maxlength="16" autocomplete="username" required />
                   </div>
 
                   <div class="account-input-group" style="margin-top: 10px;">
                     <label class="account-label" for="accountLoginPass">SENHA</label>
-                    <input type="password" id="accountLoginPass" class="account-input" placeholder="Digite sua senha..." maxlength="32" autocomplete="current-password" required />
+                    <input type="password" id="accountLoginPass" class="account-input" placeholder="Digite sua senha..."
+                      maxlength="32" autocomplete="current-password" required />
                   </div>
 
-                  <button class="term-btn gold account-submit-btn" id="accountLoginSubmitBtn" type="submit" style="margin-top: 14px;">
+                  <button class="term-btn gold account-submit-btn" id="accountLoginSubmitBtn" type="submit"
+                    style="margin-top: 14px;">
                     ENTRAR
                   </button>
                 </form>
 
                 <!-- LEGENDA EXATA SOLICITADA PELO USUÁRIO -->
                 <div class="account-switch-caption" style="margin-top: 12px;">
-                  Não possui conta? <a id="accountToggleToRegister" href="javascript:void(0);" class="account-link-action">Crie uma!</a>
+                  Não possui conta? <a id="accountToggleToRegister" href="javascript:void(0);"
+                    class="account-link-action">Crie uma!</a>
                 </div>
 
                 <!-- DIVISÃO DE SESSÃO COM LINHA -->
@@ -792,7 +800,9 @@
                 <form id="accountRegActualForm" onsubmit="return false;">
                   <div class="account-input-group">
                     <label class="account-label" for="accountRegNick">NOME DE USUÁRIO</label>
-                    <input type="text" id="accountRegNick" class="account-input" placeholder="Seu nome de usuário (ex: QUEZAS_01)" minlength="2" maxlength="16" autocomplete="off" required />
+                    <input type="text" id="accountRegNick" class="account-input"
+                      placeholder="Seu nome de usuário (ex: QUEZAS_01)" minlength="2" maxlength="16" autocomplete="off"
+                      required />
                   </div>
 
                   <div class="account-input-group" style="margin-top: 8px;">
@@ -802,24 +812,29 @@
 
                   <div class="account-input-group" style="margin-top: 8px;">
                     <label class="account-label" for="accountRegGoogleEmail">E-MAIL DO GMAIL (OBRIGATÓRIO)</label>
-                    <input type="email" id="accountRegGoogleEmail" class="account-input" placeholder="seu-email@gmail.com" required />
+                    <input type="email" id="accountRegGoogleEmail" class="account-input"
+                      placeholder="seu-email@gmail.com" required />
                     <div class="account-field-note">
-                      * É obrigatório vincular seu Gmail. Enviaremos um código real de 6 dígitos para o seu Gmail para validação de segurança e ativação da conta.
+                      * É obrigatório vincular seu Gmail. Enviaremos um código real de 6 dígitos para o seu Gmail para
+                      validação de segurança e ativação da conta.
                     </div>
                   </div>
 
                   <div class="account-input-group" style="margin-top: 8px;">
                     <label class="account-label" for="accountRegPass">SENHA (MÍNIMO 8 CARACTERES)</label>
-                    <input type="password" id="accountRegPass" class="account-input" placeholder="Mínimo 8 dígitos..." minlength="8" maxlength="32" autocomplete="new-password" required />
+                    <input type="password" id="accountRegPass" class="account-input" placeholder="Mínimo 8 dígitos..."
+                      minlength="8" maxlength="32" autocomplete="new-password" required />
                   </div>
 
-                  <button class="term-btn cyan account-submit-btn" id="accountRegSubmitBtn" type="submit" style="margin-top: 14px;">
+                  <button class="term-btn cyan account-submit-btn" id="accountRegSubmitBtn" type="submit"
+                    style="margin-top: 14px;">
                     CONCLUIR CADASTRO
                   </button>
                 </form>
 
                 <div class="account-switch-caption" style="margin-top: 12px;">
-                  Já possui conta? <a id="accountToggleToLogin" href="javascript:void(0);" class="account-link-action">Entrar</a>
+                  Já possui conta? <a id="accountToggleToLogin" href="javascript:void(0);"
+                    class="account-link-action">Entrar</a>
                 </div>
               </div>
 
@@ -836,12 +851,14 @@
                     <strong id="account2FAEmailDisplay" class="highlight-cyan">...</strong>
                   </p>
                   <div class="account-2fa-notice">
-                    Abra o seu <strong>Gmail</strong> (caixa de entrada ou spam) e insira o código de 6 dígitos recebido:
+                    Abra o seu <strong>Gmail</strong> (caixa de entrada ou spam) e insira o código de 6 dígitos
+                    recebido:
                   </div>
 
                   <div class="account-input-group" style="margin: 16px 0;">
                     <label class="account-label" for="account2FACodeInput">CÓDIGO DE 6 DÍGITOS</label>
-                    <input type="text" id="account2FACodeInput" class="account-input code-input" placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="one-time-code" />
+                    <input type="text" id="account2FACodeInput" class="account-input code-input" placeholder="000000"
+                      maxlength="6" inputmode="numeric" autocomplete="one-time-code" />
                   </div>
 
                   <button class="term-btn cyan account-submit-btn" id="account2FAConfirmBtn" type="button">
@@ -944,7 +961,7 @@
         <div class="versus-room-header">
           <div class="versus-room-tag">MULTIPLAYER</div>
           <h1 class="versus-room-title">SALAS ONLINE</h1>
-              <p class="versus-room-sub">Crie uma sala privada, entre com código ou busque duelo na fila global.</p>
+          <p class="versus-room-sub">Crie uma sala privada, entre com código ou busque duelo na fila global.</p>
         </div>
 
         <div class="versus-room-grid three-columns">
@@ -992,7 +1009,8 @@
               <div class="room-code-label">SALA CONECTADA:</div>
               <div class="room-code-badge joined" id="versusGuestCodeBadge">HORT-???</div>
               <div class="room-peer-status highlight-status" id="versusGuestHostStatus">ESPERANDO POR DUELISTA</div>
-              <button class="versus-action-btn ready-btn active" id="versusGuestReadyBtn" type="button" disabled>ESTOU PRONTO</button>
+              <button class="versus-action-btn ready-btn active" id="versusGuestReadyBtn" type="button" disabled>ESTOU
+                PRONTO</button>
             </div>
           </div>
 
@@ -1005,7 +1023,8 @@
 
             <div id="versusQueueInitialBox">
               <div class="versus-queue-rp-badge">SEU RANKING: <strong id="versusQueuePlayerRP">0 RP</strong></div>
-              <button class="versus-action-btn ranked pulse-btn" id="versusStartQueueBtn" type="button">BUSCAR DUELO</button>
+              <button class="versus-action-btn ranked pulse-btn" id="versusStartQueueBtn" type="button">BUSCAR
+                DUELO</button>
             </div>
 
 
@@ -1090,7 +1109,8 @@
           <div class="versus-deck-section" id="versusDraftSection">
             <!-- Barra de Status do Piloto na Seleção de Campeões -->
             <div class="draft-pilot-status-bar" id="draftPilotStatusBar">
-              <span class="draft-pilot-tag" id="draftPlayerPilotTag">[ PILOTO: <strong id="draftPlayerPilotName">PILOTO</strong> ]</span>
+              <span class="draft-pilot-tag" id="draftPlayerPilotTag">[ PILOTO: <strong
+                  id="draftPlayerPilotName">PILOTO</strong> ]</span>
               <span class="draft-status-tag" id="draftPlayerStatusTag">[ STATUS: SELECIONANDO (0/3) ]</span>
             </div>
             <div class="versus-compact-draft-grid" id="versusRobotGrid"></div>
@@ -1461,7 +1481,8 @@
   </div>
 
   <!-- MODAL: Prévia do E-mail Estilizado 2FA -->
-  <div id="emailPreviewModal" class="settings-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="emailPreviewTitle">
+  <div id="emailPreviewModal" class="settings-modal-overlay hidden" role="dialog" aria-modal="true"
+    aria-labelledby="emailPreviewTitle">
     <div class="settings-modal-box email-preview-modal-box">
       <div class="settings-modal-scanlines"></div>
       <div class="settings-modal-header">

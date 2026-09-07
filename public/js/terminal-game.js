@@ -1066,6 +1066,27 @@ export class TerminalGameApp {
       this.engine3D.initPreTitleBinary3D('preTitle3DCanvas');
     }
 
+    // Efeito de Boot: Cortina de tela 100% preta com fade-out bem demorado para a chuva de dados
+    const bootCurtain = document.getElementById('initialBootCurtain') || document.getElementById('preTitleBlackCurtain');
+    if (bootCurtain) {
+      const triggerFadeOut = () => {
+        setTimeout(() => {
+          bootCurtain.classList.add('fade-out');
+          setTimeout(() => {
+            if (bootCurtain && bootCurtain.parentElement) {
+              bootCurtain.remove();
+            }
+          }, 2700);
+        }, 700);
+      };
+
+      if (document.readyState === 'complete') {
+        triggerFadeOut();
+      } else {
+        window.addEventListener('load', triggerFadeOut, { once: true });
+      }
+    }
+
     let hasTriggered = false;
 
     const finishDismiss = () => {
@@ -1081,6 +1102,10 @@ export class TerminalGameApp {
     const triggerNeuralSync = (e) => {
       if (hasTriggered) return;
       hasTriggered = true;
+
+      if (bootCurtain && bootCurtain.parentElement) {
+        bootCurtain.remove();
+      }
 
       // Feedback visual imediato no HUD holográfico
       const reticle = document.getElementById('preTitleReticle');
