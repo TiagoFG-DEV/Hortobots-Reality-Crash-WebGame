@@ -13,10 +13,21 @@ import { isGoogleEmail, start2FARegistration, verify2FARegistration, resend2FACo
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Carregamento automático de variáveis (.env.pvp ou .env, incluindo Secret Files do Render)
+if (typeof process.loadEnvFile === 'function') {
+  const envPvp = path.join(__dirname, '.env.pvp');
+  const envDefault = path.join(__dirname, '.env');
+  if (fs.existsSync(envPvp)) {
+    try { process.loadEnvFile(envPvp); } catch (e) { console.warn('[ENV] Falha ao carregar .env.pvp:', e.message); }
+  } else if (fs.existsSync(envDefault)) {
+    try { process.loadEnvFile(envDefault); } catch (e) { console.warn('[ENV] Falha ao carregar .env:', e.message); }
+  }
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
-const WS_PORT = process.env.WS_PORT || 3001;
-const PVP_MODE = process.env.PVP_MODE === 'true';
+const WS_PORT = process.env.WS_PORT || PORT;
+const PVP_MODE = process.env.PVP_MODE !== 'false';
 
 // â”€â”€ JSON body parser â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.use(express.json());
