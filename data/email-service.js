@@ -1,7 +1,5 @@
 // data/email-service.js — Sistema de Autenticação 2FA & E-mails Estilizados Cyberpunk
 // Hortobots: Reality Clash // Quezas-DOS 1.0 (Mnemosyne Terminal)
-import nodemailer from 'nodemailer';
-
 // Armazenamento em memória de registros pendentes de 2FA
 // email -> { nickname, password, email, code, createdAt, expiresAt }
 export const pending2FARegistrations = new Map();
@@ -12,32 +10,6 @@ export function isGoogleEmail(email) {
   const clean = email.trim().toLowerCase();
   const googleRegex = /^[a-zA-Z0-9._%+-]+@(gmail\.com|googlemail\.com)$/i;
   return googleRegex.test(clean);
-}
-
-// Configuração do Transportador Nodemailer
-let mailTransporter = null;
-function getTransporter() {
-  if (mailTransporter) return mailTransporter;
-
-  const host = process.env.SMTP_HOST;
-  const user = (process.env.SMTP_USER || process.env.GMAIL_USER || '').trim();
-  const rawPass = (process.env.SMTP_PASS || process.env.GMAIL_PASS || '').trim();
-  const pass = rawPass.replace(/\s+/g, '');
-
-  if (host && user && pass) {
-    mailTransporter = nodemailer.createTransport({
-      host,
-      port: parseInt(process.env.SMTP_PORT || '587', 10),
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: { user, pass },
-    });
-  } else if (user && pass) {
-    mailTransporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: { user, pass },
-    });
-  }
-  return mailTransporter;
 }
 
 // Gerador de Template HTML Estilizado Cyberpunk CRT
@@ -231,75 +203,51 @@ export function generateCyberpunkEmailHTML({ nickname, email, code }) {
 </html>`;
 }
 
-// Envio de E-mail Real via SMTP
+// Envio de E-mail Real via Resend HTTP API (Porta 443 HTTPS - compatível com Render sem bloqueio)
 export async function send2FAVerificationEmail({ nickname, email, code }) {
   const cleanEmail = email.trim().toLowerCase();
   const html = generateCyberpunkEmailHTML({ nickname, email: cleanEmail, code });
+  const resendApiKey = (process.env.RESEND_API_KEY || '').trim();
 
-  // 1. Envio via Resend HTTP API (Porta 443 HTTPS - compatível com Render sem bloqueio)
-  const resendApiKey = process.env.RESEND_API_KEY;
-  if (resendApiKey) {
-    try {
-      const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${resendApiKey.trim()}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: process.env.RESEND_FROM || 'Hortobots <onboarding@resend.dev>',
-          to: [cleanEmail],
-          subject: `[HORTOBOTS] Código de Confirmação: ${code}`,
-          html,
-        }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || JSON.stringify(data));
-      console.log(`[2FA] ✅ E-mail enviado com sucesso via Resend HTTP API para: ${cleanEmail}`);
-      return {
-        success: true,
-        sentRealEmail: true,
-        message: `Código de verificação enviado para ${cleanEmail}. Verifique sua caixa de entrada.`
-      };
-    } catch (apiErr) {
-      console.error('[2FA] ⚠️ Erro no envio via Resend HTTP API:', apiErr.message);
-      // prossegue para tentar SMTP como fallback
-    }
-  }
-
-  // 2. Envio via SMTP Tradicional (Nodemailer)
-  const transporter = getTransporter();
-  let emailSent = false;
-  let errorDetail = null;
-
-  if (transporter) {
-    try {
-      await transporter.sendMail({
-        from: `"HORTOBOTS" <${process.env.SMTP_FROM || process.env.SMTP_USER || process.env.GMAIL_USER || 'central@hortobots.game'}>`,
-        to: cleanEmail,
-        subject: `[HORTOBOTS] Código de Confirmação: ${code}`,
-        text: `HORTOBOTS VERIFICAÇÃO DE PILOTO\nPiloto: ${nickname}\nCódigo de Confirmação: ${code}\nValidade: 15 minutos.\nUse este código no jogo para ativar sua conta.`,
-        html,
-      });
-      emailSent = true;
-      console.log(`[2FA] ✅ E-mail de verificação real enviado com sucesso para: ${cleanEmail}`);
-    } catch (err) {
-      errorDetail = err.message;
-      console.error(`[2FA] ❌ Erro ao enviar e-mail via SMTP (${cleanEmail}):`, err.message);
-      console.warn(`[2FA] 🔑 CHAVE 2FA DE SEGURANÇA PARA [${nickname}] (${cleanEmail}): >>> ${code} <<<`);
-      throw new Error(`Falha no envio para o Gmail (${cleanEmail}): ${err.message}. No Render (plano gratuito), portas SMTP são bloqueadas. Utilize Resend HTTP API ou consulte os logs.`);
-    }
-  } else {
-    console.warn(`[2FA] ⚠️ SMTP não configurado (SMTP_USER / SMTP_PASS ausentes no .env).`);
+  if (!resendApiKey) {
+    console.warn(`[2FA] ⚠️ RESEND_API_KEY ausente no arquivo .env.`);
     console.warn(`[2FA] 🔑 CHAVE 2FA DE SEGURANÇA PARA [${nickname}] (${cleanEmail}): >>> ${code} <<<`);
-    throw new Error('Servidor de e-mail SMTP não configurado. Adicione SMTP_USER e SMTP_PASS no .env.');
+    throw new Error('Serviço de envio de e-mail não configurado. Adicione RESEND_API_KEY no arquivo .env.');
   }
 
-  return {
-    success: true,
-    sentRealEmail: emailSent,
-    message: `Código de verificação enviado para o seu e-mail Gmail (${cleanEmail}). Verifique sua caixa de entrada.`
-  };
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: process.env.RESEND_FROM || 'Hortobots <onboarding@resend.dev>',
+        to: [cleanEmail],
+        subject: `[HORTOBOTS] Código de Confirmação: ${code}`,
+        html,
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      const errMsg = data.message || JSON.stringify(data);
+      console.error(`[2FA] ❌ Erro ao enviar e-mail via Resend (${cleanEmail}):`, errMsg);
+      console.warn(`[2FA] 🔑 CHAVE 2FA DE SEGURANÇA PARA [${nickname}] (${cleanEmail}): >>> ${code} <<<`);
+      throw new Error(`Falha no envio de e-mail (Resend): ${errMsg}`);
+    }
+
+    console.log(`[2FA] ✅ E-mail 2FA enviado com sucesso via Resend para: ${cleanEmail}`);
+    return {
+      success: true,
+      sentRealEmail: true,
+      message: `Código de verificação enviado para o seu e-mail (${cleanEmail}). Verifique sua caixa de entrada.`
+    };
+  } catch (err) {
+    console.warn(`[2FA] 🔑 CHAVE 2FA DE SEGURANÇA PARA [${nickname}] (${cleanEmail}): >>> ${code} <<<`);
+    throw err;
+  }
 }
 
 // Inicia o processo de registro com 2FA
