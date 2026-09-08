@@ -1246,14 +1246,87 @@ network.addEventListener('match_found', (e) => {
 });
 
 // ════════════════════════════════════════════════════════════════════
+// ESTADOS DE SINCRONIZAÇÃO PVP & TIMERS
+// ════════════════════════════════════════════════════════════════════
+let isDraftConfirmed = false;
+let isPlayerTurnReady = false;
+let isEnemyTurnReady = false;
+let isCoinDuelResolved = false;
+let coinDuelCountdownInterval = null;
+
+// Cinemática de Contagem Pré-Draft: 3, 2, 1, PREPAREM-SE!
+async function runPreDraftCinematic() {
+  const cinematic = $('versusPreDraftCinematic');
+  if (!cinematic) return;
+
+  const countEl = $('versusPreDraftCount');
+  const titleEl = $('versusPreDraftTitle');
+
+  cinematic.classList.remove('hidden');
+
+  const steps = [
+    { count: '3', title: 'PREPAREM-SE!' },
+    { count: '2', title: 'PREPAREM-SE!' },
+    { count: '1', title: 'PREPAREM-SE!' },
+    { count: '⚡', title: 'FASE DE RECRUTAMENTO!' }
+  ];
+
+  for (const step of steps) {
+    if (countEl) {
+      countEl.textContent = step.count;
+      countEl.classList.add('pulse');
+      setTimeout(() => countEl.classList.remove('pulse'), 250);
+    }
+    if (titleEl) titleEl.textContent = step.title;
+
+    try {
+      const audio = getAudio();
+      if (audio && audio.playSFX) audio.playSFX('select');
+    } catch (_) {}
+
+    await delay(750);
+  }
+
+  cinematic.classList.add('hidden');
+}
+
+// ════════════════════════════════════════════════════════════════════
 // SECTION 3 — Entrada na Estação Unificada & Draft em Tempo Real
 // ════════════════════════════════════════════════════════════════════
 async function enterUnifiedArena(mode) {
   showScreen('versusArenaScreen');
-  // Mantém Lizardilhas POP Theme durante a fase de draft (mesma chave do menu versus)
+  // Mantém Lizardilhas POP Theme durante a fase de draft
   const audio = getAudio();
   if (audio.currentTrack !== 'versusLobby') audio.playBGM('versusLobby', 600);
 
+  // 1. Executa a Cinemática Pré-Draft obrigatória (3, 2, 1, PREPAREM-SE!)
+  await runPreDraftCinematic();
+
+  // Controle de visibilidade do botão de Sair do Treinamento
+  const trainingExitBtn = $('versusTrainingExitBtn');
+  if (trainingExitBtn) {
+    if (mode === 'bot') {
+      trainingExitBtn.classList.remove('hidden');
+    } else {
+      trainingExitBtn.classList.add('hidden');
+    }
+  }
+
+  // Reseta estados de prontidão para a fase de draft
+  isDraftConfirmed = false;
+  isPlayerTurnReady = false;
+  isEnemyTurnReady = false;
+
+  const playerReadyTag = $('versusPlayerReadyTag');
+  if (playerReadyTag) {
+    playerReadyTag.textContent = 'DECIDINDO...';
+    playerReadyTag.className = 'versus-round-ready-tag deciding';
+  }
+  const enemyReadyTag = $('versusEnemyReadyTag');
+  if (enemyReadyTag) {
+    enemyReadyTag.textContent = 'DECIDINDO...';
+    enemyReadyTag.className = 'versus-round-ready-tag deciding';
+  }
 
   // Carrega configuração de energia de habilidades (1 a 5 níveis)
   await engine.loadEnergyConfig();
@@ -1305,6 +1378,22 @@ async function enterUnifiedArena(mode) {
   updateArenaHUD();
   updateGuide('RECRUTAMENTO: Escolha 3 robôs para suas linhas', 'Clique em um robô da lista para posicioná-lo no tabuleiro.');
   addLog('Estação de combate energizada. Custos de energia carregados.', 'info');
+}
+
+// Botão de saída imediata do Modo Treino
+$('versusTrainingExitBtn')?.addEventListener('click', () => {
+  exitTrainingMode();
+});
+
+function exitTrainingMode() {
+  if (board) board.stop();
+  engine.reset();
+  isClashRunning = false;
+  $('versusTrainingExitBtn')?.classList.add('hidden');
+  const audio = getAudio();
+  if (audio) audio.playBGM('versusLobby', 400);
+  showScreen('versusModeSelectScreen');
+  addLog('Sessão de treinamento encerrada. Retornando ao menu.', 'info');
 }
 
 function buildCompactDraftList() {
@@ -1415,6 +1504,13 @@ function updateDraftUI() {
   const confirmBtn = $('versusConfirmTeamBtn');
   if (confirmBtn) {
     confirmBtn.disabled = selectedRobotIds.length !== 3;
+    if (isDraftConfirmed) {
+      confirmBtn.textContent = 'CANCELAR PREPARAÇÃO (3/3)';
+      confirmBtn.classList.add('canceling');
+    } else {
+      confirmBtn.textContent = `CONFIRMAR ESCALAÇÃO (${selectedRobotIds.length}/3)`;
+      confirmBtn.classList.remove('canceling');
+    }
   }
 
   if (selectedRobotIds.length === 0) {
@@ -1424,30 +1520,219 @@ function updateDraftUI() {
   } else if (selectedRobotIds.length === 2) {
     updateGuide('RECRUTAMENTO: Selecione o 3º robô', 'O terceiro robô assumirá a Linha 3 no tabuleiro.');
   } else {
-    updateGuide('ESCALAÇÃO COMPLETA! Pronto para o Combate', 'Clique em [CONFIRMAR ESCALAÇÃO] para iniciar o Round 1.');
+    if (isDraftConfirmed) {
+      updateGuide('AGUARDANDO ADVERSÁRIO', 'Sua escalação está pronta. Aguarde ambos os pilotos estarem preparados.');
+    } else {
+      updateGuide('ESCALAÇÃO COMPLETA! Pronto para o Combate', 'Clique em [CONFIRMAR ESCALAÇÃO] para indicar que está pronto.');
+    }
   }
 }
 
 // ════════════════════════════════════════════════════════════════════
-// SECTION 4 — Início do Combate & Sorteio de Iniciativa
+// SECTION 4 — Duelo ao Meio-Dia (Cara ou Coroa) & Início do Combate
 // ════════════════════════════════════════════════════════════════════
 $('versusConfirmTeamBtn')?.addEventListener('click', async () => {
   if (selectedRobotIds.length !== 3) return;
 
+  if (currentMode === 'ranked') {
+    if (!isDraftConfirmed) {
+      // 1. Marca PREPARADO e envia ao servidor
+      isDraftConfirmed = true;
+      updateDraftUI();
+      isPlayerTurnReady = true;
+      updateArenaHUD();
+      addLog('Escalação confirmada! Aguardando o oponente no servidor...', 'info');
+      network.confirmDraft(selectedRobotIds);
+    } else {
+      // 2. Cancela a prontidão caso clicado novamente
+      isDraftConfirmed = false;
+      updateDraftUI();
+      isPlayerTurnReady = false;
+      updateArenaHUD();
+      addLog('Preparação cancelada. Ajuste sua escalação e confirme novamente.', 'warning');
+      network.cancelDraft();
+    }
+  } else {
+    // Modo Treino (vs Bot): Inicia o Duelo de Cara ou Coroa
+    isDraftConfirmed = true;
+    updateDraftUI();
+    isPlayerTurnReady = true;
+    updateArenaHUD();
+    runCoinDuelUI(3, false);
+  }
+});
+
+// Executa a interface do Duelo ao Meio-Dia (Cara ou Coroa rápido de reflexo)
+function runCoinDuelUI(countdown = 3, isTiebreak = false) {
+  const overlay = $('versusCoinDuelOverlay');
+  if (!overlay) return;
+
+  const titleEl = $('versusCoinDuelTitle');
+  const descEl = $('versusCoinDuelDesc');
+  const countdownEl = $('versusCoinDuelCountdown');
+  const coinDisc = $('versusCoinDisc');
+  const headsBtn = $('versusCoinPickHeadsBtn');
+  const tailsBtn = $('versusCoinPickTailsBtn');
+  const resultBanner = $('versusCoinResultBanner');
+  const headsSub = $('versusCoinHeadsSub');
+  const tailsSub = $('versusCoinTailsSub');
+
+  if (titleEl) {
+    titleEl.textContent = isTiebreak ? 'TEMPO ESGOTADO! DESEMPATE NO CARA OU COROA' : 'DUELO AO MEIO-DIA: CARA OU COROA';
+  }
+  if (descEl) {
+    descEl.textContent = 'Atenção ao sinal! Quem clicar mais rápido escolhe o seu lado da moeda!';
+  }
+  if (resultBanner) resultBanner.textContent = '';
+  if (headsSub) headsSub.textContent = 'CLIQUE RÁPIDO';
+  if (tailsSub) tailsSub.textContent = 'CLIQUE RÁPIDO';
+
+  headsBtn.disabled = true;
+  tailsBtn.disabled = true;
+  headsBtn.className = 'versus-coin-choice-btn heads';
+  tailsBtn.className = 'versus-coin-choice-btn tails';
+  coinDisc.className = 'versus-coin-disc';
+
+  overlay.classList.remove('hidden');
+  isCoinDuelResolved = false;
+
+  let currentCount = countdown;
+  if (countdownEl) {
+    countdownEl.textContent = `${currentCount}...`;
+    countdownEl.style.color = '#ffd700';
+  }
+
+  if (coinDuelCountdownInterval) clearInterval(coinDuelCountdownInterval);
+
+  coinDuelCountdownInterval = setInterval(() => {
+    currentCount--;
+    if (currentCount > 0) {
+      if (countdownEl) countdownEl.textContent = `${currentCount}...`;
+    } else if (currentCount === 0) {
+      if (countdownEl) {
+        countdownEl.textContent = 'ESCOLHA RÁPIDO!';
+        countdownEl.style.color = '#00ff88';
+      }
+      headsBtn.disabled = false;
+      tailsBtn.disabled = false;
+      try {
+        const audio = getAudio();
+        if (audio && audio.playSFX) audio.playSFX('select');
+      } catch (_) {}
+    } else {
+      clearInterval(coinDuelCountdownInterval);
+      coinDuelCountdownInterval = null;
+    }
+  }, 1000);
+
+  const handlePick = (sideChoice) => {
+    if (isCoinDuelResolved) return;
+    isCoinDuelResolved = true;
+    headsBtn.disabled = true;
+    tailsBtn.disabled = true;
+
+    if (sideChoice === 'heads') {
+      headsBtn.classList.add('selected');
+      if (headsSub) headsSub.textContent = 'VOCÊ ESCOLHEU';
+      tailsBtn.classList.add('opponent-selected');
+      if (tailsSub) tailsSub.textContent = 'OPONENTE';
+    } else {
+      tailsBtn.classList.add('selected');
+      if (tailsSub) tailsSub.textContent = 'VOCÊ ESCOLHEU';
+      headsBtn.classList.add('opponent-selected');
+      if (headsSub) headsSub.textContent = 'OPONENTE';
+    }
+
+    if (currentMode === 'ranked') {
+      network.pickCoinSide(sideChoice);
+    } else if (currentMode === 'bot') {
+      // No modo treino, bot aceita o outro lado e lança a moeda após 600ms
+      setTimeout(() => {
+        const result = Math.random() < 0.5 ? 'heads' : 'tails';
+        const winner = result === sideChoice ? 'PLAYER' : 'BOT';
+        animateCoinDuelResult(result, winner, { PLAYER: sideChoice, BOT: sideChoice === 'heads' ? 'tails' : 'heads' }, isTiebreak);
+      }, 600);
+    }
+  };
+
+  headsBtn.onclick = () => handlePick('heads');
+  tailsBtn.onclick = () => handlePick('tails');
+}
+
+// Anima a moeda 3D e anuncia o resultado do duelo
+function animateCoinDuelResult(result, winner, picks, isTiebreak = false) {
+  const coinDisc = $('versusCoinDisc');
+  const resultBanner = $('versusCoinResultBanner');
+  const headsBtn = $('versusCoinPickHeadsBtn');
+  const tailsBtn = $('versusCoinPickTailsBtn');
+  const headsSub = $('versusCoinHeadsSub');
+  const tailsSub = $('versusCoinTailsSub');
+
+  if (coinDisc) {
+    coinDisc.classList.add('flipping');
+  }
+
+  // Atualiza botões caso o oponente tenha escolhido primeiro
+  const mySide = (currentMode === 'ranked' && network.side) ? network.side : 'PLAYER';
+  const myPick = picks ? picks[mySide] : (headsBtn?.classList.contains('selected') ? 'heads' : 'tails');
+
+  if (headsBtn && tailsBtn) {
+    headsBtn.disabled = true;
+    tailsBtn.disabled = true;
+    if (myPick === 'heads') {
+      headsBtn.className = 'versus-coin-choice-btn heads selected';
+      if (headsSub) headsSub.textContent = 'VOCÊ ESCOLHEU';
+      tailsBtn.className = 'versus-coin-choice-btn tails opponent-selected';
+      if (tailsSub) tailsSub.textContent = 'ADVERSÁRIO';
+    } else {
+      tailsBtn.className = 'versus-coin-choice-btn tails selected';
+      if (tailsSub) tailsSub.textContent = 'VOCÊ ESCOLHEU';
+      headsBtn.className = 'versus-coin-choice-btn heads opponent-selected';
+      if (headsSub) headsSub.textContent = 'ADVERSÁRIO';
+    }
+  }
+
+  setTimeout(() => {
+    if (coinDisc) {
+      coinDisc.classList.remove('flipping');
+      coinDisc.style.transform = result === 'heads' ? 'rotateY(0deg)' : 'rotateY(180deg)';
+    }
+
+    const isWinner = (winner === mySide || winner === 'PLAYER');
+    if (resultBanner) {
+      if (isTiebreak) {
+        resultBanner.textContent = isWinner
+          ? `⚡ ${result.toUpperCase()}! VITÓRIA DO COMBATE POR DESEMPATE SUPREMO!`
+          : `🛡 ${result.toUpperCase()}! ADVERSÁRIO VENCEU NO DESEMPATE!`;
+        resultBanner.style.color = isWinner ? '#00ff88' : '#ff4455';
+      } else {
+        resultBanner.textContent = isWinner
+          ? `⚡ ${result.toUpperCase()}! VOCÊ GANHOU A INICIATIVA DO ROUND 1!`
+          : `🛡 ${result.toUpperCase()}! ADVERSÁRIO COMEÇA COM A INICIATIVA!`;
+        resultBanner.style.color = isWinner ? '#00ff88' : '#ff4455';
+      }
+    }
+
+    // Fecha o overlay após 3.5 segundos
+    setTimeout(() => {
+      $('versusCoinDuelOverlay')?.classList.add('hidden');
+      if (currentMode === 'bot' && !isTiebreak) {
+        startCombatFromDraft(isWinner ? 'PLAYER' : 'BOT');
+      }
+    }, 3500);
+  }, 1600);
+}
+
+// Inicia oficialmente o combate e transita da fase de recrutamento para comando
+async function startCombatFromDraft(firstTurn) {
   const playerName = (account?.nickname || account?.name || 'PILOTO').toUpperCase();
   const enemyName = currentMode === 'bot' ? 'SIMULADOR IA DA TORRE' : (engine.enemyName || 'OPONENTE RANKED').toUpperCase();
 
-  // Músicas & Temas de Duelo Versus: Sorteia aleatoriamente entre os 4 temas oficiais da Arena
   const currentArenaTheme = getRandomVersusTheme();
   const battleBgmKey = currentArenaTheme.bgmKey;
 
-  // Aplica o tema na arena 2D (canvas) e 3D (three.js)
-  if (board) {
-    board.setArenaTheme(currentArenaTheme);
-  }
-  if (versus3DEngine) {
-    versus3DEngine.applyTheme(currentArenaTheme);
-  }
+  if (board) board.setArenaTheme(currentArenaTheme);
+  if (versus3DEngine) versus3DEngine.applyTheme(currentArenaTheme);
 
   // 1. Cinemática Grandiosa 3D Pré-Duelo com suporte ao tema da arena
   if (window.gameInstance && typeof window.gameInstance.runGrandDuelCinematic === 'function') {
@@ -1461,9 +1746,11 @@ $('versusConfirmTeamBtn')?.addEventListener('click', async () => {
     );
   }
 
-  // 2. Inicia o combate na arena 2D
+  // 2. Inicia o combate
   engine.mode = currentMode;
+  engine.initiative = (firstTurn === 'PLAYER' || firstTurn === 'A' || (network && network.side && firstTurn === network.side)) ? 'PLAYER' : 'ENEMY';
   engine.startCombat();
+
   if (currentMode === 'bot' && typeof engine.botSelectTurnActions === 'function') {
     engine.botSelectTurnActions();
   }
@@ -1471,12 +1758,13 @@ $('versusConfirmTeamBtn')?.addEventListener('click', async () => {
   $('versusDraftSection')?.classList.add('hidden');
   $('versusCommandSection')?.classList.remove('hidden');
 
-  const initText = engine.initiative === 'PLAYER' ? 'VOCÊ COMEÇA' : 'ADVERSÁRIO COMEÇA';
+  const isPlayerInit = engine.initiative === 'PLAYER';
+  const initText = isPlayerInit ? 'VOCÊ COMEÇA' : 'ADVERSÁRIO COMEÇA';
   const initBadge = $('versusInitiativeBadge');
   if (initBadge) {
     initBadge.textContent = `[ INICIATIVA: ${initText} ]`;
-    initBadge.style.borderColor = engine.initiative === 'PLAYER' ? '#00ff88' : '#ff4455';
-    initBadge.style.color = engine.initiative === 'PLAYER' ? '#00ff88' : '#ff4455';
+    initBadge.style.borderColor = isPlayerInit ? '#00ff88' : '#ff4455';
+    initBadge.style.color = isPlayerInit ? '#00ff88' : '#ff4455';
   }
 
   getAudio().playBGM(battleBgmKey, 0);
@@ -1484,13 +1772,42 @@ $('versusConfirmTeamBtn')?.addEventListener('click', async () => {
   addLog(`Round 1 iniciado! Iniciativa: ${initText}.`, 'kill');
   showPhaseBanner('ROUND 1', `INICIATIVA: ${initText}`, 'normal', 1600);
 
+  // Reseta tags para o início da fase de comando
+  resetTurnTagsAndButton();
+
   resetRoleAssignmentUI();
   updateArenaHUD();
   updateStatusPanel();
   updateGuide('FASE DE COMANDO', 'Defina as ações dos seus combatentes.');
   renderCommandCards();
   resetNarratorToStatus();
-});
+}
+
+// Reseta o estado das tags e botões entre os rounds
+function resetTurnTagsAndButton() {
+  isPlayerTurnReady = false;
+  isEnemyTurnReady = false;
+  const playerReadyTag = $('versusPlayerReadyTag');
+  if (playerReadyTag) {
+    playerReadyTag.textContent = 'DECIDINDO...';
+    playerReadyTag.className = 'versus-round-ready-tag deciding';
+  }
+  const enemyReadyTag = $('versusEnemyReadyTag');
+  if (enemyReadyTag) {
+    enemyReadyTag.textContent = 'DECIDINDO...';
+    enemyReadyTag.className = 'versus-round-ready-tag deciding';
+  }
+  const confirmBtn = $('versusConfirmTurnBtn');
+  if (confirmBtn) {
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = 'CONFIRMAR JOGADA';
+  }
+  const turnTimer = $('versusTurnTimer');
+  if (turnTimer) {
+    turnTimer.textContent = '30s';
+    turnTimer.classList.remove('critical');
+  }
+}
 
 // ════════════════════════════════════════════════════════════════════
 // SECTION 5 — Deck de Comando Tático Direto (Card Selecionado & Alvos)
@@ -2134,21 +2451,65 @@ function resetRoleAssignmentUI() {
 }
 
 // ════════════════════════════════════════════════════════════════════
-// SECTION 6 — Resolução do Embate Simultâneo (Sem Overlays Bloqueantes)
+// SECTION 6 — Resolução do Embate Simultâneo (Lockstep & Sincronização)
 // ════════════════════════════════════════════════════════════════════
 $('versusConfirmTurnBtn')?.addEventListener('click', async () => {
   if (isClashRunning) return;
-  isClashRunning = true;
-  $('versusConfirmTurnBtn').disabled = true;
 
-  try {
-    await executeSimultaneousClash();
-  } catch (err) {
-    console.error('Erro na execução do clash:', err);
-    addLog(`[SISTEMA] Erro na resolução: ${err.message}`, 'miss');
-  } finally {
-    isClashRunning = false;
-    $('versusConfirmTurnBtn').disabled = false;
+  if (currentMode === 'ranked') {
+    // Modo online ranqueado: Coleta ações e envia ao servidor
+    const actions = engine.playerTeam.map(bot => ({
+      id: bot.id,
+      row: bot.row,
+      action: bot.action || 'rest',
+      targetRow: bot.targetRow ?? null,
+      supportTargetRow: bot.supportTargetRow ?? null
+    }));
+
+    isPlayerTurnReady = true;
+    const confirmBtn = $('versusConfirmTurnBtn');
+    if (confirmBtn) {
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'AGUARDANDO ADVERSÁRIO...';
+    }
+
+    const playerReadyTag = $('versusPlayerReadyTag');
+    if (playerReadyTag) {
+      playerReadyTag.textContent = 'PRONTO';
+      playerReadyTag.className = 'versus-round-ready-tag ready';
+    }
+
+    addLog('Jogada confirmada! Aguardando oponente no servidor...', 'info');
+    network.submitTurn(actions);
+    // LOCKSTEP: O cliente aguarda o evento clash_start do WebSocket para rodar a animação simultânea!
+  } else {
+    // Modo Treino (contra bot local)
+    isClashRunning = true;
+    const confirmBtn = $('versusConfirmTurnBtn');
+    if (confirmBtn) confirmBtn.disabled = true;
+
+    isPlayerTurnReady = true;
+    isEnemyTurnReady = true;
+    const playerReadyTag = $('versusPlayerReadyTag');
+    if (playerReadyTag) {
+      playerReadyTag.textContent = 'PRONTO';
+      playerReadyTag.className = 'versus-round-ready-tag ready';
+    }
+    const enemyReadyTag = $('versusEnemyReadyTag');
+    if (enemyReadyTag) {
+      enemyReadyTag.textContent = 'PRONTO';
+      enemyReadyTag.className = 'versus-round-ready-tag ready';
+    }
+
+    try {
+      await executeSimultaneousClash();
+    } catch (err) {
+      console.error('Erro na execução do clash:', err);
+      addLog(`[SISTEMA] Erro na resolução: ${err.message}`, 'miss');
+    } finally {
+      isClashRunning = false;
+      resetTurnTagsAndButton();
+    }
   }
 });
 
@@ -2586,22 +2947,27 @@ function updateArenaHUD() {
     if (isClashRunning) {
       readyTag.textContent = 'EM COMBATE';
       readyTag.className = 'versus-round-ready-tag ready';
+    } else if (isPlayerTurnReady) {
+      readyTag.textContent = 'PRONTO';
+      readyTag.className = 'versus-round-ready-tag ready';
     } else {
-      const allActionChosen = engine.playerTeam && engine.playerTeam.length > 0 && engine.playerTeam.every(r => !r.isAlive || r.action);
-      if (allActionChosen) {
-        readyTag.textContent = 'PRONTO';
-        readyTag.className = 'versus-round-ready-tag ready';
-      } else {
-        readyTag.textContent = 'AGUARDANDO COMANDOS';
-        readyTag.className = 'versus-round-ready-tag';
-      }
+      readyTag.textContent = 'DECIDINDO...';
+      readyTag.className = 'versus-round-ready-tag deciding';
     }
   }
 
   const enemyReadyTag = $('versusEnemyReadyTag');
   if (enemyReadyTag) {
-    enemyReadyTag.textContent = 'PRONTO';
-    enemyReadyTag.className = 'versus-round-ready-tag ready';
+    if (isClashRunning) {
+      enemyReadyTag.textContent = 'EM COMBATE';
+      enemyReadyTag.className = 'versus-round-ready-tag ready';
+    } else if (isEnemyTurnReady) {
+      enemyReadyTag.textContent = 'PRONTO';
+      enemyReadyTag.className = 'versus-round-ready-tag ready';
+    } else {
+      enemyReadyTag.textContent = 'DECIDINDO...';
+      enemyReadyTag.className = 'versus-round-ready-tag deciding';
+    }
   }
 
   const initBadge = $('versusInitiativeBadge');
@@ -2848,3 +3214,178 @@ function highlight(el, type) {
   el.style.borderColor = type === 'error' ? '#ff3344' : '#00ff88';
   setTimeout(() => { el.style.borderColor = ''; }, 1200);
 }
+
+// ════════════════════════════════════════════════════════════════════
+// SECTION 10 — Sincronização em Lockstep via WebSocket (VersusNetwork)
+// ════════════════════════════════════════════════════════════════════
+
+// Timer do Draft (60 segundos)
+network.addEventListener('draft_timer_tick', (e) => {
+  const countdownEl = $('draftTimerCountdown');
+  if (countdownEl) {
+    countdownEl.textContent = `${e.detail.remaining}s`;
+    if (e.detail.remaining <= 10) {
+      countdownEl.style.color = '#ff3344';
+    } else {
+      countdownEl.style.color = '#ffd700';
+    }
+  }
+});
+
+// Atualização de Prontidão do Draft (Próprio)
+network.addEventListener('draft_status', (e) => {
+  isDraftConfirmed = !!e.detail.ready;
+  isPlayerTurnReady = isDraftConfirmed;
+  updateDraftUI();
+  updateArenaHUD();
+});
+
+// Atualização de Prontidão do Draft (Adversário)
+network.addEventListener('opponent_draft_status', (e) => {
+  isEnemyTurnReady = !!e.detail.ready;
+  const enemyReadyTag = $('versusEnemyReadyTag');
+  if (enemyReadyTag) {
+    if (e.detail.ready) {
+      enemyReadyTag.textContent = 'PRONTO';
+      enemyReadyTag.className = 'versus-round-ready-tag ready';
+    } else {
+      enemyReadyTag.textContent = 'DECIDINDO...';
+      enemyReadyTag.className = 'versus-round-ready-tag deciding';
+    }
+  }
+});
+
+// Auto-confirmação defensiva no timeout de 60s
+network.addEventListener('draft_auto_confirmed', (e) => {
+  if (Array.isArray(e.detail.team)) {
+    selectedRobotIds = [...e.detail.team];
+    updateDraftUI();
+  }
+  isDraftConfirmed = true;
+  isPlayerTurnReady = true;
+  updateDraftUI();
+  updateArenaHUD();
+  addLog('Tempo de recrutamento esgotado. Escalação confirmada automaticamente pelo sistema.', 'warning');
+});
+
+// Início do Duelo ao Meio-Dia (Cara ou Coroa)
+network.addEventListener('coin_duel_start', (e) => {
+  runCoinDuelUI(e.detail.countdown || 3, e.detail.isTiebreak || false);
+});
+
+// Resultado do Cara ou Coroa
+network.addEventListener('coin_duel_result', (e) => {
+  const { result, winner, picks, isTiebreak } = e.detail;
+  animateCoinDuelResult(result, winner, picks, isTiebreak);
+});
+
+// Início Oficial do Combate enviado pelo Servidor (após ambos prontos e moeda lançada)
+network.addEventListener('combat_start', (e) => {
+  const { firstTurn } = e.detail;
+  startCombatFromDraft(firstTurn);
+});
+
+// Timer do Round (30 segundos)
+network.addEventListener('round_timer_tick', (e) => {
+  const turnTimer = $('versusTurnTimer');
+  if (turnTimer) {
+    turnTimer.textContent = `${e.detail.remaining}s`;
+    if (e.detail.remaining <= 5) {
+      turnTimer.classList.add('critical');
+    } else {
+      turnTimer.classList.remove('critical');
+    }
+  }
+});
+
+// Relógio Global da Partida (5 Minutos)
+network.addEventListener('match_timer_update', (e) => {
+  const globalTimer = $('versusGlobalTimer');
+  if (globalTimer) {
+    const remaining = Math.max(0, e.detail.remaining);
+    const m = Math.floor(remaining / 60000);
+    const s = Math.floor((remaining % 60000) / 1000);
+    globalTimer.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  }
+});
+
+// Oponente confirmou sua jogada no round
+network.addEventListener('opponent_turn_status', (e) => {
+  isEnemyTurnReady = !!e.detail.ready;
+  const enemyReadyTag = $('versusEnemyReadyTag');
+  if (enemyReadyTag) {
+    if (e.detail.ready) {
+      enemyReadyTag.textContent = 'PRONTO';
+      enemyReadyTag.className = 'versus-round-ready-tag ready';
+    } else {
+      enemyReadyTag.textContent = 'DECIDINDO...';
+      enemyReadyTag.className = 'versus-round-ready-tag deciding';
+    }
+  }
+});
+
+// Auto-submit no timeout de 30s
+network.addEventListener('turn_auto_submitted', () => {
+  addLog('Tempo de decisão esgotado. Comandos de descanso aplicados automaticamente.', 'warning');
+});
+
+// Início Simultâneo do Embate do Round (Lockstep)
+network.addEventListener('clash_start', async (e) => {
+  const { actionsA, actionsB } = e.detail;
+  const enemyActions = (network.side === 'A') ? actionsB : actionsA;
+
+  if (Array.isArray(enemyActions)) {
+    enemyActions.forEach(act => {
+      const bot = engine.enemyTeam.find(r => r.row === act.row);
+      if (bot) {
+        bot.action = act.action || 'rest';
+        bot.targetRow = act.targetRow;
+        bot.supportTargetRow = act.supportTargetRow;
+      }
+    });
+  }
+
+  isClashRunning = true;
+  const playerReadyTag = $('versusPlayerReadyTag');
+  if (playerReadyTag) {
+    playerReadyTag.textContent = 'EM COMBATE';
+    playerReadyTag.className = 'versus-round-ready-tag ready';
+  }
+  const enemyReadyTag = $('versusEnemyReadyTag');
+  if (enemyReadyTag) {
+    enemyReadyTag.textContent = 'EM COMBATE';
+    enemyReadyTag.className = 'versus-round-ready-tag ready';
+  }
+
+  try {
+    await executeSimultaneousClash();
+  } catch (err) {
+    console.error('Erro na execução simultânea do clash:', err);
+    addLog(`[SISTEMA] Erro na resolução: ${err.message}`, 'miss');
+  } finally {
+    isClashRunning = false;
+    resetTurnTagsAndButton();
+  }
+});
+
+// Encerramento da Partida (10 medalhas ou timeout com desempate)
+network.addEventListener('match_ended', (e) => {
+  const isWinner = (e.detail.winner === network.side);
+  const reasonText = e.detail.reason === 'medal_limit'
+    ? '10 MEDALHAS ALCANÇADAS'
+    : (e.detail.reason === 'coin_tiebreak' ? 'DESEMPATE NO CARA OU COROA' : 'TEMPO ESGOTADO (5 MIN)');
+
+  showPhaseBanner(isWinner ? 'VITÓRIA!' : 'DERROTA', reasonText, isWinner ? 'buff' : 'debuff', 4000);
+  setTimeout(() => {
+    endMatch(isWinner ? 'PLAYER' : 'ENEMY');
+  }, 3000);
+});
+
+// Oponente desconectou durante o combate
+network.addEventListener('opponent_disconnected', () => {
+  addLog('Adversário desconectou do servidor.', 'miss');
+  showPhaseBanner('VITÓRIA POR W.O.', 'O oponente desconectou da partida.', 'buff', 4000);
+  setTimeout(() => {
+    endMatch('PLAYER');
+  }, 2500);
+});

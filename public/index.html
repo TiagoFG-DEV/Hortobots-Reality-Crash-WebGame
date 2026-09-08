@@ -1067,6 +1067,58 @@
 
 
 
+    <!-- OVERLAY 1: CINEMÁTICA PRÉ-DRAFT (3, 2, 1, PREPAREM-SE!) -->
+    <div id="versusPreDraftCinematic" class="versus-pre-draft-cinematic hidden">
+      <div class="versus-pre-draft-card">
+        <div class="versus-pre-draft-badge">[ PROTOCOLO DE CONFRONTO ONLINE ]</div>
+        <div class="versus-pre-draft-count" id="versusPreDraftCount">3</div>
+        <div class="versus-pre-draft-title" id="versusPreDraftTitle">PREPAREM-SE!</div>
+        <div class="versus-pre-draft-notice">
+          ⚠ FASE DE RECRUTAMENTO // ESCOLHA SEUS 3 COMBATENTES<br>
+          <small style="opacity:0.8;font-size:0.8rem;letter-spacing:1px;">(ESTE MOMENTO NÃO É O ROUND 1)</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- OVERLAY 2: DUELO AO MEIO-DIA (CARA OU COROA QUICK-DRAW) -->
+    <div id="versusCoinDuelOverlay" class="versus-coin-duel-overlay hidden">
+      <div class="versus-coin-duel-box">
+        <div class="versus-coin-duel-header">// DISPUTA DE INICIATIVA //</div>
+        <h2 class="versus-coin-duel-title" id="versusCoinDuelTitle">DUELO AO MEIO-DIA: CARA OU COROA</h2>
+        <p class="versus-coin-duel-desc" id="versusCoinDuelDesc">
+          Atenção ao sinal! Quem clicar mais rápido escolhe seu lado da moeda!
+        </p>
+
+        <div class="versus-coin-countdown" id="versusCoinDuelCountdown">3...</div>
+
+        <div class="versus-coin-stage">
+          <div class="versus-coin-disc" id="versusCoinDisc">
+            <div class="versus-coin-face front">
+              <span class="coin-symbol">⚡</span>
+              <span class="coin-name">CARA</span>
+            </div>
+            <div class="versus-coin-face back">
+              <span class="coin-symbol">🛡</span>
+              <span class="coin-name">COROA</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="versus-coin-buttons-grid">
+          <button class="versus-coin-choice-btn heads" id="versusCoinPickHeadsBtn" type="button" disabled>
+            <span>[ CARA ]</span>
+            <span class="versus-coin-subtext" id="versusCoinHeadsSub">CLIQUE RÁPIDO</span>
+          </button>
+          <button class="versus-coin-choice-btn tails" id="versusCoinPickTailsBtn" type="button" disabled>
+            <span>[ COROA ]</span>
+            <span class="versus-coin-subtext" id="versusCoinTailsSub">CLIQUE RÁPIDO</span>
+          </button>
+        </div>
+
+        <div class="versus-coin-result-banner" id="versusCoinResultBanner"></div>
+      </div>
+    </div>
+
     <!-- TELA PRINCIPAL: ARENA UNIFICADA VERSUS -->
     <div id="versusArenaScreen" class="term-screen versus-unified-screen hidden">
       <!-- Top HUD Minimalista -->
@@ -1075,7 +1127,7 @@
           <div class="versus-hud-name-box">
             <span class="versus-side-tag">PILOTO</span>
             <strong id="versusHudPlayerName">PLAYER</strong>
-            <span class="versus-round-ready-tag" id="versusPlayerReadyTag">AGUARDANDO COMANDOS</span>
+            <span class="versus-round-ready-tag deciding" id="versusPlayerReadyTag">DECIDINDO...</span>
           </div>
           <div class="versus-medals-badge">
             <span>MEDALHAS:</span> <strong id="versusPlayerMedalCount">0</strong>/10
@@ -1085,11 +1137,19 @@
         </div>
 
         <div class="versus-hud-match-status">
-          <div class="versus-round-tag">ROUND <span id="versusRoundNum">1</span></div>
+          <div class="versus-match-timer-row">
+            <span class="versus-global-clock" id="versusGlobalTimer" title="Tempo total da partida (5 min)">05:00</span>
+            <div class="versus-round-tag">ROUND <span id="versusRoundNum">1</span></div>
+            <span class="versus-turn-countdown" id="versusTurnTimer" title="Tempo para confirmar jogada">30s</span>
+          </div>
           <div class="versus-initiative-badge" id="versusInitiativeBadge">INICIATIVA: SORTEANDO...</div>
-          <button class="versus-action-btn small ghost beat-pulse-toggle-btn" id="versusBeatPulseToggle" type="button"
-            style="margin-top:4px;padding:2px 8px;font-size:0.65rem;"
-            title="Alternar intensidade do pulso de câmera no ritmo da música">PULSO: 100%</button>
+          <div class="versus-hud-controls-row">
+            <button class="versus-action-btn small ghost beat-pulse-toggle-btn" id="versusBeatPulseToggle" type="button"
+              style="padding:2px 8px;font-size:0.65rem;"
+              title="Alternar intensidade do pulso de câmera no ritmo da música">PULSO: 100%</button>
+            <button class="versus-exit-training-btn hidden" id="versusTrainingExitBtn" type="button"
+              title="Sair imediatamente do treinamento e voltar ao menu">SAIR DO TREINO</button>
+          </div>
         </div>
 
         <div class="versus-hud-side enemy">
@@ -1100,7 +1160,7 @@
           <div class="versus-hud-name-box">
             <span class="versus-side-tag">ADVERSÁRIO</span>
             <strong id="versusHudEnemyName">BOT</strong>
-            <span class="versus-round-ready-tag ready" id="versusEnemyReadyTag">PRONTO</span>
+            <span class="versus-round-ready-tag deciding" id="versusEnemyReadyTag">DECIDINDO...</span>
           </div>
           <div class="versus-player-status" id="versusEnemyStatus"></div>
         </div>
@@ -1123,6 +1183,7 @@
               <span class="draft-pilot-tag" id="draftPlayerPilotTag">[ PILOTO: <strong
                   id="draftPlayerPilotName">PILOTO</strong> ]</span>
               <span class="draft-status-tag" id="draftPlayerStatusTag">[ STATUS: SELECIONANDO (0/3) ]</span>
+              <span class="draft-timer-badge" id="draftTimerBadge">TEMPO: <strong id="draftTimerCountdown">60s</strong></span>
             </div>
             <div class="versus-compact-draft-grid" id="versusRobotGrid"></div>
 
@@ -1144,7 +1205,7 @@
             </div>
 
             <button class="term-btn gold full-w versus-execute-btn" id="versusConfirmTurnBtn">
-              INICIAR COMBATE
+              CONFIRMAR JOGADA
             </button>
           </div>
         </div>

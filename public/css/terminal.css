@@ -7612,14 +7612,17 @@ body.graphics-low .crt-monitor-container {
   width: 100%;
   padding: 24px 16px;
   gap: 22px;
+  box-sizing: border-box;
 }
 
 .versus-profile-header {
+  box-sizing: border-box;
+  max-width: 100%;
   width: 100%;
   background: linear-gradient(135deg, rgba(2, 22, 12, 0.95) 0%, rgba(1, 10, 6, 0.98) 100%);
   border: 1.5px solid rgba(0, 255, 136, 0.4);
   border-radius: 10px;
-  padding: 14px 22px;
+  padding: 14px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -7644,6 +7647,8 @@ body.graphics-low .crt-monitor-container {
   display: flex;
   align-items: center;
   gap: 14px;
+  min-width: 0;
+  flex: 1 1 280px;
 }
 
 .versus-pilot-badge {
@@ -7656,10 +7661,13 @@ body.graphics-low .crt-monitor-container {
   border-radius: 6px;
   letter-spacing: 2px;
   box-shadow: 0 0 12px rgba(255, 215, 0, 0.3);
+  flex-shrink: 0;
 }
 
 .versus-pilot-meta {
   text-align: left;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .versus-pilot-name {
@@ -7668,6 +7676,9 @@ body.graphics-low .crt-monitor-container {
   color: #00ff88;
   letter-spacing: 2.5px;
   text-shadow: 0 0 10px rgba(0, 255, 136, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .versus-pilot-bio {
@@ -7686,6 +7697,8 @@ body.graphics-low .crt-monitor-container {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  justify-content: flex-end;
+  flex: 1 1 340px;
 }
 
 .versus-stat-chip {
@@ -10799,19 +10812,489 @@ body.graphics-low svg {
 .versus-round-ready-tag {
   display: inline-block;
   font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 1px;
-  padding: 2px 6px;
-  border-radius: 3px;
-  background: rgba(255, 215, 0, 0.12);
-  border: 1px solid rgba(255, 215, 0, 0.4);
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(255, 170, 0, 0.12);
+  border: 1px solid rgba(255, 170, 0, 0.4);
   color: #ffd700;
   margin-left: 8px;
   vertical-align: middle;
+  text-transform: uppercase;
+  transition: all 0.25s ease;
+}
+
+.versus-round-ready-tag.deciding {
+  background: rgba(255, 170, 0, 0.15);
+  border-color: #ffaa00;
+  color: #ffaa00;
+  box-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
+  animation: pulseDecidingTag 1.5s infinite ease-in-out;
 }
 
 .versus-round-ready-tag.ready {
-  background: rgba(0, 255, 136, 0.15);
+  background: rgba(0, 255, 136, 0.18);
   border-color: #00ff88;
   color: #00ff88;
+  box-shadow: 0 0 12px rgba(0, 255, 136, 0.45);
+  animation: none;
 }
+
+@keyframes pulseDecidingTag {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+
+/* ── HUD Match Timers & Controls ── */
+.versus-match-timer-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.versus-global-clock {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #00e5ff;
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 1.5px;
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
+}
+
+.versus-turn-countdown {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: #ffd700;
+  background: rgba(255, 215, 0, 0.12);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+  min-width: 38px;
+  text-align: center;
+}
+
+.versus-turn-countdown.critical {
+  color: #ff3344;
+  border-color: #ff3344;
+  background: rgba(255, 51, 68, 0.2);
+  text-shadow: 0 0 12px rgba(255, 51, 68, 0.8);
+  animation: pulseDecidingTag 0.6s infinite ease-in-out;
+}
+
+.versus-hud-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.versus-exit-training-btn {
+  background: rgba(255, 30, 60, 0.18);
+  border: 1px solid #ff2a4b;
+  color: #ff556e;
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-shadow: 0 0 6px rgba(255, 42, 75, 0.5);
+  box-shadow: 0 0 10px rgba(255, 42, 75, 0.2);
+}
+
+.versus-exit-training-btn:hover {
+  background: rgba(255, 30, 60, 0.4);
+  color: #fff;
+  border-color: #ff4d6d;
+  box-shadow: 0 0 16px rgba(255, 42, 75, 0.6);
+  transform: translateY(-1px);
+}
+
+/* ── Draft Timer Badge ── */
+.draft-timer-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #00e5ff;
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+}
+
+.draft-timer-badge strong {
+  color: #ffd700;
+}
+
+/* Botão de Cancelar Preparado no Draft */
+.term-btn.canceling {
+  background: rgba(255, 51, 68, 0.18) !important;
+  border-color: #ff3344 !important;
+  color: #ff4d6d !important;
+  box-shadow: 0 0 15px rgba(255, 51, 68, 0.3) !important;
+  animation: pulseCanceling 1.8s infinite ease-in-out;
+}
+
+.term-btn.canceling:hover {
+  background: rgba(255, 51, 68, 0.35) !important;
+  color: #fff !important;
+  box-shadow: 0 0 22px rgba(255, 51, 68, 0.6) !important;
+}
+
+@keyframes pulseCanceling {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 1; border-color: #ff6677; }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   CINEMÁTICA PRÉ-DRAFT (3, 2, 1, PREPAREM-SE!)
+   ════════════════════════════════════════════════════════════════════ */
+.versus-pre-draft-cinematic {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: radial-gradient(circle at center, rgba(3, 20, 12, 0.97) 0%, rgba(1, 6, 4, 0.99) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+}
+
+.versus-pre-draft-cinematic::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%),
+              linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  background-size: 100% 3px, 6px 100%;
+  pointer-events: none;
+}
+
+.versus-pre-draft-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  padding: 40px;
+}
+
+.versus-pre-draft-badge {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #00ff88;
+  background: rgba(0, 255, 136, 0.12);
+  border: 1.5px solid #00ff88;
+  padding: 6px 18px;
+  border-radius: 6px;
+  letter-spacing: 3px;
+  box-shadow: 0 0 16px rgba(0, 255, 136, 0.3);
+  text-transform: uppercase;
+}
+
+.versus-pre-draft-count {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 5.5rem;
+  font-weight: 900;
+  color: #ffd700;
+  letter-spacing: 4px;
+  text-shadow: 0 0 25px rgba(255, 215, 0, 0.8), 0 0 50px rgba(255, 215, 0, 0.4);
+  line-height: 1;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.versus-pre-draft-count.pulse {
+  transform: scale(1.15);
+  color: #00ff88;
+  text-shadow: 0 0 35px rgba(0, 255, 136, 0.9);
+}
+
+.versus-pre-draft-title {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+}
+
+.versus-pre-draft-notice {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #ffaa00;
+  background: rgba(255, 170, 0, 0.12);
+  border: 1px solid rgba(255, 170, 0, 0.4);
+  padding: 8px 18px;
+  border-radius: 6px;
+  letter-spacing: 2px;
+  box-shadow: 0 0 15px rgba(255, 170, 0, 0.2);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   DUELO AO MEIO-DIA: CARA OU COROA (DISPUTA DE INICIATIVA & DESEMPATE)
+   ════════════════════════════════════════════════════════════════════ */
+.versus-coin-duel-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99998;
+  background: radial-gradient(circle at center, rgba(8, 14, 20, 0.96) 0%, rgba(2, 4, 8, 0.99) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  padding: 20px;
+}
+
+.versus-coin-duel-box {
+  background: rgba(4, 16, 12, 0.94);
+  border: 2px solid rgba(0, 229, 255, 0.5);
+  border-radius: 14px;
+  padding: 32px 40px;
+  max-width: 680px;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(0, 229, 255, 0.25), inset 0 1px 0 rgba(0, 229, 255, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.versus-coin-duel-header {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #00e5ff;
+  letter-spacing: 3px;
+  margin-bottom: 6px;
+}
+
+.versus-coin-duel-title {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #ffd700;
+  letter-spacing: 2.5px;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+  margin-bottom: 8px;
+}
+
+.versus-coin-duel-desc {
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.8);
+  letter-spacing: 1px;
+  margin-bottom: 24px;
+}
+
+.versus-coin-countdown {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: #00ff88;
+  text-shadow: 0 0 20px rgba(0, 255, 136, 0.7);
+  margin-bottom: 18px;
+}
+
+/* Arena de Moeda 3D */
+.versus-coin-stage {
+  perspective: 1000px;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 24px auto;
+  position: relative;
+}
+
+.versus-coin-disc {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.1s linear;
+}
+
+.versus-coin-disc.flipping {
+  animation: coinFlipSpin 0.4s infinite linear;
+}
+
+.versus-coin-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  backface-visibility: hidden;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.4), inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.versus-coin-face.front {
+  background: radial-gradient(circle, #ffe066 0%, #d4af37 60%, #997a15 100%);
+  border: 3px solid #ffd700;
+  color: #1a1200;
+  transform: rotateY(0deg);
+}
+
+.versus-coin-face.back {
+  background: radial-gradient(circle, #b8e6ff 0%, #4da6ff 60%, #0059b3 100%);
+  border: 3px solid #00e5ff;
+  color: #001f3f;
+  transform: rotateY(180deg);
+}
+
+.versus-coin-face .coin-symbol {
+  font-size: 1.8rem;
+}
+
+.versus-coin-face .coin-name {
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  margin-top: 2px;
+}
+
+@keyframes coinFlipSpin {
+  0% { transform: rotateY(0deg) rotateX(20deg); }
+  100% { transform: rotateY(360deg) rotateX(20deg); }
+}
+
+/* Botões Rápidos de Reflexo */
+.versus-coin-buttons-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.versus-coin-choice-btn {
+  background: rgba(0, 15, 10, 0.8);
+  border: 2px solid rgba(255, 215, 0, 0.4);
+  color: #ffd700;
+  padding: 16px 20px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+}
+
+.versus-coin-choice-btn.heads {
+  border-color: #ffd700;
+  color: #ffd700;
+}
+
+.versus-coin-choice-btn.tails {
+  border-color: #00e5ff;
+  color: #00e5ff;
+}
+
+.versus-coin-choice-btn:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 0 25px currentColor;
+}
+
+.versus-coin-choice-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.versus-coin-choice-btn.selected {
+  background: rgba(0, 255, 136, 0.2) !important;
+  border-color: #00ff88 !important;
+  color: #00ff88 !important;
+  box-shadow: 0 0 25px rgba(0, 255, 136, 0.6) !important;
+}
+
+.versus-coin-choice-btn.opponent-selected {
+  background: rgba(255, 51, 68, 0.15) !important;
+  border-color: #ff3344 !important;
+  color: #ff4d6d !important;
+  box-shadow: 0 0 18px rgba(255, 51, 68, 0.4) !important;
+}
+
+.versus-coin-subtext {
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  opacity: 0.8;
+}
+
+.versus-coin-result-banner {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #00ff88;
+  letter-spacing: 2px;
+  min-height: 28px;
+  margin-top: 8px;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.6);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   RESPONSIVIDADE GERAL DO VERSUS
+   ════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .versus-profile-header {
+    padding: 12px 14px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .versus-pilot-identity {
+    justify-content: flex-start;
+    flex: 1 1 100%;
+  }
+  .versus-pilot-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    width: 100%;
+    flex: 1 1 100%;
+  }
+  .versus-stat-chip {
+    justify-content: space-between;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .versus-coin-buttons-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .versus-pilot-stats {
+    grid-template-columns: 1fr;
+  }
+  .versus-pilot-bio {
+    max-width: 100%;
+  }
+  .versus-pre-draft-count {
+    font-size: 4rem;
+  }
+  .versus-pre-draft-title {
+    font-size: 1.3rem;
+  }
+  .versus-coin-duel-box {
+    padding: 20px 16px;
+  }
+}

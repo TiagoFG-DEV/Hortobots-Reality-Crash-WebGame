@@ -573,113 +573,268 @@ function generateMatchId() {
   return `match_${++matchCounter}_${Date.now()}`;
 }
 
-// â”€â”€ PvP Match Timers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── PvP Match Lifecycle, Timers & Duelos ──────────────────────────
 
-// Aplica penalidade de -10 RP para jogador que nÃ£o deu PREPARADO no draft
-async function applyDraftPenalty(clientObj) {
-  if (!clientObj || !clientObj.name) return;
-  try {
-    await supabasePenalty(clientObj.name);
-    console.log(`[PENALTY] -10 RP aplicado no Supabase para ${clientObj.name} por AFK no draft.`);
-  } catch (err) {
-    console.error('[PENALTY] Erro:', err.message);
-  }
-}
-
-// Inicia o timer de draft (60s) após match_found
+// Inicia o timer de recrutamento / draft (60 segundos)
 function startDraftTimer(matchId) {
   const match = activeMatches.get(matchId);
   if (!match) return;
 
+  match.draftStartTime = Date.now();
+  if (match.draftTimer) clearTimeout(match.draftTimer);
+  if (match.draftTick) clearInterval(match.draftTick);
+
+  // Broadcast imediato dos 60 segundos
+  broadcast(matchId, { type: 'draft_timer_tick', remaining: 60 });
+
+  // Tick a cada 1 segundo
+  match.draftTick = setInterval(() => {
+    const m = activeMatches.get(matchId);
+    if (!m || m.phase !== 'draft') {
+      clearInterval(m?.draftTick);
+      return;
+    }
+    const elapsed = Math.floor((Date.now() - m.draftStartTime) / 1000);
+    const remaining = Math.max(0, 60 - elapsed);
+    broadcast(matchId, { type: 'draft_timer_tick', remaining });
+  }, 1000);
+
+  // Timeout aos 60 segundos: auto-pick defensivo para quem não confirmou
   match.draftTimer = setTimeout(() => {
     const m = activeMatches.get(matchId);
     if (!m || m.phase !== 'draft') return;
 
-    // Grace period: 5s ocultos, depois encerra
+    clearInterval(m.draftTick);
+    m.draftTick = null;
 
-    m.draftGrace = setTimeout(() => {
-      const mm = activeMatches.get(matchId);
-      if (!mm || mm.phase !== 'draft') return;
+    const defaultRobots = ['dinobyte', 'penlinux', 'cowputer'];
 
-      const notReadyA = !mm.draftReady.A;
-      const notReadyB = !mm.draftReady.B;
-
-      // Penalidade para quem nÃ£o confirmou
-      if (notReadyA) applyDraftPenalty(mm.playerA);
-      if (notReadyB) applyDraftPenalty(mm.playerB);
-
-      // Notifica ambos e remove o match
-      [mm.playerA, mm.playerB].forEach((p, idx) => {
-        const penalized = idx === 0 ? notReadyA : notReadyB;
-        if (p && p.ws) {
-          send(p.ws, {
-            type: 'draft_timeout',
-            penalized,
-            rpLost: penalized ? 10 : 0,
-            msg: penalized
-              ? 'VocÃª nÃ£o confirmou sua escalacÃ£o a tempo. -10 RP de penalidade.'
-              : 'Seu oponente nÃ£o confirmou a escalacÃ£o. Partida cancelada.'
-          });
-          p.matchId = null;
-          p.side = null;
+    ['A', 'B'].forEach(side => {
+      if (!m.draftReady[side]) {
+        const player = side === 'A' ? m.playerA : m.playerB;
+        const opponent = side === 'A' ? m.playerB : m.playerA;
+        if (!player.team || player.team.length !== 3) {
+          player.team = [...defaultRobots];
         }
-      });
+        m.draftReady[side] = true;
+        m[`player${side}`].team = player.team;
 
-      clearAllMatchTimers(matchId);
-      activeMatches.delete(matchId);
-      console.log(`[DRAFT_TIMEOUT] Match ${matchId} cancelado por timeout de draft.`);
-    }, 5000);
+        if (player.ws) {
+          send(player.ws, { type: 'draft_auto_confirmed', team: player.team });
+          send(player.ws, { type: 'draft_status', ready: true });
+        }
+        if (opponent && opponent.ws) {
+          send(opponent.ws, { type: 'opponent_draft_status', ready: true });
+        }
+        console.log(`[DRAFT_TIMEOUT] Auto-pick defensivo aplicado para ${side} no match ${matchId}.`);
+      }
+    });
+
+    // Se ambos estão prontos, avança para o Duelo de Cara ou Coroa!
+    if (m.draftReady.A && m.draftReady.B) {
+      startCoinDuel(matchId);
+    }
   }, 60000);
 
-  console.log(`[DRAFT_TIMER] Match ${matchId}: timer de draft de 60s iniciado.`);
+  console.log(`[DRAFT_TIMER] Match ${matchId}: timer de recrutamento de 60s iniciado.`);
 }
 
-// Timer por round (30s) â€” servidor envia auto-submit para quem nÃ£o agiu
-function startRoundTimer(matchId) {
+// Inicia o minigame Duelo ao Meio-Dia (Cara ou Coroa de reflexo)
+function startCoinDuel(matchId, isTiebreak = false) {
   const match = activeMatches.get(matchId);
   if (!match) return;
 
-  clearTimeout(match.roundTimer);
+  clearAllMatchTimers(matchId);
+  match.phase = 'coin_duel';
+  match.coinDuel = {
+    picks: {},
+    resolved: false,
+    isTiebreak,
+    startedAt: Date.now()
+  };
+
+  // Broadcast do início do duelo com contagem de 3 segundos
+  broadcast(matchId, { type: 'coin_duel_start', countdown: 3, isTiebreak });
+  console.log(`[COIN_DUEL] Match ${matchId}: duelo ao meio-dia iniciado (tiebreak: ${isTiebreak}).`);
+
+  // Fallback se ninguém clicar em 7 segundos (3s de contagem + 4s de timeout)
+  match.coinDuelTimer = setTimeout(() => {
+    const m = activeMatches.get(matchId);
+    if (!m || m.phase !== 'coin_duel' || !m.coinDuel || m.coinDuel.resolved) return;
+
+    console.log(`[COIN_DUEL_TIMEOUT] Nenhum piloto escolheu a tempo no match ${matchId}. Sorteando automaticamente...`);
+    const sideA = Math.random() < 0.5 ? 'heads' : 'tails';
+    m.coinDuel.picks.A = sideA;
+    m.coinDuel.picks.B = sideA === 'heads' ? 'tails' : 'heads';
+    resolveCoinDuel(matchId);
+  }, 7000);
+}
+
+// Resolve o Cara ou Coroa criptográfico e define vencedor da iniciativa/desempate
+function resolveCoinDuel(matchId) {
+  const match = activeMatches.get(matchId);
+  if (!match || !match.coinDuel || match.coinDuel.resolved) return;
+
+  match.coinDuel.resolved = true;
+  if (match.coinDuelTimer) {
+    clearTimeout(match.coinDuelTimer);
+    match.coinDuelTimer = null;
+  }
+
+  const flipResult = Math.random() < 0.5 ? 'heads' : 'tails';
+  const winningSide = (match.coinDuel.picks.A === flipResult) ? 'A' : 'B';
+
+  broadcast(matchId, {
+    type: 'coin_duel_result',
+    result: flipResult,
+    winner: winningSide,
+    picks: match.coinDuel.picks,
+    isTiebreak: match.coinDuel.isTiebreak
+  });
+
+  console.log(`[COIN_DUEL] Resultado: ${flipResult.toUpperCase()} | Vencedor: Lado ${winningSide}`);
+
+  if (match.coinDuel.isTiebreak) {
+    // Desempate supremo de fim de jogo
+    setTimeout(() => {
+      broadcast(matchId, {
+        type: 'match_ended',
+        winner: winningSide,
+        medals: match.medals,
+        reason: 'coin_tiebreak'
+      });
+      clearAllMatchTimers(matchId);
+      activeMatches.delete(matchId);
+    }, 4000);
+  } else {
+    // Iniciativa do Round 1 -> Iniciar combate após animação da moeda (4s)
+    setTimeout(() => {
+      const m = activeMatches.get(matchId);
+      if (!m) return;
+      startCombatPhase(matchId, winningSide);
+    }, 4000);
+  }
+}
+
+// Inicia a Fase Oficial de Combate em Rounds
+function startCombatPhase(matchId, firstTurn) {
+  const match = activeMatches.get(matchId);
+  if (!match) return;
+
+  match.phase = 'combat';
+  match.firstTurn = firstTurn;
+  match.round = 1;
+  match.turnReady = { A: false, B: false };
+  match.turnActions = { A: null, B: null };
+
+  send(match.playerA.ws, {
+    type: 'combat_start',
+    yourTeam: match.playerA.team,
+    enemyTeam: match.playerB.team,
+    firstTurn,
+    round: 1
+  });
+  send(match.playerB.ws, {
+    type: 'combat_start',
+    yourTeam: match.playerB.team,
+    enemyTeam: match.playerA.team,
+    firstTurn,
+    round: 1
+  });
+
+  console.log(`[COMBAT] Match ${matchId} iniciado com iniciativa para ${firstTurn}!`);
+
+  // Dispara o relógio global de 5 minutos e o primeiro timer de round de 30s
+  startMatchTimer(matchId);
+  startRoundTimer(matchId);
+}
+
+// Timer de 30 segundos por round (sincronizado)
+function startRoundTimer(matchId) {
+  const match = activeMatches.get(matchId);
+  if (!match || match.phase !== 'combat') return;
+
+  if (match.roundTimer) clearTimeout(match.roundTimer);
+  if (match.roundTick) clearInterval(match.roundTick);
+
+  match.roundStartTime = Date.now();
+  broadcast(matchId, { type: 'round_timer_tick', remaining: 30, round: match.round });
+
+  match.roundTick = setInterval(() => {
+    const m = activeMatches.get(matchId);
+    if (!m || m.phase !== 'combat') {
+      clearInterval(m?.roundTick);
+      return;
+    }
+    const elapsed = Math.floor((Date.now() - m.roundStartTime) / 1000);
+    const remaining = Math.max(0, 30 - elapsed);
+    broadcast(matchId, { type: 'round_timer_tick', remaining, round: m.round });
+  }, 1000);
+
   match.roundTimer = setTimeout(() => {
     const m = activeMatches.get(matchId);
     if (!m || m.phase !== 'combat') return;
 
-    // Auto-submit 'rest' para quem nÃ£o submeteu ainda
+    clearInterval(m.roundTick);
+    m.roundTick = null;
+
+    // Auto-rest para qualquer piloto que não enviou suas decisões nos 30s
     ['A', 'B'].forEach(side => {
       if (!m.turnReady[side]) {
-        const player = side === 'A' ? m.playerA : m.playerB;
-        const opponent = side === 'A' ? m.playerB : m.playerA;
         m.turnActions[side] = [{ action: 'rest', auto: true }];
         m.turnReady[side] = true;
+        const player = side === 'A' ? m.playerA : m.playerB;
         if (player && player.ws) {
-          send(player.ws, { type: 'round_auto_submit', side, round: m.round });
+          send(player.ws, { type: 'turn_auto_submitted', side, round: m.round });
         }
-        if (opponent && opponent.ws) {
-          send(opponent.ws, { type: 'opponent_turn', actions: m.turnActions[side], round: m.round, auto: true });
-        }
-        console.log(`[ROUND_TIMER] Auto-submit 'rest' para ${side} no match ${matchId}.`);
       }
     });
 
-    // Se ambos submeteram, avanÃ§a o round
-    if (m.turnReady.A && m.turnReady.B) {
-      m.round++;
-      m.turnReady = { A: false, B: false };
-      m.turnActions = { A: null, B: null };
-      broadcast(matchId, { type: 'round_complete', round: m.round });
-    }
+    executeRoundClash(matchId);
   }, 30000);
 }
 
-// Match timer global (7 minutos)
+// Executa o clash simultâneo quando ambos os jogadores estão prontos ou no timeout
+function executeRoundClash(matchId) {
+  const match = activeMatches.get(matchId);
+  if (!match || match.phase !== 'combat') return;
+
+  if (match.roundTimer) clearTimeout(match.roundTimer);
+  if (match.roundTick) clearInterval(match.roundTick);
+
+  console.log(`[ROUND_CLASH] Executando Round ${match.round} no match ${matchId}.`);
+
+  broadcast(matchId, {
+    type: 'clash_start',
+    actionsA: match.turnActions.A,
+    actionsB: match.turnActions.B,
+    round: match.round
+  });
+
+  // Reseta estado para a próxima rodada
+  match.turnReady = { A: false, B: false };
+  match.turnActions = { A: null, B: null };
+  match.round++;
+
+  // Aguarda 6 segundos para a animação do embate antes de reiniciar o timer de 30s
+  match.roundGraceTimer = setTimeout(() => {
+    const m = activeMatches.get(matchId);
+    if (m && m.phase === 'combat') {
+      startRoundTimer(matchId);
+    }
+  }, 6000);
+}
+
+// Relógio Global da Partida (5 Minutos = 300 Segundos)
 function startMatchTimer(matchId) {
   const match = activeMatches.get(matchId);
   if (!match) return;
 
   match.matchStartTime = Date.now();
-  const MATCH_DURATION = 7 * 60 * 1000; // 7 minutos em ms
+  const MATCH_DURATION = 5 * 60 * 1000; // 5 minutos em ms
 
-  // Tick a cada 5s para atualizar HUD dos clientes
+  if (match.matchTimerTick) clearInterval(match.matchTimerTick);
+
   match.matchTimerTick = setInterval(() => {
     const m = activeMatches.get(matchId);
     if (!m) return;
@@ -690,30 +845,39 @@ function startMatchTimer(matchId) {
     if (remaining <= 0) {
       clearInterval(m.matchTimerTick);
       m.matchTimerTick = null;
-      // Encerra partida por tempo
-      broadcast(matchId, {
-        type: 'match_timeout',
-        medals: m.medals,
-        msg: 'Tempo esgotado! VitÃ³ria por medalhas.'
-      });
-      clearAllMatchTimers(matchId);
-      activeMatches.delete(matchId);
-      console.log(`[MATCH_TIMEOUT] Match ${matchId} encerrado por tempo. Medalhas: A=${m.medals.A} B=${m.medals.B}`);
-    }
-  }, 5000);
 
-  console.log(`[MATCH_TIMER] Match ${matchId}: timer global de 7min iniciado.`);
+      console.log(`[MATCH_TIMEOUT] 5 minutos esgotados no match ${matchId}. Medalhas: A=${m.medals.A} B=${m.medals.B}`);
+
+      if (m.medals.A > m.medals.B) {
+        broadcast(matchId, { type: 'match_ended', winner: 'A', medals: m.medals, reason: 'time_medals' });
+        clearAllMatchTimers(matchId);
+        activeMatches.delete(matchId);
+      } else if (m.medals.B > m.medals.A) {
+        broadcast(matchId, { type: 'match_ended', winner: 'B', medals: m.medals, reason: 'time_medals' });
+        clearAllMatchTimers(matchId);
+        activeMatches.delete(matchId);
+      } else {
+        // Empate -> Desempate supremo no Cara ou Coroa!
+        console.log(`[MATCH_TIE] Empate no match ${matchId}! Disparando Cara ou Coroa de desempate...`);
+        startCoinDuel(matchId, true /* isTiebreak */);
+      }
+    }
+  }, 1000);
+
+  console.log(`[MATCH_TIMER] Match ${matchId}: relógio global de 5 minutos iniciado.`);
 }
 
-// Limpa todos os timers de um match
+// Limpa todos os timers ativos de uma partida
 function clearAllMatchTimers(matchId) {
   const m = activeMatches.get(matchId);
   if (!m) return;
-  if (m.draftTimer)    { clearTimeout(m.draftTimer);    m.draftTimer = null; }
-  if (m.draftGrace)   { clearTimeout(m.draftGrace);    m.draftGrace = null; }
-  if (m.roundTimer)   { clearTimeout(m.roundTimer);    m.roundTimer = null; }
-  if (m.matchTimerTick){ clearInterval(m.matchTimerTick); m.matchTimerTick = null; }
-  if (m.coinFlipTimer){ clearTimeout(m.coinFlipTimer); m.coinFlipTimer = null; }
+  if (m.draftTimer)      { clearTimeout(m.draftTimer);      m.draftTimer = null; }
+  if (m.draftTick)       { clearInterval(m.draftTick);       m.draftTick = null; }
+  if (m.coinDuelTimer)   { clearTimeout(m.coinDuelTimer);   m.coinDuelTimer = null; }
+  if (m.roundTimer)      { clearTimeout(m.roundTimer);      m.roundTimer = null; }
+  if (m.roundTick)       { clearInterval(m.roundTick);       m.roundTick = null; }
+  if (m.roundGraceTimer) { clearTimeout(m.roundGraceTimer); m.roundGraceTimer = null; }
+  if (m.matchTimerTick)  { clearInterval(m.matchTimerTick);  m.matchTimerTick = null; }
 }
 
 // â”€â”€ Matchmaking â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -800,8 +964,10 @@ function tryMatchmake() {
         enemyPoints: a.rankingPoints
       });
 
-      console.log(`[MATCH] Pareamento ranqueado: ${a.name} (${p1.rankingPoints} RP) vs ${b.name} (${p2.rankingPoints} RP) [Diff: ${minDiff}] â€” ${matchId}`);
-      i--; // Reajusta Ã­ndice apÃ³s a remoÃ§Ã£o
+      startDraftTimer(matchId);
+
+      console.log(`[MATCH] Pareamento ranqueado: ${a.name} (${p1.rankingPoints} RP) vs ${b.name} (${p2.rankingPoints} RP) [Diff: ${minDiff}] — ${matchId}`);
+      i--; // Reajusta índice após a remoção
     }
   }
 }
@@ -1000,6 +1166,7 @@ wss.on('connection', (ws) => {
           });
 
           activeRooms.delete(room.code);
+          startDraftTimer(matchId);
           console.log(`[MATCH] Batalha iniciada da sala ${room.code}: ${room.host.name} vs ${room.guest.name}`);
         }
         break;
@@ -1085,45 +1252,78 @@ wss.on('connection', (ws) => {
         break;
       }
 
-      // â”€â”€ DRAFT READY (team confirmed) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── DRAFT READY (Confirmação de Campeões) ────────────────
       case 'draft_ready': {
         const { matchId, team } = msg;
         const match = activeMatches.get(matchId);
-        if (!match) break;
+        if (!match || match.phase !== 'draft') break;
 
-        client.team = team;
         const side = client.side;
+        client.team = team;
         match.draftReady[side] = true;
         match[`player${side}`].team = team;
 
-        // Notify opponent that this player is ready
+        // Avisa a si mesmo e ao oponente sobre a prontidão
+        send(ws, { type: 'draft_status', ready: true });
         const opponent = side === 'A' ? match.playerB : match.playerA;
-        send(opponent.ws, { type: 'opponent_draft_ready', enemyTeam: team });
+        if (opponent && opponent.ws) {
+          send(opponent.ws, { type: 'opponent_draft_status', ready: true, enemyTeam: team });
+        }
 
-        // If both ready â†’ start combat
+        console.log(`[DRAFT] Piloto ${client.name} (${side}) marcou PREPARADO no match ${matchId}.`);
+
+        // Transição SÓ avança se AMBOS estiverem preparados no servidor!
         if (match.draftReady.A && match.draftReady.B) {
-          match.phase = 'combat';
-          send(match.playerA.ws, {
-            type: 'combat_start',
-            yourTeam: match.playerA.team,
-            enemyTeam: match.playerB.team,
-            firstTurn: 'A',
-          });
-          send(match.playerB.ws, {
-            type: 'combat_start',
-            yourTeam: match.playerB.team,
-            enemyTeam: match.playerA.team,
-            firstTurn: 'A',
-          });
-          console.log(`[COMBAT] Match ${matchId} started!`);
-        } else {
-          // Notify self to wait
-          send(ws, { type: 'waiting_opponent_draft' });
+          if (match.draftTimer) clearTimeout(match.draftTimer);
+          if (match.draftTick) clearInterval(match.draftTick);
+          match.draftTimer = null;
+          match.draftTick = null;
+          console.log(`[DRAFT] Ambos os pilotos confirmaram no match ${matchId}! Avançando para Duelo ao Meio-Dia.`);
+          startCoinDuel(matchId);
         }
         break;
       }
 
-      // â”€â”€ SUBMIT TURN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── DRAFT UNREADY (Cancelar Preparado no Draft) ─────────────
+      case 'draft_unready': {
+        const { matchId } = msg;
+        const match = activeMatches.get(matchId);
+        if (!match || match.phase !== 'draft') break;
+
+        const side = client.side;
+        match.draftReady[side] = false;
+
+        send(ws, { type: 'draft_status', ready: false });
+        const opponent = side === 'A' ? match.playerB : match.playerA;
+        if (opponent && opponent.ws) {
+          send(opponent.ws, { type: 'opponent_draft_status', ready: false });
+        }
+
+        console.log(`[DRAFT] Piloto ${client.name} (${side}) cancelou preparação no match ${matchId}.`);
+        break;
+      }
+
+      // ── DUELO AO MEIO-DIA: CARA OU COROA (ESCOLHA RÁPIDA) ───────
+      case 'coin_duel_pick': {
+        const { matchId, sideChoice } = msg;
+        const match = activeMatches.get(matchId);
+        if (!match || match.phase !== 'coin_duel' || !match.coinDuel || match.coinDuel.resolved) break;
+
+        const playerSide = client.side;
+        const opponentSide = playerSide === 'A' ? 'B' : 'A';
+        const chosen = (sideChoice === 'heads' || sideChoice === 'tails') ? sideChoice : 'heads';
+        const other = chosen === 'heads' ? 'tails' : 'heads';
+
+        // O primeiro a enviar garante a sua escolha e define o outro
+        match.coinDuel.picks[playerSide] = chosen;
+        match.coinDuel.picks[opponentSide] = other;
+
+        console.log(`[COIN_DUEL_PICK] Piloto ${client.name} (${playerSide}) clicou primeiro: ${chosen.toUpperCase()}! (Oponente: ${other.toUpperCase()})`);
+        resolveCoinDuel(matchId);
+        break;
+      }
+
+      // ── SUBMIT TURN (CONFIRMAR JOGADA) ──────────────────────────
       case 'submit_turn': {
         const { matchId, actions } = msg;
         const match = activeMatches.get(matchId);
@@ -1133,35 +1333,48 @@ wss.on('connection', (ws) => {
         match.turnActions[side] = actions;
         match.turnReady[side] = true;
 
-        // Forward actions to opponent immediately
+        // Confirma localmente e notifica o adversário que o piloto está PRONTO
+        send(ws, { type: 'turn_status', ready: true, round: match.round });
         const opponent = side === 'A' ? match.playerB : match.playerA;
-        if (opponent) {
+        if (opponent && opponent.ws) {
           send(opponent.ws, {
-            type: 'opponent_turn',
-            actions,
-            round: match.round,
+            type: 'opponent_turn_status',
+            ready: true,
+            round: match.round
           });
         }
 
-        send(ws, { type: 'turn_received', round: match.round });
+        console.log(`[TURN] Piloto ${client.name} (${side}) confirmou jogada no Round ${match.round}.`);
 
-        // If both submitted â†’ advance round
+        // O round SÓ EXECUTA quando AMBOS os jogadores tiverem clicado em "CONFIRMAR JOGADA"!
         if (match.turnReady.A && match.turnReady.B) {
-          match.round++;
-          match.turnReady = { A: false, B: false };
-          match.turnActions = { A: null, B: null };
-          broadcast(matchId, { type: 'round_complete', round: match.round });
+          executeRoundClash(matchId);
         }
         break;
       }
 
-      // â”€â”€ MEDAL UPDATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── MEDAL UPDATE & VITÓRIA POR 10 MEDALHAS ──────────────────
       case 'medal_update': {
         const { matchId, side, medals } = msg;
         const match = activeMatches.get(matchId);
         if (!match) break;
+
         match.medals[side] = medals;
         broadcast(matchId, { type: 'medals', medals: match.medals }, ws);
+
+        // Condição de Vitória Imediata: 10 Medalhas alcançadas
+        if (match.medals.A >= 10 || match.medals.B >= 10) {
+          const winner = match.medals.A >= 10 ? 'A' : 'B';
+          console.log(`[VICTORY_MEDALS] Piloto do lado ${winner} atingiu 10 medalhas no match ${matchId}!`);
+          broadcast(matchId, {
+            type: 'match_ended',
+            winner,
+            medals: match.medals,
+            reason: 'medal_limit'
+          });
+          clearAllMatchTimers(matchId);
+          activeMatches.delete(matchId);
+        }
         break;
       }
 

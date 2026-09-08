@@ -283,6 +283,17 @@ export class VersusNetwork extends EventTarget {
     this._emit('status', { status: 'draft_ready' });
   }
 
+  cancelDraft() {
+    this._send({ type: 'draft_unready', matchId: this.matchId });
+    this.status = 'draft';
+    this._emit('status', { status: 'draft' });
+  }
+
+  // ── Duelo de Cara ou Coroa ────────────────────────────────────────
+  pickCoinSide(sideChoice) {
+    this._send({ type: 'coin_duel_pick', matchId: this.matchId, sideChoice });
+  }
+
   // ── Turn ─────────────────────────────────────────────────────────
   submitTurn(actions) {
     this._send({ type: 'submit_turn', matchId: this.matchId, actions });
@@ -366,6 +377,22 @@ export class VersusNetwork extends EventTarget {
         this._emit('match_found', { matchId: msg.matchId, side: msg.side, enemyName: msg.enemyName });
         break;
 
+      case 'draft_timer_tick':
+        this._emit('draft_timer_tick', { remaining: msg.remaining });
+        break;
+
+      case 'draft_status':
+        this._emit('draft_status', { ready: msg.ready });
+        break;
+
+      case 'opponent_draft_status':
+        this._emit('opponent_draft_status', { ready: msg.ready, enemyTeam: msg.enemyTeam });
+        break;
+
+      case 'draft_auto_confirmed':
+        this._emit('draft_auto_confirmed', { team: msg.team });
+        break;
+
       case 'opponent_draft_ready':
         this._emit('opponent_draft_ready', { enemyTeam: msg.enemyTeam });
         break;
@@ -374,12 +401,55 @@ export class VersusNetwork extends EventTarget {
         this._emit('waiting_opponent_draft', {});
         break;
 
+      case 'coin_duel_start':
+        this.status = 'coin_duel';
+        this._emit('coin_duel_start', { countdown: msg.countdown, isTiebreak: msg.isTiebreak });
+        break;
+
+      case 'coin_duel_result':
+        this._emit('coin_duel_result', {
+          result: msg.result,
+          winner: msg.winner,
+          picks: msg.picks,
+          isTiebreak: msg.isTiebreak
+        });
+        break;
+
       case 'combat_start':
         this.status = 'combat';
         this._emit('combat_start', {
           yourTeam: msg.yourTeam,
           enemyTeam: msg.enemyTeam,
           firstTurn: msg.firstTurn,
+          round: msg.round || 1
+        });
+        break;
+
+      case 'round_timer_tick':
+        this._emit('round_timer_tick', { remaining: msg.remaining, round: msg.round });
+        break;
+
+      case 'match_timer_update':
+        this._emit('match_timer_update', { remaining: msg.remaining, total: msg.total });
+        break;
+
+      case 'turn_status':
+        this._emit('turn_status', { ready: msg.ready, round: msg.round });
+        break;
+
+      case 'opponent_turn_status':
+        this._emit('opponent_turn_status', { ready: msg.ready, round: msg.round });
+        break;
+
+      case 'turn_auto_submitted':
+        this._emit('turn_auto_submitted', { side: msg.side, round: msg.round });
+        break;
+
+      case 'clash_start':
+        this._emit('clash_start', {
+          actionsA: msg.actionsA,
+          actionsB: msg.actionsB,
+          round: msg.round
         });
         break;
 
@@ -397,6 +467,17 @@ export class VersusNetwork extends EventTarget {
 
       case 'medals':
         this._emit('medals', { medals: msg.medals });
+        break;
+
+      case 'match_ended':
+        this.status = 'idle';
+        this.matchId = null;
+        this.side = null;
+        this._emit('match_ended', {
+          winner: msg.winner,
+          medals: msg.medals,
+          reason: msg.reason
+        });
         break;
 
       case 'match_over':
