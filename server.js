@@ -107,7 +107,7 @@ function checkRegistrationRateLimit(req, res, next) {
   }
   registrationRateLimitMap.set(ip, record);
 
-  // Máximo 6 solicitações por minuto por IP (protege o servidor e a cota do Resend)
+  // Máximo 6 solicitações por minuto por IP (protege o servidor e a cota do Gmail)
   if (record.count > 6) {
     return res.status(429).json({
       error: 'Muitas solicitações simultâneas deste IP. Para proteger o servidor contra sobrecarga, aguarde 1 minuto.'

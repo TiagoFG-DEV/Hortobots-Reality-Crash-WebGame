@@ -220,51 +220,127 @@ export function generateCyberpunkEmailHTML({ nickname, email, code }) {
 </html>`;
 }
 
-// Envio de E-mail Real via Resend HTTP API (Porta 443 HTTPS - compatível com Render sem bloqueio)
+// ── Gerenciamento Inteligente de Access Token Gmail OAuth2 (com cache em memória) ──
+let cachedGmailAccessToken = null;
+let cachedGmailAccessTokenExpiresAt = 0;
+
+/**
+ * Obtém um Access Token válido utilizando o Refresh Token do Google OAuth2
+ */
+async function getGmailAccessToken() {
+  const clientId = (process.env.GOOGLE_CLIENT_ID || '').trim();
+  const clientSecret = (process.env.GOOGLE_CLIENT_SECRET || '').trim();
+  const refreshToken = (process.env.GMAIL_REFRESH_TOKEN || '').trim();
+
+  if (!clientId || !clientSecret || !refreshToken) {
+    throw new Error('Credenciais da Gmail API incompletas no arquivo .env (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET ou GMAIL_REFRESH_TOKEN).');
+  }
+
+  // Verifica se o token em cache ainda é válido (com margem de 60 segundos)
+  const now = Date.now();
+  if (cachedGmailAccessToken && now < (cachedGmailAccessTokenExpiresAt - 60000)) {
+    return cachedGmailAccessToken;
+  }
+
+  // Renova o token de acesso via oauth2.googleapis.com
+  const params = new URLSearchParams({
+    client_id: clientId,
+    client_secret: clientSecret,
+    refresh_token: refreshToken,
+    grant_type: 'refresh_token',
+  });
+
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: params.toString(),
+    signal: AbortSignal.timeout(8000),
+  });
+
+  const data = await response.json();
+  if (!response.ok || !data.access_token) {
+    const detail = data.error_description || data.error || JSON.stringify(data);
+    throw new Error(`Falha ao obter Access Token OAuth2 do Google: ${detail}`);
+  }
+
+  cachedGmailAccessToken = data.access_token;
+  const expiresInMs = (data.expires_in || 3600) * 1000;
+  cachedGmailAccessTokenExpiresAt = now + expiresInMs;
+
+  return cachedGmailAccessToken;
+}
+
+/**
+ * Converte a mensagem em formato RFC 2822 oficial e codifica em base64url para a Gmail REST API
+ */
+function buildRFC2822Email({ from, to, subject, html }) {
+  const encodedSubject = `=?utf-8?B?${Buffer.from(subject, 'utf-8').toString('base64')}?=`;
+  const base64Body = Buffer.from(html, 'utf-8').toString('base64');
+  const lines = [
+    `From: ${from}`,
+    `To: ${to}`,
+    `Subject: ${encodedSubject}`,
+    'MIME-Version: 1.0',
+    'Content-Type: text/html; charset=utf-8',
+    'Content-Transfer-Encoding: base64',
+    '',
+    base64Body,
+  ];
+  const rfc2822String = lines.join('\r\n');
+  return Buffer.from(rfc2822String, 'utf-8').toString('base64url');
+}
+
+// Envio de E-mail Real via Gmail REST API (HTTPS / Porta 443 liberada no Render)
 export async function send2FAVerificationEmail({ nickname, email, code }) {
   const cleanEmail = email.trim().toLowerCase();
   const html = generateCyberpunkEmailHTML({ nickname, email: cleanEmail, code });
-  const resendApiKey = (process.env.RESEND_API_KEY || '').trim();
-
-  if (!resendApiKey) {
-    console.warn(`[VALIDAÇÃO] ⚠️ RESEND_API_KEY ausente no arquivo .env.`);
-    console.warn(`[VALIDAÇÃO] 🔑 CÓDIGO DE SEGURANÇA PARA [${nickname}] (${cleanEmail}): >>> ${code} <<<`);
-    throw new Error('Serviço de envio de e-mail não configurado. Adicione RESEND_API_KEY no arquivo .env.');
-  }
+  const senderEmail = (process.env.GMAIL_SENDER || 'tiagop05gregorio@gmail.com').trim().toLowerCase();
+  const fromHeader = `LangoLabs <${senderEmail}>`;
+  const subject = `[RealityClash] Código de Validação: ${code}`;
 
   try {
-    const response = await fetch('https://api.resend.com/emails', {
+    const accessToken = await getGmailAccessToken();
+    const raw = buildRFC2822Email({
+      from: fromHeader,
+      to: cleanEmail,
+      subject,
+      html,
+    });
+
+    const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
+        'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        from: process.env.RESEND_FROM || 'LangoLabs <onboarding@resend.dev>',
-        to: [cleanEmail],
-        subject: `[RealityClash] Código de Validação: ${code}`,
-        html,
-      }),
-      signal: AbortSignal.timeout(6000), // Timeout rígido de 6s para evitar conexões penduradas
+      body: JSON.stringify({ raw }),
+      signal: AbortSignal.timeout(10000), // Timeout rígido de 10s
     });
 
     const data = await response.json();
     if (!response.ok) {
-      const errMsg = data.message || JSON.stringify(data);
-      console.error(`[VALIDAÇÃO] ❌ Erro ao enviar e-mail via Resend (${cleanEmail}):`, errMsg);
-      console.warn(`[VALIDAÇÃO] 🔑 CÓDIGO DE SEGURANÇA PARA [${nickname}] (${cleanEmail}): >>> ${code} <<<`);
-      throw new Error(`Falha no envio de e-mail (Resend): ${errMsg}`);
+      const errMsg = data.error?.message || JSON.stringify(data);
+      throw new Error(`Gmail API [${response.status}]: ${errMsg}`);
     }
 
-    console.log(`[VALIDAÇÃO] ✅ E-mail enviado com sucesso via Resend para: ${cleanEmail}`);
+    console.log(`[VALIDAÇÃO] ✅ E-mail enviado com sucesso via Gmail REST API para: ${cleanEmail}`);
     return {
       success: true,
       sentRealEmail: true,
+      terminalFallback: false,
       message: `Código de verificação enviado para o seu e-mail (${cleanEmail}). Verifique sua caixa de entrada.`
     };
   } catch (err) {
+    console.warn(`[VALIDAÇÃO] ⚠️ Falha ou cota diária excedida ao enviar e-mail via Gmail (${cleanEmail}):`, err.message);
     console.warn(`[VALIDAÇÃO] 🔑 CÓDIGO DE SEGURANÇA PARA [${nickname}] (${cleanEmail}): >>> ${code} <<<`);
-    throw err;
+
+    // Opção A: Fallback resiliente com aviso de cota diária excedida
+    return {
+      success: true,
+      sentRealEmail: false,
+      terminalFallback: true,
+      message: 'Cota diária de envio excedida. O código de segurança foi enviado no terminal do servidor.'
+    };
   }
 }
 
@@ -325,6 +401,7 @@ export async function start2FARegistration({ nickname, password, email, birthDat
   const expiresAt = now + 15 * 60 * 1000; // 15 minutos
 
   inFlightEmails.add(cleanEmail);
+  let sendResult = null;
   try {
     pending2FARegistrations.set(cleanEmail, {
       nickname: cleanNick,
@@ -336,7 +413,7 @@ export async function start2FARegistration({ nickname, password, email, birthDat
       expiresAt,
     });
 
-    await send2FAVerificationEmail({
+    sendResult = await send2FAVerificationEmail({
       nickname: cleanNick,
       email: cleanEmail,
       code,
@@ -352,7 +429,8 @@ export async function start2FARegistration({ nickname, password, email, birthDat
     email: cleanEmail,
     nickname: cleanNick,
     expiresAt,
-    message: `Código de 4 dígitos enviado para ${cleanEmail}! Abra seu e-mail para conferir.`,
+    terminalFallback: !!sendResult?.terminalFallback,
+    message: sendResult?.message || `Código de 4 dígitos enviado para ${cleanEmail}! Abra seu e-mail para conferir.`,
   };
 }
 
@@ -443,8 +521,9 @@ export async function resend2FACode({ email }) {
   pending.expiresAt = Date.now() + 15 * 60 * 1000;
 
   inFlightEmails.add(cleanEmail);
+  let sendResult = null;
   try {
-    await send2FAVerificationEmail({
+    sendResult = await send2FAVerificationEmail({
       nickname: pending.nickname,
       email: cleanEmail,
       code: newCode,
@@ -458,6 +537,7 @@ export async function resend2FACode({ email }) {
     ok: true,
     email: cleanEmail,
     expiresAt: pending.expiresAt,
-    message: 'Novo código de 4 dígitos enviado para o seu e-mail!',
+    terminalFallback: !!sendResult?.terminalFallback,
+    message: sendResult?.message || 'Novo código de 4 dígitos enviado para o seu e-mail!',
   };
 }

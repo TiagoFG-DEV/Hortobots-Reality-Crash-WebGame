@@ -631,10 +631,14 @@ $('accountRegSubmitBtn')?.addEventListener('click', async (e) => {
   if (btn) btn.textContent = 'ENVIANDO E-MAIL...';
 
   try {
-    await AccountAPI.start2FARegister(nick, pass, googleEmail, birth);
+    const res = await AccountAPI.start2FARegister(nick, pass, googleEmail, birth);
     pendingRegEmail = googleEmail;
     showAccount2FAForm(googleEmail);
-    showAccountStatus(`Código de 4 dígitos enviado ao seu e-mail (${googleEmail}). Abra sua caixa de entrada.`, 'info');
+    if (res && res.terminalFallback) {
+      showAccountStatus(res.message || 'Cota diária de envio excedida. O código de segurança foi enviado no terminal do servidor.', 'warning');
+    } else {
+      showAccountStatus(res.message || `Código de 4 dígitos enviado ao seu e-mail (${googleEmail}). Abra sua caixa de entrada.`, 'info');
+    }
     getAudio().playKeyClack();
   } catch (err) {
     showAccountStatus(err.message || 'Erro ao enviar código de validação');
@@ -697,8 +701,12 @@ $('account2FAResendBtn')?.addEventListener('click', async () => {
   const btn = $('account2FAResendBtn');
   if (btn) btn.textContent = 'REENVIANDO...';
   try {
-    await AccountAPI.resend2FACode(pendingRegEmail);
-    showAccountStatus(`Novo código de 4 dígitos enviado ao e-mail (${pendingRegEmail}).`, 'info');
+    const res = await AccountAPI.resend2FACode(pendingRegEmail);
+    if (res && res.terminalFallback) {
+      showAccountStatus(res.message || 'Cota diária de envio excedida. O código de segurança foi enviado no terminal do servidor.', 'warning');
+    } else {
+      showAccountStatus(res.message || `Novo código de 4 dígitos enviado ao e-mail (${pendingRegEmail}).`, 'info');
+    }
     getAudio().playKeyClack();
   } catch (err) {
     showAccountStatus(err.message || 'Erro ao reenviar código');
