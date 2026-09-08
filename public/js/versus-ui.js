@@ -2486,15 +2486,15 @@ function updateArenaHUD() {
   const readyTag = $('versusPlayerReadyTag');
   if (readyTag) {
     if (isClashRunning) {
-      readyTag.textContent = '[ EM COMBATE ]';
+      readyTag.textContent = 'EM COMBATE';
       readyTag.className = 'versus-round-ready-tag ready';
     } else {
       const allActionChosen = engine.playerTeam && engine.playerTeam.length > 0 && engine.playerTeam.every(r => !r.isAlive || r.action);
       if (allActionChosen) {
-        readyTag.textContent = '[ PRONTO ]';
+        readyTag.textContent = 'PRONTO';
         readyTag.className = 'versus-round-ready-tag ready';
       } else {
-        readyTag.textContent = '[ AGUARDANDO COMANDOS ]';
+        readyTag.textContent = 'AGUARDANDO COMANDOS';
         readyTag.className = 'versus-round-ready-tag';
       }
     }
@@ -2502,14 +2502,14 @@ function updateArenaHUD() {
 
   const enemyReadyTag = $('versusEnemyReadyTag');
   if (enemyReadyTag) {
-    enemyReadyTag.textContent = '[ PRONTO ]';
+    enemyReadyTag.textContent = 'PRONTO';
     enemyReadyTag.className = 'versus-round-ready-tag ready';
   }
 
   const initBadge = $('versusInitiativeBadge');
   if (initBadge && engine.initiative) {
     const initText = engine.initiative === 'PLAYER' ? 'VOCÊ COMEÇA' : 'ADVERSÁRIO COMEÇA';
-    initBadge.textContent = `[ INICIATIVA: ${initText} ]`;
+    initBadge.textContent = `INICIATIVA: ${initText}`;
   }
 
   // Alerta de Emergência: Ativado quando qualquer robô atinge 10 de ataque

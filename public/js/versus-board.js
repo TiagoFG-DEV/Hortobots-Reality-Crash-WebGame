@@ -811,7 +811,7 @@ export class VersusBoard {
       ctx.strokeStyle = evColor;
       ctx.lineWidth = 2.5;
       ctx.shadowColor = evColor;
-      ctx.shadowBlur = 18;
+      ctx.shadowBlur = 10;
       ctx.setLineDash([5, 5]);
       ctx.lineDashOffset = t * 1.2;
       ctx.beginPath();
@@ -836,7 +836,7 @@ export class VersusBoard {
 
       ctx.save();
       ctx.shadowColor = auraColor;
-      ctx.shadowBlur = 24 + Math.sin(t * 0.1) * 6;
+      ctx.shadowBlur = 14 + Math.sin(t * 0.1) * 4;
       ctx.strokeStyle = auraColor;
       ctx.lineWidth = 3;
       ctx.setLineDash([6, 4]);
@@ -859,7 +859,7 @@ export class VersusBoard {
         ctx.save();
         ctx.strokeStyle = candColor;
         ctx.shadowColor = candColor;
-        ctx.shadowBlur = isHovered ? 45 : (28 + Math.sin(t * 0.15) * 10);
+        ctx.shadowBlur = isHovered ? 24 : (16 + Math.sin(t * 0.15) * 5);
         ctx.lineWidth = isHovered ? 3.8 : 2.6;
         ctx.setLineDash([7, 5]);
         ctx.lineDashOffset = t * (isHovered ? 2.2 : 1.2);
@@ -952,7 +952,7 @@ export class VersusBoard {
     // 6. Robot Body Gradient & Core
     ctx.save();
     ctx.shadowColor = robot.color;
-    ctx.shadowBlur = 18;
+    ctx.shadowBlur = 10;
 
     const bodyGrad = ctx.createRadialGradient(x - 5, y - 5, 2, x, y, r);
     bodyGrad.addColorStop(0, this._lighten(robot.color, 0.7));
@@ -1198,7 +1198,7 @@ export class VersusBoard {
 
     ctx.save();
     ctx.shadowColor = robot.shield.color || '#00e5ff';
-    ctx.shadowBlur = 18 + Math.sin(this.time * 0.1) * 6;
+    ctx.shadowBlur = 12 + Math.sin(this.time * 0.1) * 4;
 
     // Outer shield dome ring
     const startAngle = -Math.PI / 2;
@@ -1283,7 +1283,7 @@ export class VersusBoard {
       ctx.save();
       ctx.fillStyle = pr.color || '#ff3344';
       ctx.shadowColor = pr.color || '#ff3344';
-      ctx.shadowBlur = 25;
+      ctx.shadowBlur = 14;
 
       // Projectile core
       ctx.beginPath();
@@ -1308,7 +1308,7 @@ export class VersusBoard {
       ctx.save();
       ctx.strokeStyle = b.color || '#00ff88';
       ctx.shadowColor = b.color || '#00ff88';
-      ctx.shadowBlur = 20;
+      ctx.shadowBlur = 10;
       ctx.lineWidth = 4 + Math.sin(this.time * 0.3) * 2;
       ctx.globalAlpha = Math.min(1, b.life * 1.5);
 
@@ -1340,7 +1340,7 @@ export class VersusBoard {
       ctx.save();
       ctx.strokeStyle = d.color || '#00e5ff';
       ctx.shadowColor = d.color || '#00e5ff';
-      ctx.shadowBlur = 25;
+      ctx.shadowBlur = 14;
       ctx.lineWidth = 3 * (1 - d.progress * 0.5);
       ctx.globalAlpha = Math.min(1, d.life * 1.8);
 
@@ -1365,7 +1365,7 @@ export class VersusBoard {
       ctx.save();
       ctx.strokeStyle = sw.color;
       ctx.shadowColor = sw.color;
-      ctx.shadowBlur = 15;
+      ctx.shadowBlur = 8;
       ctx.lineWidth = 3.5 * sw.life;
       ctx.globalAlpha = sw.life;
       ctx.beginPath();
@@ -1414,7 +1414,7 @@ export class VersusBoard {
       ctx.globalAlpha = Math.max(0, ft.life);
       ctx.fillStyle = ft.color;
       ctx.shadowColor = ft.color;
-      ctx.shadowBlur = 12;
+      ctx.shadowBlur = 6;
       ctx.font = `bold ${ft.size || 16}px 'Share Tech Mono', monospace`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
