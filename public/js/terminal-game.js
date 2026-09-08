@@ -3262,7 +3262,15 @@ export class TerminalGameApp {
     }
     if (!target) { this.advanceTurn(); return; }
 
-    bot.currentEnergy -= move.cost;
+    // REGRA FUNDAMENTAL: Todo ataque custa energia e DEVE descontar esse custo imediatamente do armazenamento de energia do campeão!
+    const cost = (move && typeof move.cost === 'number') ? move.cost : (move && move.energyCost) ? move.energyCost : 2;
+    if (bot.currentEnergy < cost) {
+      this.combatLogs.push(`> ${bot.name} não possui energia suficiente (${bot.currentEnergy}/${cost} EN) para [${move.name}]!`);
+      this.renderBattleArena();
+      return;
+    }
+    bot.currentEnergy = Math.max(0, (bot.currentEnergy || 0) - cost);
+    this.renderBattleArena();
 
     // Cinemática banner esquerda → direita
     await this.showTurnActionCinematic(bot.name, move.name, true);

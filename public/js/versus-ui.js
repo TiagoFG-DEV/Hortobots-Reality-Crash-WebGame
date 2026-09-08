@@ -2770,7 +2770,10 @@ async function executeSimultaneousClash() {
     }
 
     if (!target || !target.isAlive) {
-      // Sem alvo
+      // Sem alvo — O ataque foi realizado, consome a energia do robô imediatamente
+      attacker.currentEnergy = Math.max(0, (attacker.currentEnergy || 0) - energyCost);
+      updateStatusPanel();
+      updateArenaHUD();
       const colorHex = attacker.color ? parseInt(attacker.color.replace('#', '0x'), 16) : 0xff3344;
       versus3DEngine.trigger3DAttackLaser(attacker.side, attacker.homeRow, attacker.homeRow, colorHex);
       await board.animateMissSequence(attacker, attacker.homeRow);

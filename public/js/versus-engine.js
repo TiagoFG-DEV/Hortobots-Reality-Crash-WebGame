@@ -267,6 +267,10 @@ export class VersusEngine {
       minigamePerformance = minigameSuccessArg !== undefined ? minigameSuccessArg : 1.0;
     }
 
+    // REGRA FUNDAMENTAL: Todo ataque custa energia e DEVE descontar esse custo imediatamente do armazenamento de energia do campeão!
+    const energyCost = (attackMove && typeof attackMove.energyCost === 'number') ? attackMove.energyCost : 1;
+    attackerRobot.currentEnergy = Math.max(0, (attackerRobot.currentEnergy || 0) - energyCost);
+
     // Alvo do atacante (prioriza alvo escolhido na interface, senão frente da linha)
     let targetRobot = attackerRobot._chosenTarget && attackerRobot._chosenTarget.isAlive
       ? attackerRobot._chosenTarget
@@ -311,9 +315,6 @@ export class VersusEngine {
     }
 
     attackerRobot.attackHitsThisRound++;
-    if (attackMove && attackMove.energyCost) {
-      attackerRobot.currentEnergy = Math.max(0, attackerRobot.currentEnergy - attackMove.energyCost);
-    }
 
     // REGRA DO USUÁRIO:
     // O primeiro ataque custa 1 energia, dá 25% de ataque (mínimo 1).
