@@ -139,11 +139,28 @@ export const AccountAPI = {
     return data;
   },
 
+  async getAccount(nickname) {
+    const res = await fetch(`${API_BASE}/accounts/${encodeURIComponent(String(nickname).trim().toUpperCase())}`);
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(data?.error || 'Conta não encontrada');
+    return data;
+  },
+
   async saveMatchResult(resultData) {
+    const payload = {
+      winnerName: resultData.winnerName || resultData.winnerNick,
+      loserName: resultData.loserName || resultData.loserNick,
+      hpPercentRemaining: resultData.hpPercentRemaining ?? 50,
+      turns: resultData.turns || resultData.totalRounds || 3,
+      medals: resultData.medals ?? 10,
+      isRanked: resultData.isRanked !== false,
+      matchId: resultData.matchId || null,
+      ...resultData
+    };
     const res = await fetch(`${API_BASE}/accounts/match-result`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(resultData),
+      body: JSON.stringify(payload),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || 'Falha ao registrar resultado de combate');
@@ -151,12 +168,13 @@ export const AccountAPI = {
   },
 
   async saveResult(name, won, medals) {
-    const res = await fetch(`${API_BASE}/accounts/${encodeURIComponent(name.toUpperCase())}/result`, {
+    const res = await fetch(`${API_BASE}/accounts/${encodeURIComponent(String(name).toUpperCase())}/result`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ won, medals }),
     });
-    if (!res.ok) throw new Error('Falha ao salvar resultado');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Falha ao salvar resultado');
     return data;
   },
 

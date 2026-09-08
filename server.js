@@ -7,7 +7,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
-import { initSupabase, getAccount, getAccountByEmail, createAccount, updateAccount, deleteAccount, clearAllAccounts, saveMatchResult, getLeaderboard, applyDraftPenalty as supabasePenalty, saveStoryToAccount, getStoryFromAccount } from './data/supabase.js';
+import { initSupabase, getAccount, getAccountByEmail, createAccount, updateAccount, deleteAccount, clearAllAccounts, saveMatchResult, recordDuelResult, getLeaderboard, applyDraftPenalty as supabasePenalty, saveStoryToAccount, getStoryFromAccount } from './data/supabase.js';
 import { isGoogleEmail, start2FARegistration, verify2FARegistration, resend2FACode } from './data/email-service.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -387,46 +387,66 @@ app.post('/api/admin/clear-all-accounts', async (req, res) => {
 });
 
 // POST /api/accounts/match-result â€” Salvar resultado e atualizar Ranking
-app.post('/api/accounts/match-result', (req, res) => {
-  const { winnerName, loserName, hpPercentRemaining = 50, turns = 3, medals = 10 } = req.body;
-  const accounts = readAccounts();
+app.post('/api/accounts/match-result', async (req, res) => {
+  try {
+    const winnerName = req.body.winnerName || req.body.winnerNick || req.body.winner;
+    const loserName = req.body.loserName || req.body.loserNick || req.body.loser;
+    const hpPercentRemaining = req.body.hpPercentRemaining !== undefined ? Number(req.body.hpPercentRemaining) : 50;
+    const turns = req.body.turns || req.body.totalRounds || 3;
+    const medals = req.body.medals !== undefined ? Number(req.body.medals) : 10;
+    const isRanked = req.body.isRanked !== false;
+    const matchId = req.body.matchId || null;
 
-  const wKey = winnerName ? Object.keys(accounts).find(k => k.toUpperCase() === sanitizeNick(winnerName)) : null;
-  const lKey = loserName ? Object.keys(accounts).find(k => k.toUpperCase() === sanitizeNick(loserName)) : null;
+    console.log(`[MATCH_RESULT] Registrando duelo: Vencedor=${winnerName}, Perdedor=${loserName}, Ranked=${isRanked}, MatchId=${matchId}`);
 
-  let pointsGained = 0;
-  let pointsLost = 0;
+    const result = await recordDuelResult({
+      winnerName,
+      loserName,
+      hpPercentRemaining,
+      turns,
+      medals,
+      isRanked,
+      matchId
+    });
 
-  // AtualizaÃ§Ã£o do Vencedor (ganha atÃ© +30 pontos de ranking)
-  if (wKey && accounts[wKey]) {
-    const w = accounts[wKey];
-    w.wins = (w.wins || 0) + 1;
-    w.totalMatches = (w.totalMatches || 0) + 1;
-    w.totalMedals = (w.totalMedals || 0) + (medals || 10);
-    // PontuaÃ§Ã£o condizente com performance: base 18 + atÃ© 12 proporcional ao HP restante = atÃ© 30
-    pointsGained = Math.min(30, Math.max(15, Math.round(18 + (Math.min(100, Math.max(0, hpPercentRemaining)) / 100) * 12)));
-    w.rankingPoints = Math.min(999, Math.max(0, (w.rankingPoints ?? 0) + pointsGained));
-    w.lastSeen = Date.now();
+    res.json(result);
+  } catch (err) {
+    console.error('[MATCH_RESULT] Erro ao salvar resultado:', err);
+    res.status(500).json({ error: err.message });
   }
+});
 
-  // AtualizaÃ§Ã£o do Perdedor (perde atÃ© -20 pontos de ranking, mÃ­nimo ZERO)
-  if (lKey && accounts[lKey]) {
-    const l = accounts[lKey];
-    l.losses = (l.losses || 0) + 1;
-    l.totalMatches = (l.totalMatches || 0) + 1;
-    // Perda entre 10 e 20 pontos
-    pointsLost = Math.min(20, Math.max(10, Math.round(16 - (turns > 4 ? 3 : 0))));
-    l.rankingPoints = Math.min(999, Math.max(0, (l.rankingPoints ?? 0) - pointsLost)); // MÃNIMO 0
-    l.lastSeen = Date.now();
+// POST /api/accounts/:name/result — Salvar resultado de duelo individual (ex: Modo Treino vs IA)
+app.post('/api/accounts/:name/result', async (req, res) => {
+  try {
+    const name = sanitizeNick(req.params.name);
+    if (!name) return res.status(400).json({ error: 'Nome inválido' });
+
+    const won = Boolean(req.body.won);
+    const medals = req.body.medals !== undefined ? Number(req.body.medals) : 5;
+
+    console.log(`[TRAINING_RESULT] Piloto=${name}, Venceu=${won}, Medalhas=${medals}`);
+
+    const result = await recordDuelResult({
+      winnerName: won ? name : null,
+      loserName: won ? null : name,
+      isRanked: false, // Treino não altera RP
+      medals,
+      hpPercentRemaining: won ? 60 : 0,
+      turns: 3
+    });
+
+    const updatedAcc = won ? result.winner : result.loser;
+    res.json({
+      success: true,
+      account: updatedAcc,
+      won,
+      medals
+    });
+  } catch (err) {
+    console.error('[TRAINING_RESULT] Erro ao salvar treino:', err);
+    res.status(500).json({ error: err.message });
   }
-
-  writeAccounts(accounts);
-  res.json({
-    winner: wKey ? accounts[wKey] : null,
-    loser: lKey ? accounts[lKey] : null,
-    pointsGained,
-    pointsLost
-  });
 });
 
 // GET /api/accounts/:name — busca dados da conta (compatibilidade)
@@ -850,10 +870,26 @@ function startMatchTimer(matchId) {
 
       if (m.medals.A > m.medals.B) {
         broadcast(matchId, { type: 'match_ended', winner: 'A', medals: m.medals, reason: 'time_medals' });
+        if (m.playerA && m.playerB) {
+          recordDuelResult({
+            winnerName: m.playerA.name,
+            loserName: m.playerB.name,
+            medals: m.medals.A,
+            matchId
+          }).catch(e => console.error('[MATCH_TIMEOUT] Erro ao registrar:', e));
+        }
         clearAllMatchTimers(matchId);
         activeMatches.delete(matchId);
       } else if (m.medals.B > m.medals.A) {
         broadcast(matchId, { type: 'match_ended', winner: 'B', medals: m.medals, reason: 'time_medals' });
+        if (m.playerA && m.playerB) {
+          recordDuelResult({
+            winnerName: m.playerB.name,
+            loserName: m.playerA.name,
+            medals: m.medals.B,
+            matchId
+          }).catch(e => console.error('[MATCH_TIMEOUT] Erro ao registrar:', e));
+        }
         clearAllMatchTimers(matchId);
         activeMatches.delete(matchId);
       } else {
@@ -1372,6 +1408,20 @@ wss.on('connection', (ws) => {
             medals: match.medals,
             reason: 'medal_limit'
           });
+
+          const pWin = winner === 'A' ? match.playerA : match.playerB;
+          const pLose = winner === 'A' ? match.playerB : match.playerA;
+          if (pWin && pLose) {
+            recordDuelResult({
+              winnerName: pWin.name,
+              loserName: pLose.name,
+              medals: 10,
+              hpPercentRemaining: 70,
+              turns: match.round || 3,
+              matchId
+            }).catch(e => console.error('[VICTORY_MEDALS] Erro ao persistir:', e));
+          }
+
           clearAllMatchTimers(matchId);
           activeMatches.delete(matchId);
         }

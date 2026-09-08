@@ -74,6 +74,7 @@ export async function initSupabase() {
         ALTER TABLE accounts ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT false;
         ALTER TABLE accounts ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT false;
         ALTER TABLE accounts ADD COLUMN IF NOT EXISTS birth_date VARCHAR(20) DEFAULT '';
+        UPDATE accounts SET custom_bio = 'Piloto Certificado RealityClash' WHERE custom_bio LIKE '%@%';
       `);
       isSupabaseConnected = true;
       console.log('\n[SUPABASE] 🚀 Banco de dados PostgreSQL Conectado com Sucesso!');
@@ -410,15 +411,43 @@ export async function clearAllAccounts() {
   return true;
 }
 
-export async function saveMatchResult(winnerName, loserName, hpPercentRemaining = 50, turns = 3, medals = 10) {
+// Cache de deduplicação de partidas PvP para evitar contagem dupla entre dois clientes (janela de 2 min)
+const processedMatchDedupe = new Map();
+setInterval(() => {
+  const now = Date.now();
+  for (const [id, item] of processedMatchDedupe.entries()) {
+    if (now - item.timestamp > 120000) processedMatchDedupe.delete(id);
+  }
+}, 60000).unref();
+
+export async function recordDuelResult({
+  winnerName,
+  loserName,
+  hpPercentRemaining = 50,
+  turns = 3,
+  medals = 10,
+  isRanked = true,
+  matchId = null
+}) {
+  if (matchId && processedMatchDedupe.has(matchId)) {
+    console.log(`[SUPABASE] ♻️ Match ${matchId} já processado anteriormente. Retornando resultado em cache.`);
+    return processedMatchDedupe.get(matchId).result;
+  }
+
   let pointsGained = 0;
   let pointsLost = 0;
+  let updatedWinner = null;
+  let updatedLoser = null;
 
-  // Atualiza vencedor
+  // 1. Atualização do Vencedor (se conta registrada)
   if (winnerName) {
     const w = await getAccount(winnerName);
     if (w) {
-      pointsGained = Math.min(30, Math.max(15, Math.round(18 + (Math.min(100, Math.max(0, hpPercentRemaining)) / 100) * 12)));
+      if (isRanked) {
+        pointsGained = Math.min(30, Math.max(15, Math.round(18 + (Math.min(100, Math.max(0, hpPercentRemaining)) / 100) * 12)));
+      } else {
+        pointsGained = 0; // Modo Treino: sem alteração de RP
+      }
       const newRp = Math.min(999, Math.max(0, (w.rankingPoints ?? 0) + pointsGained));
       const newWins = (w.wins || 0) + 1;
       const newMatches = (w.totalMatches || 0) + 1;
@@ -431,6 +460,7 @@ export async function saveMatchResult(winnerName, loserName, hpPercentRemaining 
             SET wins = $1, total_matches = $2, total_medals = $3, ranking_points = $4, last_seen = $5
             WHERE UPPER(name) = UPPER($6)
           `, [newWins, newMatches, newMedals, newRp, Date.now(), w.name]);
+          console.log(`[SUPABASE] 🏆 Vencedor salvo: ${w.name} | Vitórias: ${newWins} | Partidas: ${newMatches} | RP: ${newRp}`);
         } catch (err) {
           console.error('[SUPABASE] Erro ao salvar vencedor:', err.message);
         }
@@ -446,14 +476,27 @@ export async function saveMatchResult(winnerName, loserName, hpPercentRemaining 
         local[w.name].lastSeen = Date.now();
         writeLocalAccounts(local);
       }
+
+      updatedWinner = {
+        ...w,
+        wins: newWins,
+        totalMatches: newMatches,
+        totalMedals: newMedals,
+        rankingPoints: newRp,
+        lastSeen: Date.now()
+      };
     }
   }
 
-  // Atualiza perdedor
+  // 2. Atualização do Perdedor (se conta registrada)
   if (loserName) {
     const l = await getAccount(loserName);
     if (l) {
-      pointsLost = Math.min(20, Math.max(10, Math.round(16 - (turns > 4 ? 3 : 0))));
+      if (isRanked) {
+        pointsLost = Math.min(20, Math.max(10, Math.round(16 - (turns > 4 ? 3 : 0))));
+      } else {
+        pointsLost = 0; // Modo Treino: sem alteração de RP
+      }
       const newRp = Math.min(999, Math.max(0, (l.rankingPoints ?? 0) - pointsLost));
       const newLosses = (l.losses || 0) + 1;
       const newMatches = (l.totalMatches || 0) + 1;
@@ -465,6 +508,7 @@ export async function saveMatchResult(winnerName, loserName, hpPercentRemaining 
             SET losses = $1, total_matches = $2, ranking_points = $3, last_seen = $4
             WHERE UPPER(name) = UPPER($5)
           `, [newLosses, newMatches, newRp, Date.now(), l.name]);
+          console.log(`[SUPABASE] 🛡️ Perdedor salvo: ${l.name} | Derrotas: ${newLosses} | Partidas: ${newMatches} | RP: ${newRp}`);
         } catch (err) {
           console.error('[SUPABASE] Erro ao salvar perdedor:', err.message);
         }
@@ -479,10 +523,40 @@ export async function saveMatchResult(winnerName, loserName, hpPercentRemaining 
         local[l.name].lastSeen = Date.now();
         writeLocalAccounts(local);
       }
+
+      updatedLoser = {
+        ...l,
+        losses: newLosses,
+        totalMatches: newMatches,
+        rankingPoints: newRp,
+        lastSeen: Date.now()
+      };
     }
   }
 
-  return { pointsGained, pointsLost };
+  const result = {
+    pointsGained,
+    pointsLost,
+    winner: updatedWinner,
+    loser: updatedLoser
+  };
+
+  if (matchId) {
+    processedMatchDedupe.set(matchId, { result, timestamp: Date.now() });
+  }
+
+  return result;
+}
+
+export async function saveMatchResult(winnerName, loserName, hpPercentRemaining = 50, turns = 3, medals = 10) {
+  return recordDuelResult({
+    winnerName,
+    loserName,
+    hpPercentRemaining,
+    turns,
+    medals,
+    isRanked: true
+  });
 }
 
 export async function applyDraftPenalty(name) {

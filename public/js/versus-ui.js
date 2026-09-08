@@ -127,7 +127,12 @@ function updateProfileHeader(acc) {
   const wins = acc ? (acc.wins || 0) : 0;
   const matches = acc ? (acc.totalMatches || 0) : 0;
   const badge = acc ? (acc.avatarBadge || '[QZ-01]') : '[QZ-01]';
-  const bio = acc ? (acc.customBio || 'Piloto de Combate da Torre Central') : 'Piloto de Combate da Torre Central';
+  
+  // Sanitização Rigorosa: Remove QUALQUER e-mail ou padrão de e-mail (ex: parenthesized email) do cabeçalho versus
+  let bio = acc ? (acc.customBio || 'Piloto Certificado RealityClash') : 'Piloto de Combate da Torre Central';
+  bio = bio.replace(/\s*\([^)]*@[^)]*\)/g, '').replace(/\s*\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g, '').trim();
+  if (!bio) bio = 'Piloto Certificado RealityClash';
+
   const winrate = matches > 0 ? Math.round((wins / matches) * 100) : 0;
 
   const nickEl = $('versusProfileNickDisplay');
@@ -199,8 +204,8 @@ window.openLoginFromTitle = (targetScreen = null) => {
 };
 
 // Entrada no Modo Versus: Exige conta logada obrigatoriamente
-window.enterVersusMode = () => {
-  const acc = window.getLoggedAccount();
+window.enterVersusMode = async () => {
+  let acc = window.getLoggedAccount();
   if (!acc) {
     // Redireciona para a tela de conta/login e exibe aviso claro
     window.accountPreviousScreen = 'titleScreen';
@@ -213,6 +218,20 @@ window.enterVersusMode = () => {
   getAudio().playBGM('versusLobby', 600);
   updateProfileHeader(acc);
   showScreen('versusModeSelectScreen');
+
+  // Sincroniza em segundo plano com o Supabase para carregar vitórias/partidas/RP mais recentes
+  try {
+    const nick = acc.nickname || acc.name;
+    if (nick) {
+      const fresh = await AccountAPI.getAccount(nick);
+      if (fresh && (fresh.nickname || fresh.name)) {
+        account = { ...acc, ...fresh };
+        updateProfileHeader(account);
+      }
+    }
+  } catch (err) {
+    console.warn('[Versus] Sincronização em segundo plano falhou:', err.message);
+  }
 };
 
 // ── Handlers do Cabeçalho para Acessar a Tela de Conta ────────────────
@@ -1392,6 +1411,7 @@ function exitTrainingMode() {
   $('versusTrainingExitBtn')?.classList.add('hidden');
   const audio = getAudio();
   if (audio) audio.playBGM('versusLobby', 400);
+  updateProfileHeader(account);
   showScreen('versusModeSelectScreen');
   addLog('Sessão de treinamento encerrada. Retornando ao menu.', 'info');
 }
@@ -3099,7 +3119,11 @@ async function endMatch(winner) {
         updateProfileHeader(account);
       } else {
         // Modo Treino (sem perda de RP)
-        await AccountAPI.saveResult(currentNick, playerWon, engine.medals.PLAYER);
+        const res = await AccountAPI.saveResult(currentNick, playerWon, engine.medals.PLAYER);
+        if (res && res.account) {
+          account = { ...account, ...res.account };
+          updateProfileHeader(account);
+        }
       }
     }
   } catch (e) {

@@ -477,7 +477,7 @@ export async function verify2FARegistration({ email, code, createAccountFn }) {
     losses: 0,
     totalMatches: 0,
     totalMedals: 0,
-    customBio: `Piloto Certificado RealityClash (${pending.email})`,
+    customBio: 'Piloto Certificado RealityClash',
     avatarBadge: 'quezas',
   };
 
