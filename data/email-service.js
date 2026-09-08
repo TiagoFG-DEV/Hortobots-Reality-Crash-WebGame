@@ -20,8 +20,9 @@ function getTransporter() {
   if (mailTransporter) return mailTransporter;
 
   const host = process.env.SMTP_HOST;
-  const user = process.env.SMTP_USER || process.env.GMAIL_USER;
-  const pass = process.env.SMTP_PASS || process.env.GMAIL_PASS;
+  const user = (process.env.SMTP_USER || process.env.GMAIL_USER || '').trim();
+  const rawPass = (process.env.SMTP_PASS || process.env.GMAIL_PASS || '').trim();
+  const pass = rawPass.replace(/\s+/g, '');
 
   if (host && user && pass) {
     mailTransporter = nodemailer.createTransport({
