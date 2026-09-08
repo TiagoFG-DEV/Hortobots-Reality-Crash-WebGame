@@ -619,41 +619,85 @@ function startDraftTimer(matchId) {
     broadcast(matchId, { type: 'draft_timer_tick', remaining });
   }, 1000);
 
-  // Timeout aos 60 segundos: auto-pick defensivo para quem não confirmou
-  match.draftTimer = setTimeout(() => {
+  // Timeout aos 60 segundos: Opção B (W.O. / Cancelamento com -10 RP para o ausente)
+  match.draftTimer = setTimeout(async () => {
     const m = activeMatches.get(matchId);
     if (!m || m.phase !== 'draft') return;
 
     clearInterval(m.draftTick);
     m.draftTick = null;
 
-    const defaultRobots = ['dinobyte', 'penlinux', 'cowputer'];
-
-    ['A', 'B'].forEach(side => {
-      if (!m.draftReady[side]) {
-        const player = side === 'A' ? m.playerA : m.playerB;
-        const opponent = side === 'A' ? m.playerB : m.playerA;
-        if (!player.team || player.team.length !== 3) {
-          player.team = [...defaultRobots];
-        }
-        m.draftReady[side] = true;
-        m[`player${side}`].team = player.team;
-
-        if (player.ws) {
-          send(player.ws, { type: 'draft_auto_confirmed', team: player.team });
-          send(player.ws, { type: 'draft_status', ready: true });
-        }
-        if (opponent && opponent.ws) {
-          send(opponent.ws, { type: 'opponent_draft_status', ready: true });
-        }
-        console.log(`[DRAFT_TIMEOUT] Auto-pick defensivo aplicado para ${side} no match ${matchId}.`);
-      }
-    });
-
-    // Se ambos estão prontos, avança para o Duelo de Cara ou Coroa!
+    // Se ambos confirmaram antes do disparo (race condition)
     if (m.draftReady.A && m.draftReady.B) {
       startCoinDuel(matchId);
+      return;
     }
+
+    console.log(`[DRAFT_TIMEOUT_WO] Tempo de recrutamento esgotado no match ${matchId}. Aplicando W.O. / Cancelamento...`);
+
+    const readyA = !!m.draftReady.A;
+    const readyB = !!m.draftReady.B;
+
+    if (!readyA && !readyB) {
+      // Ambos ausentes: penaliza ambos com -10 RP
+      if (m.playerA?.name) await supabasePenalty(m.playerA.name).catch(e => console.error(e));
+      if (m.playerB?.name) await supabasePenalty(m.playerB.name).catch(e => console.error(e));
+
+      broadcast(matchId, {
+        type: 'draft_timeout_canceled',
+        reason: 'both_afk',
+        isAbsent: true,
+        penalty: 10,
+        message: 'Ambos os pilotos excederam o tempo limite de recrutamento (60s). Partida cancelada com penalidade de -10 RP para ambos.'
+      });
+    } else if (readyA && !readyB) {
+      // Player B ausente: penaliza Player B com -10 RP; Player A recebe vitória por W.O. sem pontos perdidos nem vitória registrada
+      if (m.playerB?.name) await supabasePenalty(m.playerB.name).catch(e => console.error(e));
+
+      if (m.playerB?.ws) {
+        send(m.playerB.ws, {
+          type: 'draft_timeout_canceled',
+          reason: 'wo_absent',
+          isAbsent: true,
+          penalty: 10,
+          message: 'Você não confirmou a escalação no tempo limite (60s). Partida cancelada com penalidade de -10 RP por inatividade.'
+        });
+      }
+      if (m.playerA?.ws) {
+        send(m.playerA.ws, {
+          type: 'draft_timeout_canceled',
+          reason: 'wo_ready',
+          isAbsent: false,
+          penalty: 0,
+          message: 'Oponente ausente no recrutamento. Partida encerrada por W.O. (Nenhum ponto perdido).'
+        });
+      }
+    } else if (!readyA && readyB) {
+      // Player A ausente: penaliza Player A com -10 RP; Player B recebe vitória por W.O.
+      if (m.playerA?.name) await supabasePenalty(m.playerA.name).catch(e => console.error(e));
+
+      if (m.playerA?.ws) {
+        send(m.playerA.ws, {
+          type: 'draft_timeout_canceled',
+          reason: 'wo_absent',
+          isAbsent: true,
+          penalty: 10,
+          message: 'Você não confirmou a escalação no tempo limite (60s). Partida cancelada com penalidade de -10 RP por inatividade.'
+        });
+      }
+      if (m.playerB?.ws) {
+        send(m.playerB.ws, {
+          type: 'draft_timeout_canceled',
+          reason: 'wo_ready',
+          isAbsent: false,
+          penalty: 0,
+          message: 'Oponente ausente no recrutamento. Partida encerrada por W.O. (Nenhum ponto perdido).'
+        });
+      }
+    }
+
+    clearAllMatchTimers(matchId);
+    activeMatches.delete(matchId);
   }, 60000);
 
   console.log(`[DRAFT_TIMER] Match ${matchId}: timer de recrutamento de 60s iniciado.`);

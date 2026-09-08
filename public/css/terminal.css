@@ -10898,27 +10898,37 @@ body.graphics-low svg {
 }
 
 .versus-exit-training-btn {
-  background: rgba(255, 30, 60, 0.18);
+  background: rgba(255, 30, 60, 0.16);
   border: 1px solid #ff2a4b;
   color: #ff556e;
   font-family: inherit;
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 1.5px;
-  padding: 3px 10px;
+  padding: 0 12px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
-  text-shadow: 0 0 6px rgba(255, 42, 75, 0.5);
-  box-shadow: 0 0 10px rgba(255, 42, 75, 0.2);
+  text-shadow: 0 0 6px rgba(255, 42, 75, 0.6);
+  box-shadow: 0 0 10px rgba(255, 42, 75, 0.25);
+  white-space: nowrap;
+  text-transform: uppercase;
 }
 
 .versus-exit-training-btn:hover {
-  background: rgba(255, 30, 60, 0.4);
-  color: #fff;
+  background: rgba(255, 30, 60, 0.38);
+  color: #ffffff;
   border-color: #ff4d6d;
-  box-shadow: 0 0 16px rgba(255, 42, 75, 0.6);
+  box-shadow: 0 0 16px rgba(255, 42, 75, 0.7);
   transform: translateY(-1px);
+}
+
+.versus-exit-training-btn.hidden {
+  display: none !important;
 }
 
 /* ── Draft Timer Badge ── */

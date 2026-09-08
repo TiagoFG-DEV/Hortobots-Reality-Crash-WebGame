@@ -419,6 +419,18 @@ export class VersusNetwork extends EventTarget {
         this._emit('waiting_opponent_draft', {});
         break;
 
+      case 'draft_timeout_canceled':
+        this.status = 'idle';
+        this.matchId = null;
+        this.side = null;
+        this._emit('draft_timeout_canceled', {
+          reason: msg.reason,
+          isAbsent: msg.isAbsent,
+          penalty: msg.penalty || 0,
+          message: msg.message
+        });
+        break;
+
       case 'coin_duel_start':
         this.status = 'coin_duel';
         this._emit('coin_duel_start', { countdown: msg.countdown, isTiebreak: msg.isTiebreak });

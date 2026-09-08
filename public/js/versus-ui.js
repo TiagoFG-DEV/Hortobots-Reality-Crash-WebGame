@@ -86,9 +86,20 @@ function showScreen(id) {
       homeBtn.classList.remove('hidden');
     }
   }
+
+  // O botão [ SAIR DO TREINO ] é visível exclusivamente na Arena durante o modo Treino
+  const trainingExitBtn = $('versusTrainingExitBtn');
+  if (trainingExitBtn) {
+    if (id === 'versusArenaScreen' && currentMode === 'bot') {
+      trainingExitBtn.classList.remove('hidden');
+    } else {
+      trainingExitBtn.classList.add('hidden');
+    }
+  }
 }
 
 function showTitle() {
+  $('versusTrainingExitBtn')?.classList.add('hidden');
   screens.forEach(s => $(s)?.classList.add('hidden'));
   ['storyScreen', 'elevatorScreen', 'battleScreen', 'endingScreen'].forEach(s => {
     $(s)?.classList.add('hidden');
@@ -1399,7 +1410,7 @@ async function enterUnifiedArena(mode) {
   addLog('Estação de combate energizada. Custos de energia carregados.', 'info');
 }
 
-// Botão de saída imediata do Modo Treino
+// Botão de saída imediata do Modo Treino (posicionado no cabeçalho superior direito)
 $('versusTrainingExitBtn')?.addEventListener('click', () => {
   exitTrainingMode();
 });
@@ -1414,6 +1425,22 @@ function exitTrainingMode() {
   updateProfileHeader(account);
   showScreen('versusModeSelectScreen');
   addLog('Sessão de treinamento encerrada. Retornando ao menu.', 'info');
+}
+
+function exitDraftToVersusMenu() {
+  if (board) board.stop();
+  engine.reset();
+  isClashRunning = false;
+  $('versusTrainingExitBtn')?.classList.add('hidden');
+  $('versusCoinDuelOverlay')?.classList.add('hidden');
+  $('versusDraftSection')?.classList.remove('hidden');
+  $('versusCommandSection')?.classList.add('hidden');
+  $('versusResultOverlay')?.classList.add('hidden');
+  network.disconnect();
+  showScreen('versusModeSelectScreen');
+  updateProfileHeader(account);
+  const audio = getAudio();
+  if (audio) audio.playBGM('versusLobby', 600);
 }
 
 function buildCompactDraftList() {
@@ -3280,7 +3307,7 @@ network.addEventListener('opponent_draft_status', (e) => {
   }
 });
 
-// Auto-confirmação defensiva no timeout de 60s
+// Auto-confirmação defensiva ou W.O. por timeout de 60s
 network.addEventListener('draft_auto_confirmed', (e) => {
   if (Array.isArray(e.detail.team)) {
     selectedRobotIds = [...e.detail.team];
@@ -3291,6 +3318,34 @@ network.addEventListener('draft_auto_confirmed', (e) => {
   updateDraftUI();
   updateArenaHUD();
   addLog('Tempo de recrutamento esgotado. Escalação confirmada automaticamente pelo sistema.', 'warning');
+});
+
+// Opção B: Cancelamento / W.O. por inatividade no recrutamento (60s)
+network.addEventListener('draft_timeout_canceled', async (e) => {
+  const { isAbsent, penalty, message } = e.detail;
+  const title = isAbsent ? 'W.O. // PENALIDADE' : 'VITÓRIA TÉCNICA (W.O.)';
+  const subtitle = message || (isAbsent ? 'Penalidade de -10 RP por inatividade no recrutamento.' : 'Oponente ausente. Partida encerrada por W.O.');
+  const tone = isAbsent ? 'kill' : 'buff';
+
+  addLog(subtitle, isAbsent ? 'miss' : 'kill');
+  showPhaseBanner(title, subtitle, tone, 4000);
+
+  if (isAbsent && penalty > 0 && account) {
+    account.rankingPoints = Math.max(0, (account.rankingPoints || 0) - penalty);
+    updateProfileHeader(account);
+  } else if (!isAbsent && account) {
+    try {
+      const updated = await AccountAPI.getAccount(account.name);
+      if (updated && updated.account) {
+        account = { ...account, ...updated.account };
+        updateProfileHeader(account);
+      }
+    } catch (_) {}
+  }
+
+  setTimeout(() => {
+    exitDraftToVersusMenu();
+  }, 3500);
 });
 
 // Início do Duelo ao Meio-Dia (Cara ou Coroa)
@@ -3406,11 +3461,16 @@ network.addEventListener('match_ended', (e) => {
   }, 3000);
 });
 
-// Oponente desconectou durante o combate
+// Oponente desconectou durante o combate ou recrutamento
 network.addEventListener('opponent_disconnected', () => {
   addLog('Adversário desconectou do servidor.', 'miss');
   showPhaseBanner('VITÓRIA POR W.O.', 'O oponente desconectou da partida.', 'buff', 4000);
   setTimeout(() => {
-    endMatch('PLAYER');
+    const inDraft = !$('versusDraftSection')?.classList.contains('hidden') || engine.round === 0;
+    if (inDraft) {
+      exitDraftToVersusMenu();
+    } else {
+      endMatch('PLAYER');
+    }
   }, 2500);
 });
