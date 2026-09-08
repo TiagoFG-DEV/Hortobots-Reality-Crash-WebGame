@@ -13,20 +13,19 @@ import { isGoogleEmail, start2FARegistration, verify2FARegistration, resend2FACo
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Carregamento automático de variáveis (.env.pvp ou .env, incluindo Secret Files do Render)
+// Carregamento automático de variáveis (.env ou .env.pvp, incluindo Secret Files do Render)
 if (typeof process.loadEnvFile === 'function') {
-  const envPvp = path.join(__dirname, '.env.pvp');
   const envDefault = path.join(__dirname, '.env');
-  if (fs.existsSync(envPvp)) {
-    try { process.loadEnvFile(envPvp); } catch (e) { console.warn('[ENV] Falha ao carregar .env.pvp:', e.message); }
-  } else if (fs.existsSync(envDefault)) {
+  const envPvp = path.join(__dirname, '.env.pvp');
+  if (fs.existsSync(envDefault)) {
     try { process.loadEnvFile(envDefault); } catch (e) { console.warn('[ENV] Falha ao carregar .env:', e.message); }
+  } else if (fs.existsSync(envPvp)) {
+    try { process.loadEnvFile(envPvp); } catch (e) { console.warn('[ENV] Falha ao carregar .env.pvp:', e.message); }
   }
 }
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const WS_PORT = process.env.WS_PORT || PORT;
+const PORT = process.env.PORT || 3333;
 const PVP_MODE = process.env.PVP_MODE !== 'false';
 
 // â”€â”€ JSON body parser â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -492,7 +491,7 @@ app.get('/api/server-info', (req, res) => {
   res.json({
     pvpMode: PVP_MODE,
     port: PORT,
-    wsPort: WS_PORT,
+    wsPort: PORT,
     version: '1.0.0'
   });
 });
@@ -1211,34 +1210,3 @@ mainHttpServer.on('error', (err) => {
     console.error('[HTTP] Erro:', err.message);
   }
 });
-
-// Se WS_PORT for diferente de PORT (ex: no script npm run pvp com porta 3334 dedicada), abre porta dedicada também
-let separateWsServer = null;
-if (WS_PORT && String(WS_PORT) !== String(PORT)) {
-  separateWsServer = createServer((req, res) => {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('HORTOBOTS Dedicated WebSocket Server\n');
-  });
-
-  separateWsServer.on('upgrade', (request, socket, head) => {
-    wss.handleUpgrade(request, socket, head, (ws) => {
-      wss.emit('connection', ws, request);
-    });
-  });
-
-  separateWsServer.listen(WS_PORT, () => {
-    const line = '═'.repeat(55);
-    console.log(line);
-    console.log(' [HORTOBOTS] WS DEDICADO → ws://localhost:' + WS_PORT);
-    console.log(' [HORTOBOTS] Contas      → data/accounts.json');
-    console.log(line + '\n');
-  });
-
-  separateWsServer.on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
-      console.error('\n[AVISO] A porta WebSocket dedicada ' + WS_PORT + ' já está em uso por outro processo.');
-    } else {
-      console.error('[WS] Erro:', err.message);
-    }
-  });
-}

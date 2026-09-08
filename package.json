@@ -6,7 +6,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "pvp": "node --env-file=.env.pvp server.js",
+    "pvp": "node server.js",
     "web": "node server.js",
     "cli": "node cli.js",
     "test": "node debug-versus.js"

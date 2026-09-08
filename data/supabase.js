@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 const LOCAL_ACCOUNTS_FILE = path.join(__dirname, 'accounts.json');
 
 const connectionString = process.env.DATABASE_URL ||
-  'postgresql://postgres:1Q2W3E4R5T6Y7U8I9O0Pa!!@db.rxfdjwdfinhqdwllzmcc.supabase.co:5432/postgres';
+  'postgresql://postgres.rxfdjwdfinhqdwllzmcc:1Q2W3E4R5T6Y7U8I9O0Pa!!@aws-0-us-west-2.pooler.supabase.com:5432/postgres';
 
 export const pool = new Pool({
   connectionString,
