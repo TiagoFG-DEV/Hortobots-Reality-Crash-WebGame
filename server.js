@@ -91,8 +91,40 @@ app.get('/api/auth/google-config', (req, res) => {
   res.json({ clientId: process.env.GOOGLE_CLIENT_ID || '' });
 });
 
-// ── AUTH 2FA: Início do Registro com Envio de E-mail Real (Gmail) ────────
-app.post('/api/auth/register-2fa-start', async (req, res) => {
+// Proteção contra Overload e Ataques de Spam (Rate Limiter Inteligente por IP)
+const registrationRateLimitMap = new Map();
+function checkRegistrationRateLimit(req, res, next) {
+  const forwarded = req.headers['x-forwarded-for'];
+  const ip = (typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : '') || req.socket.remoteAddress || 'unknown-ip';
+  const now = Date.now();
+  const record = registrationRateLimitMap.get(ip) || { count: 0, resetAt: now + 60000 };
+
+  if (now > record.resetAt) {
+    record.count = 1;
+    record.resetAt = now + 60000;
+  } else {
+    record.count++;
+  }
+  registrationRateLimitMap.set(ip, record);
+
+  // Máximo 6 solicitações por minuto por IP (protege o servidor e a cota do Resend)
+  if (record.count > 6) {
+    return res.status(429).json({
+      error: 'Muitas solicitações simultâneas deste IP. Para proteger o servidor contra sobrecarga, aguarde 1 minuto.'
+    });
+  }
+
+  if (registrationRateLimitMap.size > 1000) {
+    for (const [k, v] of registrationRateLimitMap.entries()) {
+      if (now > v.resetAt) registrationRateLimitMap.delete(k);
+    }
+  }
+
+  next();
+}
+
+// ── AUTH: Início do Registro com Envio de E-mail de Validação ─────────────
+app.post('/api/auth/register-2fa-start', checkRegistrationRateLimit, async (req, res) => {
   try {
     const { nickname, password, email, birthDate } = req.body;
     const result = await start2FARegistration({
@@ -121,7 +153,7 @@ app.post('/api/auth/register-2fa-start', async (req, res) => {
   }
 });
 
-// ── AUTH 2FA: Confirmação do Código e Ativação da Conta ─────────────────
+// ── AUTH: Confirmação do Código de 4 Dígitos e Ativação da Conta ─────────
 app.post('/api/auth/register-2fa-verify', async (req, res) => {
   try {
     const { email, code } = req.body;
@@ -138,8 +170,8 @@ app.post('/api/auth/register-2fa-verify', async (req, res) => {
   }
 });
 
-// ── AUTH 2FA: Reenviar Código ao Gmail ─────────────────────────────────
-app.post('/api/auth/register-2fa-resend', async (req, res) => {
+// ── AUTH: Reenviar Código ao E-mail ─────────────────────────────────────
+app.post('/api/auth/register-2fa-resend', checkRegistrationRateLimit, async (req, res) => {
   try {
     const { email } = req.body;
     const result = await resend2FACode({ email });
@@ -152,7 +184,7 @@ app.post('/api/auth/register-2fa-resend', async (req, res) => {
 // ── AUTH: Cadastro Direto Desativado (E-mail Real é Obrigatório) ────────
 app.post('/api/auth/register-direct', (req, res) => {
   return res.status(403).json({
-    error: 'O cadastro direto sem e-mail foi desativado. É obrigatório registrar com e-mail real do Gmail com verificação de 2 fatores.'
+    error: 'O cadastro direto sem e-mail foi desativado. É obrigatório registrar com e-mail real para validação.'
   });
 });
 

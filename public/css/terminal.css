@@ -168,7 +168,7 @@ body {
   justify-content: center;
 }
 
-/* CRT MONITOR FRAME & CURVATURA DE TV DE TUBO (OLHO DE PEIXE / DISTORÇÃO BARREL) */
+/* CRT MONITOR FRAME & CURVATURA DE TV DE TUBO (OLHO DE PEIXE / DISTORÇÃO BARREL SIMULADA VIA CSS) */
 .crt-monitor-container {
   width: 97.6vw;
   height: 97.2vh;
@@ -178,22 +178,27 @@ body {
   background: var(--term-bg);
   padding: 16px 22px;
   overflow: hidden;
-  border-radius: 46px / 34px;
+  /* Border-radius elíptico acentuado simula a curvatura da frente de um CRT antigo */
+  border-radius: 52px / 40px;
   box-shadow:
-    inset 0 0 120px rgba(0, 0, 0, 0.95),
-    inset 0 0 25px rgba(0, 255, 102, 0.15),
-    0 0 0 5px #070a08,
-    0 0 0 14px #101412,
-    0 0 38px rgba(0, 0, 0, 0.95);
-  transform: perspective(950px) scale(0.986);
-  filter: url(#crtBarrelDistortion);
+    /* Sombra interna: escurece fortemente as bordas internas (efeito barrel) */
+    inset 0 0 180px rgba(0, 0, 0, 0.97),
+    inset 0 0 60px rgba(0, 0, 0, 0.75),
+    inset 0 0 25px rgba(0, 255, 102, 0.12),
+    /* Moldura da carcaça do monitor */
+    0 0 0 6px #050808,
+    0 0 0 18px #0d1110,
+    0 0 0 22px #080c09,
+    0 0 50px rgba(0, 0, 0, 0.98);
+  /* perspective cria sensação de profundidade/curvatura do vidro */
+  transform: perspective(1100px) scale(0.984);
   transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 
 body.graphics-low .crt-monitor-container {
-  filter: none !important;
   border-radius: 8px;
   transform: none;
+  box-shadow: 0 0 0 4px #0d1110;
 }
 
 .crt-scanlines {
@@ -218,38 +223,58 @@ body.graphics-low .crt-monitor-container {
   z-index: 101;
 }
 
-/* EFEITO DE BULBO DE VIDRO CRT / CURVATURA ESFÉRICA DE OLHO DE PEIXE */
+/* EFEITO DE BULBO DE VIDRO CRT / CURVATURA ESFÉRICA DE OLHO DE PEIXE
+   Simula o vidro abaulado convexo de um monitor CRT antigo:
+   - Centro: leve brilho branco (reflexo do vidro bombeado para fora)
+   - Bordas: escurecimento progressivo forte (barrel curvature)
+   - Box-shadow inset: "cantos" do tubo esmagados pela curvatura
+*/
 .crt-fisheye-overlay {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 102;
-  border-radius: 46px / 34px;
+  border-radius: 52px / 40px;
+  /* Multi-camada de sombra simula curvatura esférica do tubo de vidro */
   box-shadow:
-    inset 0 0 160px rgba(0, 0, 0, 0.88),
-    inset 0 0 70px rgba(0, 0, 0, 0.72),
-    inset 0 4px 12px rgba(255, 255, 255, 0.06),
-    inset 0 -6px 14px rgba(0, 0, 0, 0.85);
-  background: radial-gradient(circle at 50% 50%,
-      rgba(255, 255, 255, 0.015) 0%,
-      rgba(0, 0, 0, 0) 50%,
-      rgba(0, 0, 0, 0.28) 85%,
-      rgba(0, 0, 0, 0.65) 100%);
+    inset 0 0 220px rgba(0, 0, 0, 0.95),
+    inset 0 0 110px rgba(0, 0, 0, 0.80),
+    inset 0 0 50px rgba(0, 0, 0, 0.60),
+    inset 0 6px 18px rgba(255, 255, 255, 0.05),
+    inset 0 -8px 20px rgba(0, 0, 0, 0.90),
+    inset 12px 0 30px rgba(0, 0, 0, 0.50),
+    inset -12px 0 30px rgba(0, 0, 0, 0.50);
+  /* Gradiente radial: centro levemente brilhante, bordas muito escuras */
+  background:
+    radial-gradient(
+      ellipse 72% 68% at 50% 50%,
+      rgba(255, 255, 255, 0.018) 0%,
+      rgba(255, 255, 255, 0.008) 28%,
+      rgba(0, 0, 0, 0.0)        50%,
+      rgba(0, 0, 0, 0.38)       75%,
+      rgba(0, 0, 0, 0.72)       90%,
+      rgba(0, 0, 0, 0.90)       100%
+    );
 }
 
 .crt-glass-glare {
   position: fixed;
-  top: -8%;
-  left: 6%;
-  right: 6%;
-  height: 50%;
-  background: radial-gradient(ellipse 70% 45% at 50% 16%,
-      rgba(255, 255, 255, 0.065) 0%,
-      rgba(255, 255, 255, 0.02) 48%,
-      rgba(255, 255, 255, 0) 78%);
+  top: -6%;
+  left: 8%;
+  right: 8%;
+  height: 48%;
+  /* Reflexo de luz de teto no vidro abaulado do CRT */
+  background:
+    radial-gradient(
+      ellipse 62% 38% at 50% 14%,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(255, 255, 255, 0.035) 40%,
+      rgba(255, 255, 255, 0.010) 65%,
+      rgba(255, 255, 255, 0) 80%
+    );
   pointer-events: none;
   z-index: 103;
-  border-radius: 50% 50% 45% 45% / 60% 60% 30% 30%;
+  border-radius: 50% 50% 40% 40% / 65% 65% 28% 28%;
 }
 
 /* CABEÇALHO */

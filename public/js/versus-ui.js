@@ -628,28 +628,28 @@ $('accountRegSubmitBtn')?.addEventListener('click', async (e) => {
   }
 
   const btn = $('accountRegSubmitBtn');
-  if (btn) btn.textContent = 'ENVIANDO E-MAIL AO GMAIL...';
+  if (btn) btn.textContent = 'ENVIANDO E-MAIL...';
 
   try {
     await AccountAPI.start2FARegister(nick, pass, googleEmail, birth);
     pendingRegEmail = googleEmail;
     showAccount2FAForm(googleEmail);
-    showAccountStatus(`Código de 6 dígitos transmitido ao seu Gmail (${googleEmail}). Abra seu Gmail para verificar.`, 'info');
+    showAccountStatus(`Código de 4 dígitos enviado ao seu e-mail (${googleEmail}). Abra sua caixa de entrada.`, 'info');
     getAudio().playKeyClack();
   } catch (err) {
-    showAccountStatus(err.message || 'Erro ao enviar código de verificação para o Gmail');
+    showAccountStatus(err.message || 'Erro ao enviar código de validação');
   } finally {
     if (btn) btn.textContent = 'CONCLUIR CADASTRO';
   }
 });
 
-// ── Confirmação de Código 2FA Recebido no Gmail ──────────────────────
+// ── Confirmação de Código de 4 Dígitos Recebido no E-mail ────────────
 async function handleConfirm2FACode() {
   clearAccountStatus();
   const code = ($('account2FACodeInput')?.value || '').replace(/\D/g, '').trim();
 
-  if (!code || code.length !== 6) {
-    showAccountStatus('Digite o código de 6 dígitos que recebeu em seu Gmail.', 'warning');
+  if (!code || code.length !== 4) {
+    showAccountStatus('Digite o código de 4 dígitos que recebeu em seu e-mail.', 'warning');
     return;
   }
 
@@ -671,7 +671,7 @@ async function handleConfirm2FACode() {
       account.emailVerified = true;
     }
     updateProfileHeader(account);
-    showAccountStatus(`Conta ativada e verificada com sucesso! Piloto: ${account.nickname}`, 'success');
+    showAccountStatus(`Conta ativada e validada com sucesso! Piloto: ${account.nickname}`, 'success');
     getAudio().playKeyClack();
     setTimeout(() => {
       renderAccountScreen();
@@ -698,7 +698,7 @@ $('account2FAResendBtn')?.addEventListener('click', async () => {
   if (btn) btn.textContent = 'REENVIANDO...';
   try {
     await AccountAPI.resend2FACode(pendingRegEmail);
-    showAccountStatus(`Novo código enviado ao Gmail (${pendingRegEmail}).`, 'info');
+    showAccountStatus(`Novo código de 4 dígitos enviado ao e-mail (${pendingRegEmail}).`, 'info');
     getAudio().playKeyClack();
   } catch (err) {
     showAccountStatus(err.message || 'Erro ao reenviar código');

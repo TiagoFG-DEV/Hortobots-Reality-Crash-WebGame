@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HORTOBOTS // QUEZAS-DOS - A TORRE VIRTUAL</title>
+  <title>QUEZAS-DOS</title>
   <link rel="icon" type="image/png" href="/img/cara-icon.png">
   <link rel="shortcut icon" type="image/png" href="/img/cara-icon.png">
   <link rel="apple-touch-icon" href="/img/cara-icon.png">
@@ -15,17 +15,19 @@
 
 <body>
   <!-- CORTINA PRETA DE INICIALIZAÇÃO (CARREGA EM TELA PRETA E FAZ FADE OUT DEMORADO) -->
-  <div id="initialBootCurtain" class="initial-boot-curtain" style="position:fixed;inset:0;width:100vw;height:100vh;background:#000000;z-index:999999;pointer-events:none;"></div>
+  <div id="initialBootCurtain" class="initial-boot-curtain"
+    style="position:fixed;inset:0;width:100vw;height:100vh;background:#000000;z-index:999999;pointer-events:none;">
+  </div>
   <div class="crt-scanlines"></div>
   <div class="crt-vignette"></div>
   <div class="crt-fisheye-overlay"></div>
   <div class="crt-glass-glare"></div>
-  <!-- FILTRO SVG DE DISTORÇÃO ÓPTICA DE OLHO DE PEIXE / CURVATURA REAL DE TV DE TUBO CRT -->
+  <!-- FILTRO SVG CRT (marcador preservado para compatibilidade — distorção via CSS puro) -->
   <svg style="position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none;" aria-hidden="true">
     <defs>
-      <filter id="crtBarrelDistortion" x="-4%" y="-4%" width="108%" height="108%" color-interpolation-filters="sRGB">
-        <feImage id="crtBarrelMapImg" href="/img/crt-displacement-map.png" xlink:href="/img/crt-displacement-map.png" result="barrelMap" preserveAspectRatio="none" />
-        <feDisplacementMap in="SourceGraphic" in2="barrelMap" scale="18" xChannelSelector="R" yChannelSelector="G" />
+      <!-- Placeholder vazio — distorção barrel CRT feita via CSS transform/perspective -->
+      <filter id="crtBarrelDistortion">
+        <feGaussianBlur stdDeviation="0" />
       </filter>
     </defs>
   </svg>
@@ -847,27 +849,26 @@
                 </div>
               </div>
 
-              <!-- 3. CONFIRMAÇÃO DO CÓDIGO NO GMAIL (SEM DEBUG, VERDADEIRO E DIRETO) -->
+              <!-- 3. CONFIRMAÇÃO DO CÓDIGO DE VALIDAÇÃO (4 DÍGITOS) -->
               <div id="account2FAForm" class="account-form-box hidden">
                 <div class="account-form-header">
-                  <h3 class="form-title">VERIFICAÇÃO DE E-MAIL</h3>
-                  <span class="form-sub">CÓDIGO ENVIADO AO GMAIL</span>
+                  <h3 class="form-title">VALIDAÇÃO DE CONTA</h3>
+                  <span class="form-sub">CÓDIGO DE 4 DÍGITOS ENVIADO AO SEU E-MAIL</span>
                 </div>
 
                 <div class="account-2fa-card">
                   <p class="account-2fa-instructions">
-                    Enviamos um código de confirmação para o endereço:<br>
+                    Enviamos um código de validação para o endereço:<br>
                     <strong id="account2FAEmailDisplay" class="highlight-cyan">...</strong>
                   </p>
                   <div class="account-2fa-notice">
-                    Abra o seu <strong>Gmail</strong> (caixa de entrada ou spam) e insira o código de 6 dígitos
-                    recebido:
+                    Abra o seu e-mail (caixa de entrada ou spam) e insira o código de 4 dígitos recebido:
                   </div>
 
                   <div class="account-input-group" style="margin: 16px 0;">
-                    <label class="account-label" for="account2FACodeInput">CÓDIGO DE 6 DÍGITOS</label>
-                    <input type="text" id="account2FACodeInput" class="account-input code-input" placeholder="000000"
-                      maxlength="6" inputmode="numeric" autocomplete="one-time-code" />
+                    <label class="account-label" for="account2FACodeInput">CÓDIGO DE 4 DÍGITOS</label>
+                    <input type="text" id="account2FACodeInput" class="account-input code-input" placeholder="0000"
+                      maxlength="4" inputmode="numeric" autocomplete="one-time-code" />
                   </div>
 
                   <button class="term-btn cyan account-submit-btn" id="account2FAConfirmBtn" type="button">

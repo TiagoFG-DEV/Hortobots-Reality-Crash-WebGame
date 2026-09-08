@@ -1,8 +1,25 @@
-// data/email-service.js — Sistema de Autenticação 2FA & E-mails Estilizados Cyberpunk
-// Hortobots: Reality Clash // Quezas-DOS 1.0 (Mnemosyne Terminal)
-// Armazenamento em memória de registros pendentes de 2FA
-// email -> { nickname, password, email, code, createdAt, expiresAt }
+// data/email-service.js — Sistema de Validação de Contas & E-mails Estilizados Cyberpunk
+// LangoLabs // RealityClash // Quezas-DOS 1.0
+// Armazenamento em memória de registros pendentes de validação
 export const pending2FARegistrations = new Map();
+
+// Proteção contra Overload e Concorrência Simultânea
+const inFlightEmails = new Set();
+const emailLastSentAt = new Map();
+
+// Limpeza automática periódica de memória a cada 3 minutos
+if (typeof setInterval === 'function') {
+  const cleanupTimer = setInterval(() => {
+    const now = Date.now();
+    for (const [em, entry] of pending2FARegistrations.entries()) {
+      if (now > entry.expiresAt) pending2FARegistrations.delete(em);
+    }
+    for (const [em, time] of emailLastSentAt.entries()) {
+      if (now - time > 60000) emailLastSentAt.delete(em);
+    }
+  }, 3 * 60 * 1000);
+  if (cleanupTimer.unref) cleanupTimer.unref();
+}
 
 // Validação estrita de e-mails Google (@gmail.com ou @googlemail.com)
 export function isGoogleEmail(email) {
@@ -22,7 +39,7 @@ export function generateCyberpunkEmailHTML({ nickname, email, code }) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>[HORTOBOTS] Chave de Acesso 2FA</title>
+  <title>[RealityClash] Código de Validação de Conta</title>
   <style>
     body {
       margin: 0;
@@ -102,9 +119,9 @@ export function generateCyberpunkEmailHTML({ nickname, email, code }) {
       border: 2px dashed #00ff88;
       border-radius: 4px;
       padding: 16px 32px;
-      font-size: 34px;
+      font-size: 36px;
       font-weight: bold;
-      letter-spacing: 10px;
+      letter-spacing: 14px;
       color: #00ff88;
       text-shadow: 0 0 16px rgba(0, 255, 136, 0.8), 0 0 30px rgba(0, 255, 136, 0.4);
       box-shadow: inset 0 0 15px rgba(0, 255, 136, 0.15);
@@ -154,19 +171,19 @@ export function generateCyberpunkEmailHTML({ nickname, email, code }) {
 <body>
   <div class="email-container">
     <div class="header-banner">
-      <div class="brand-title">HORTOBOTS</div>
-      <div class="brand-subtitle">CÓDIGO DE VERIFICAÇÃO</div>
+      <div class="brand-title">LANGOLABS</div>
+      <div class="brand-subtitle">REALITYCLASH // VALIDAÇÃO DE CONTA</div>
       <div class="crt-line"></div>
     </div>
 
     <div class="content-section">
-      <span class="terminal-tag">VERIFICAÇÃO DE E-MAIL</span>
+      <span class="terminal-tag">CÓDIGO DE ATIVAÇÃO</span>
 
       <div class="greeting">Olá, ${nickname}!</div>
 
       <p style="margin: 0 0 14px 0; color: #c4f3d8; font-size: 13px;">
-        Uma solicitação de registro de conta de piloto foi realizada com sucesso no Hortobots.
-        Para autorizar e ativar o seu acesso, utilize o código abaixo:
+        Uma solicitação de registro de piloto foi iniciada no <strong>RealityClash</strong>.
+        Para validar o seu e-mail e ativar a sua conta, utilize o código de 4 dígitos abaixo:
       </p>
 
       <p style="margin: 0; font-size: 13px; color: #88c5a4;">
@@ -176,15 +193,15 @@ export function generateCyberpunkEmailHTML({ nickname, email, code }) {
 
       <div class="code-wrapper">
         <div class="code-box">${formattedCode}</div>
-        <div class="code-label">CÓDIGO DE 6 DÍGITOS</div>
+        <div class="code-label">CÓDIGO DE 4 DÍGITOS</div>
       </div>
 
       <div class="instructions-card">
         <strong style="color: #00e5ff;">INSTRUÇÕES:</strong>
         <ol>
-          <li>Retorne à tela de cadastro no <strong>Hortobots</strong>.</li>
-          <li>Insira o código de 6 dígitos acima no campo de confirmação.</li>
-          <li>Clique no botão <strong>CONFIRMAR</strong> para ativar sua conta.</li>
+          <li>Retorne à tela de validação no <strong>RealityClash</strong>.</li>
+          <li>Insira o código de 4 dígitos acima no campo de confirmação.</li>
+          <li>Clique no botão <strong>CONFIRMAR CÓDIGO</strong> para ativar sua conta.</li>
         </ol>
       </div>
 
@@ -195,7 +212,7 @@ export function generateCyberpunkEmailHTML({ nickname, email, code }) {
     </div>
 
     <div class="footer-section">
-      HORTOBOTS: REALITY CLASH<br>
+      LANGOLABS // REALITYCLASH<br>
       © 2026 Todos os direitos reservados.
     </div>
   </div>
@@ -210,8 +227,8 @@ export async function send2FAVerificationEmail({ nickname, email, code }) {
   const resendApiKey = (process.env.RESEND_API_KEY || '').trim();
 
   if (!resendApiKey) {
-    console.warn(`[2FA] ⚠️ RESEND_API_KEY ausente no arquivo .env.`);
-    console.warn(`[2FA] 🔑 CHAVE 2FA DE SEGURANÇA PARA [${nickname}] (${cleanEmail}): >>> ${code} <<<`);
+    console.warn(`[VALIDAÇÃO] ⚠️ RESEND_API_KEY ausente no arquivo .env.`);
+    console.warn(`[VALIDAÇÃO] 🔑 CÓDIGO DE SEGURANÇA PARA [${nickname}] (${cleanEmail}): >>> ${code} <<<`);
     throw new Error('Serviço de envio de e-mail não configurado. Adicione RESEND_API_KEY no arquivo .env.');
   }
 
@@ -223,34 +240,35 @@ export async function send2FAVerificationEmail({ nickname, email, code }) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: process.env.RESEND_FROM || 'Hortobots <onboarding@resend.dev>',
+        from: process.env.RESEND_FROM || 'LangoLabs <onboarding@resend.dev>',
         to: [cleanEmail],
-        subject: `[HORTOBOTS] Código de Confirmação: ${code}`,
+        subject: `[RealityClash] Código de Validação: ${code}`,
         html,
       }),
+      signal: AbortSignal.timeout(6000), // Timeout rígido de 6s para evitar conexões penduradas
     });
 
     const data = await response.json();
     if (!response.ok) {
       const errMsg = data.message || JSON.stringify(data);
-      console.error(`[2FA] ❌ Erro ao enviar e-mail via Resend (${cleanEmail}):`, errMsg);
-      console.warn(`[2FA] 🔑 CHAVE 2FA DE SEGURANÇA PARA [${nickname}] (${cleanEmail}): >>> ${code} <<<`);
+      console.error(`[VALIDAÇÃO] ❌ Erro ao enviar e-mail via Resend (${cleanEmail}):`, errMsg);
+      console.warn(`[VALIDAÇÃO] 🔑 CÓDIGO DE SEGURANÇA PARA [${nickname}] (${cleanEmail}): >>> ${code} <<<`);
       throw new Error(`Falha no envio de e-mail (Resend): ${errMsg}`);
     }
 
-    console.log(`[2FA] ✅ E-mail 2FA enviado com sucesso via Resend para: ${cleanEmail}`);
+    console.log(`[VALIDAÇÃO] ✅ E-mail enviado com sucesso via Resend para: ${cleanEmail}`);
     return {
       success: true,
       sentRealEmail: true,
       message: `Código de verificação enviado para o seu e-mail (${cleanEmail}). Verifique sua caixa de entrada.`
     };
   } catch (err) {
-    console.warn(`[2FA] 🔑 CHAVE 2FA DE SEGURANÇA PARA [${nickname}] (${cleanEmail}): >>> ${code} <<<`);
+    console.warn(`[VALIDAÇÃO] 🔑 CÓDIGO DE SEGURANÇA PARA [${nickname}] (${cleanEmail}): >>> ${code} <<<`);
     throw err;
   }
 }
 
-// Inicia o processo de registro com 2FA
+// Inicia o processo de registro com validação por e-mail
 export async function start2FARegistration({ nickname, password, email, birthDate = '', existingAccountsCheck }) {
   const cleanEmail = (email || '').trim().toLowerCase();
   const cleanNick = (nickname || '').trim().replace(/[^a-zA-Z0-9_]/g, '').toUpperCase().slice(0, 16);
@@ -264,78 +282,108 @@ export async function start2FARegistration({ nickname, password, email, birthDat
   }
 
   if (!cleanEmail) {
-    throw new Error('O e-mail é obrigatório para envio do código de verificação.');
+    throw new Error('O e-mail é obrigatório para envio do código de validação.');
   }
 
   if (!isGoogleEmail(cleanEmail)) {
     throw new Error('Obrigatório utilizar um e-mail Google válido (@gmail.com ou @googlemail.com).');
   }
 
-  // Checa se conta já existe
+  // 1. Proteção de Concorrência: In-Flight Mutex por E-mail
+  if (inFlightEmails.has(cleanEmail)) {
+    throw new Error('Já existe uma validação em andamento para este e-mail. Aguarde alguns instantes.');
+  }
+
+  // 2. Proteção contra Overload: Cooldown de 25 segundos
+  const lastSent = emailLastSentAt.get(cleanEmail) || 0;
+  const elapsed = Date.now() - lastSent;
+  if (elapsed < 25000) {
+    const waitSec = Math.ceil((25000 - elapsed) / 1000);
+    throw new Error(`Aguarde ${waitSec} segundos antes de solicitar um novo código para este e-mail.`);
+  }
+
+  // 3. Checa se conta já existe
   if (existingAccountsCheck) {
     const checkResult = await existingAccountsCheck(cleanNick, cleanEmail);
     if (checkResult.nickTaken) {
-      throw new Error('Esse NickName já está em uso por outro piloto. Nenhum usuário tem permissão para cadastrar o mesmo NickName.');
+      throw new Error('Esse NickName já está em uso por outro piloto. Escolha outro NickName.');
     }
     if (checkResult.emailTaken) {
-      throw new Error('Esse e-mail já está vinculado a outra conta cadastrada. Nenhum usuário tem permissão para ter mais de uma conta por e-mail.');
+      throw new Error('Esse e-mail já está vinculado a outra conta cadastrada.');
     }
   }
 
-  // Gera código aleatório de 6 dígitos
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  // 4. Limite de tamanho de memória (máximo 500 registros pendentes simultâneos)
+  if (pending2FARegistrations.size > 500) {
+    const oldestKey = pending2FARegistrations.keys().next().value;
+    if (oldestKey) pending2FARegistrations.delete(oldestKey);
+  }
+
+  // 5. Gera código de 4 dígitos
+  const code = Math.floor(1000 + Math.random() * 9000).toString();
   const now = Date.now();
   const expiresAt = now + 15 * 60 * 1000; // 15 minutos
 
-  pending2FARegistrations.set(cleanEmail, {
-    nickname: cleanNick,
-    password: String(password),
-    email: cleanEmail,
-    birthDate: (birthDate || '').trim(),
-    code,
-    createdAt: now,
-    expiresAt,
-  });
+  inFlightEmails.add(cleanEmail);
+  try {
+    pending2FARegistrations.set(cleanEmail, {
+      nickname: cleanNick,
+      password: String(password),
+      email: cleanEmail,
+      birthDate: (birthDate || '').trim(),
+      code,
+      createdAt: now,
+      expiresAt,
+    });
 
-  await send2FAVerificationEmail({
-    nickname: cleanNick,
-    email: cleanEmail,
-    code,
-  });
+    await send2FAVerificationEmail({
+      nickname: cleanNick,
+      email: cleanEmail,
+      code,
+    });
+
+    emailLastSentAt.set(cleanEmail, Date.now());
+  } finally {
+    inFlightEmails.delete(cleanEmail);
+  }
 
   return {
     ok: true,
     email: cleanEmail,
     nickname: cleanNick,
     expiresAt,
-    message: `Código de verificação enviado para ${cleanEmail}! Abra seu Gmail para conferir os 6 dígitos.`,
+    message: `Código de 4 dígitos enviado para ${cleanEmail}! Abra seu e-mail para conferir.`,
   };
 }
 
-// Valida o código 2FA e cria a conta
+// Valida o código de 4 dígitos e ativa a conta
 export async function verify2FARegistration({ email, code, createAccountFn }) {
   const cleanEmail = (email || '').trim().toLowerCase();
   const inputCode = String(code || '').replace(/\D/g, '').trim();
 
   if (!cleanEmail || !inputCode) {
-    throw new Error('E-mail e código de verificação são obrigatórios.');
+    throw new Error('E-mail e código de validação são obrigatórios.');
+  }
+
+  if (inputCode.length !== 4) {
+    throw new Error('O código de validação deve conter exatamente 4 dígitos.');
   }
 
   const pending = pending2FARegistrations.get(cleanEmail);
   if (!pending) {
-    throw new Error('Nenhuma solicitação de verificação ativa encontrada para este e-mail. Inicie o registro novamente.');
+    throw new Error('Nenhuma solicitação de validação ativa encontrada para este e-mail. Inicie o cadastro novamente.');
   }
 
   if (Date.now() > pending.expiresAt) {
     pending2FARegistrations.delete(cleanEmail);
-    throw new Error('O código de verificação expirou. Solicite um novo código.');
+    throw new Error('O código de validação expirou. Solicite um novo código.');
   }
 
   if (pending.code !== inputCode) {
-    throw new Error('Código de verificação incorreto. Verifique no seu Gmail e digite novamente.');
+    throw new Error('Código de validação incorreto. Verifique no seu e-mail e digite os 4 dígitos novamente.');
   }
 
-  // Cria a conta com email verificado e 2FA habilitado
+  // Cria a conta com email verificado
   const accountData = {
     name: pending.nickname,
     nickname: pending.nickname,
@@ -345,13 +393,13 @@ export async function verify2FARegistration({ email, code, createAccountFn }) {
     googleLinked: true,
     googleEmail: pending.email,
     emailVerified: true,
-    twoFactorEnabled: true,
+    twoFactorEnabled: false,
     rankingPoints: 0,
     wins: 0,
     losses: 0,
     totalMatches: 0,
     totalMedals: 0,
-    customBio: `Piloto Certificado Google (${pending.email})`,
+    customBio: `Piloto Certificado RealityClash (${pending.email})`,
     avatarBadge: 'quezas',
   };
 
@@ -362,36 +410,54 @@ export async function verify2FARegistration({ email, code, createAccountFn }) {
 
   // Remove dos pendentes após validação
   pending2FARegistrations.delete(cleanEmail);
+  emailLastSentAt.delete(cleanEmail);
 
   return {
     ok: true,
     account: newAccount || accountData,
-    message: `Conta do piloto ${pending.nickname} ativada com sucesso com segurança Google!`,
+    message: `Conta do piloto ${pending.nickname} ativada com sucesso!`,
   };
 }
 
-// Reenvia código 2FA
+// Reenvia código de 4 dígitos
 export async function resend2FACode({ email }) {
   const cleanEmail = (email || '').trim().toLowerCase();
   const pending = pending2FARegistrations.get(cleanEmail);
   if (!pending) {
-    throw new Error('Nenhum registro pendente para este e-mail.');
+    throw new Error('Nenhum cadastro pendente para este e-mail.');
   }
 
-  const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+  if (inFlightEmails.has(cleanEmail)) {
+    throw new Error('Já existe um reenvio em processamento. Aguarde alguns instantes.');
+  }
+
+  const lastSent = emailLastSentAt.get(cleanEmail) || 0;
+  const elapsed = Date.now() - lastSent;
+  if (elapsed < 25000) {
+    const waitSec = Math.ceil((25000 - elapsed) / 1000);
+    throw new Error(`Aguarde ${waitSec} segundos antes de solicitar um novo código.`);
+  }
+
+  const newCode = Math.floor(1000 + Math.random() * 9000).toString();
   pending.code = newCode;
   pending.expiresAt = Date.now() + 15 * 60 * 1000;
 
-  await send2FAVerificationEmail({
-    nickname: pending.nickname,
-    email: cleanEmail,
-    code: newCode,
-  });
+  inFlightEmails.add(cleanEmail);
+  try {
+    await send2FAVerificationEmail({
+      nickname: pending.nickname,
+      email: cleanEmail,
+      code: newCode,
+    });
+    emailLastSentAt.set(cleanEmail, Date.now());
+  } finally {
+    inFlightEmails.delete(cleanEmail);
+  }
 
   return {
     ok: true,
     email: cleanEmail,
     expiresAt: pending.expiresAt,
-    message: 'Novo código de verificação enviado para o seu Gmail!',
+    message: 'Novo código de 4 dígitos enviado para o seu e-mail!',
   };
 }
