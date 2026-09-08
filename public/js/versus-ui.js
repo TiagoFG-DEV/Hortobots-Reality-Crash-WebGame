@@ -22,6 +22,7 @@ const network   = new VersusNetwork();
 let board       = null;
 let minigames   = null;
 let account     = null;
+let currentRoundDefCoinResults = {};
 
 // ── DOM Helpers ──────────────────────────────────────────────────────
 const $ = (id) => document.getElementById(id);
@@ -1822,8 +1823,11 @@ async function startCombatFromDraft(firstTurn, themeId = null, yourTeam = null, 
 
   // 2. Inicia o combate
   engine.mode = currentMode;
-  engine.initiative = (firstTurn === 'PLAYER' || firstTurn === 'A' || (network && network.side && firstTurn === network.side)) ? 'PLAYER' : 'ENEMY';
-  engine.startCombat();
+  const doesThisClientGoFirst = (currentMode === 'bot')
+    ? (firstTurn === 'PLAYER')
+    : (network && network.side ? firstTurn === network.side : firstTurn === 'A');
+  engine.initiative = doesThisClientGoFirst ? 'PLAYER' : 'ENEMY';
+  engine.startCombat(engine.initiative);
 
   if (currentMode === 'bot' && typeof engine.botSelectTurnActions === 'function') {
     engine.botSelectTurnActions();
@@ -2642,10 +2646,34 @@ async function executeSimultaneousClash() {
     await delay(250);
 
     let defSuccess = false;
-    if (isPlayer) {
-      defSuccess = await minigames.runCoinFlip(defBot.color);
+    if (currentMode === 'ranked') {
+      const botServerSide = isPlayer ? network.side : (network.side === 'A' ? 'B' : 'A');
+      defSuccess = currentRoundDefCoinResults && (currentRoundDefCoinResults[botServerSide] !== undefined)
+        ? !!currentRoundDefCoinResults[botServerSide]
+        : Math.random() < 0.5;
+
+      // Executa a cinemática da Moeda 3D para ambos os duelistas verem a moeda cair simultaneamente!
+      const outcome = defSuccess ? 'CARA' : 'COROA';
+      const engine3D = (window.gameInstance && window.gameInstance.engine3D) || (minigames && minigames.engine3D);
+      await new Promise(resolve => {
+        if (engine3D && typeof engine3D.run3DCoinFlipCinematic === 'function') {
+          engine3D.run3DCoinFlipCinematic(
+            'CARA',
+            outcome,
+            () => resolve(),
+            `>> DEFESA: ${defBot.name} ATIVOU ESCUDO! <<`,
+            `>> DEFESA: ${defBot.name} FALHOU (SEM ESCUDO) <<`
+          );
+        } else {
+          setTimeout(resolve, 1500);
+        }
+      });
     } else {
-      defSuccess = Math.random() < 0.5;
+      if (isPlayer) {
+        defSuccess = await minigames.runCoinFlip(defBot.color);
+      } else {
+        defSuccess = Math.random() < 0.5;
+      }
     }
 
     const defTarget = (defBot.id === 'DB') ? null : (defBot._chosenDefenseTarget || defBot);
@@ -2752,12 +2780,16 @@ async function executeSimultaneousClash() {
     } else {
       // Minigame proposto (desempenho proporcional de 0 a 100%)
       let minigameResult = 1.0;
-      if (isPlayer) {
-        const atk = attacker._chosenAttack || attacker.attacks[0];
-        minigameResult = await minigames.run(atk.minigame, attacker.color, attacker.name);
+      if (currentMode === 'ranked') {
+        minigameResult = 1.0; // Em PvP online, ataques utilizam precisão tática integral sem bloquear a tela do oponente
       } else {
-        // Bot adversário: precisão proporcional de 70% a 100% ou erro (0.0)
-        minigameResult = Math.random() < 0.75 ? (0.70 + Math.random() * 0.30) : 0.0;
+        if (isPlayer) {
+          const atk = attacker._chosenAttack || attacker.attacks[0];
+          minigameResult = await minigames.run(atk.minigame, attacker.color, attacker.name);
+        } else {
+          // Bot adversário: precisão proporcional de 70% a 100% ou erro (0.0)
+          minigameResult = Math.random() < 0.75 ? (0.70 + Math.random() * 0.30) : 0.0;
+        }
       }
 
       // REGRA DO USUÁRIO: Esperar o ataque ter contato para DAÍ mover a barra ou mostrar o que aconteceu!
@@ -3454,8 +3486,14 @@ network.addEventListener('turn_auto_submitted', () => {
 
 // Início Simultâneo do Embate do Round (Lockstep)
 network.addEventListener('clash_start', async (e) => {
-  const { actionsA, actionsB } = e.detail;
+  const { actionsA, actionsB, defCoinResults, initiativeSide } = e.detail;
   const enemyActions = (network.side === 'A') ? actionsB : actionsA;
+
+  if (initiativeSide) {
+    engine.initiative = (initiativeSide === network.side) ? 'PLAYER' : 'ENEMY';
+  }
+
+  currentRoundDefCoinResults = defCoinResults || {};
 
   if (Array.isArray(enemyActions)) {
     enemyActions.forEach(act => {

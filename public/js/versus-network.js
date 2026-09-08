@@ -480,6 +480,8 @@ export class VersusNetwork extends EventTarget {
         this._emit('clash_start', {
           actionsA: msg.actionsA,
           actionsB: msg.actionsB,
+          defCoinResults: msg.defCoinResults || null,
+          initiativeSide: msg.initiativeSide || null,
           round: msg.round
         });
         break;

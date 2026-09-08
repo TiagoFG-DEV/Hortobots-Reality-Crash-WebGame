@@ -8,9 +8,9 @@ export const VERSUS_ROBOTS = {
     id: 'DB', name: 'Dino-Byte', color: '#ff3344', colorName: 'RED',
     baseHp: 10, baseAtk: 15, baseEnergy: 0,
     attacks: [
-      { id: 'db_l1', name: 'Impacto Térmico',    level: 1, energyCost: 1, minigame: 'click_targets',  desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
-      { id: 'db_l2', name: 'Garras QTE',          level: 2, energyCost: 3, minigame: 'arrow_qte',     desc: 'Custo: 3 EN · 50% ATK' },
-      { id: 'db_l3', name: 'Firewall Infernal',   level: 3, energyCost: 5, minigame: 'gravity_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
+      { id: 'db_l1', name: 'Impacto Térmico', level: 1, energyCost: 1, minigame: 'click_targets', desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
+      { id: 'db_l2', name: 'Garras QTE', level: 2, energyCost: 3, minigame: 'arrow_qte', desc: 'Custo: 3 EN · 50% ATK' },
+      { id: 'db_l3', name: 'Firewall Infernal', level: 3, energyCost: 5, minigame: 'gravity_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
       name: 'Muralha Tripla de Fogo',
@@ -29,8 +29,8 @@ export const VERSUS_ROBOTS = {
     id: 'PL', name: 'Penlinux', color: '#00e5ff', colorName: 'CYAN',
     baseHp: 10, baseAtk: 15, baseEnergy: 0,
     attacks: [
-      { id: 'pl_l1', name: 'Deslize Glacial',    level: 1, energyCost: 1, minigame: 'swipe_path',     desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
-      { id: 'pl_l2', name: 'Combo Glaciar',       level: 2, energyCost: 3, minigame: 'typing_sprint',  desc: 'Custo: 3 EN · 50% ATK' },
+      { id: 'pl_l1', name: 'Deslize Glacial', level: 1, energyCost: 1, minigame: 'swipe_path', desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
+      { id: 'pl_l2', name: 'Combo Glaciar', level: 2, energyCost: 3, minigame: 'typing_sprint', desc: 'Custo: 3 EN · 50% ATK' },
       { id: 'pl_l3', name: 'Blizzard Plataforma', level: 3, energyCost: 5, minigame: 'platform_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
@@ -50,9 +50,9 @@ export const VERSUS_ROBOTS = {
     id: 'CP', name: 'Cowputer-Moo', color: '#ffd700', colorName: 'GOLD',
     baseHp: 10, baseAtk: 15, baseEnergy: 0,
     attacks: [
-      { id: 'cp_l1', name: 'Laço Circular',    level: 1, energyCost: 1, minigame: 'circle_click',  desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
-      { id: 'cp_l2', name: 'Código do Xerife', level: 2, energyCost: 3, minigame: 'dual_keys',     desc: 'Custo: 3 EN · 50% ATK' },
-      { id: 'cp_l3', name: 'Pólvora Digital',  level: 3, energyCost: 5, minigame: 'shooter_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
+      { id: 'cp_l1', name: 'Laço Circular', level: 1, energyCost: 1, minigame: 'circle_click', desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
+      { id: 'cp_l2', name: 'Código do Xerife', level: 2, energyCost: 3, minigame: 'dual_keys', desc: 'Custo: 3 EN · 50% ATK' },
+      { id: 'cp_l3', name: 'Pólvora Digital', level: 3, energyCost: 5, minigame: 'shooter_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
       name: 'Blindagem de Balística Dourada',
@@ -72,8 +72,8 @@ export const VERSUS_ROBOTS = {
     baseHp: 10, baseAtk: 15, baseEnergy: 0,
     attacks: [
       { id: 'pb_l1', name: 'Reflexo Prismático', level: 1, energyCost: 1, minigame: 'mirror_sequence', desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
-      { id: 'pb_l2', name: 'Teste de Reação',    level: 2, energyCost: 3, minigame: 'reaction_test',   desc: 'Custo: 3 EN · 50% ATK' },
-      { id: 'pb_l3', name: 'Órbita Caótica',     level: 3, energyCost: 5, minigame: 'orbit_dodge',     desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
+      { id: 'pb_l2', name: 'Teste de Reação', level: 2, energyCost: 3, minigame: 'reaction_test', desc: 'Custo: 3 EN · 50% ATK' },
+      { id: 'pb_l3', name: 'Órbita Caótica', level: 3, energyCost: 5, minigame: 'orbit_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
       name: 'Matriz Bio-Prismática',
@@ -92,8 +92,8 @@ export const VERSUS_ROBOTS = {
     id: 'TV', name: 'Tigervex', color: '#ff8c00', colorName: 'ORANGE',
     baseHp: 10, baseAtk: 15, baseEnergy: 0,
     attacks: [
-      { id: 'tv_l1', name: 'Talho Veloz',      level: 1, energyCost: 1, minigame: 'slash_draw',      desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
-      { id: 'tv_l2', name: 'Sequência Tesla',  level: 2, energyCost: 3, minigame: 'arrow_sequence',  desc: 'Custo: 3 EN · 50% ATK' },
+      { id: 'tv_l1', name: 'Talho Veloz', level: 1, energyCost: 1, minigame: 'slash_draw', desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
+      { id: 'tv_l2', name: 'Sequência Tesla', level: 2, energyCost: 3, minigame: 'arrow_sequence', desc: 'Custo: 3 EN · 50% ATK' },
       { id: 'tv_l3', name: 'Coração de Ferro', level: 3, energyCost: 5, minigame: 'green_heart_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
@@ -753,8 +753,8 @@ export class VersusEngine {
   // ─── Account Management — now via REST API ─────────────────────────
   // All account persistence is handled server-side at /api/accounts/*
   // These stubs are kept to avoid breaking any old callers.
-  static loadAccount()  { return null; } // use AccountAPI.fetch(name)
-  static saveAccount()  {}
+  static loadAccount() { return null; } // use AccountAPI.fetch(name)
+  static saveAccount() { }
   static createAccount(name) { return { name, wins: 0, losses: 0, totalMedals: 0, totalMatches: 0, createdAt: Date.now() }; }
-  static recordResult() {} // use AccountAPI.saveResult(name, won, medals)
+  static recordResult() { } // use AccountAPI.saveResult(name, won, medals)
 }

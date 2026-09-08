@@ -802,18 +802,25 @@ function startCombatPhase(matchId, firstTurn) {
     match.themeId = pickRandomArenaTheme();
   }
 
+  const teamA = (Array.isArray(match.playerA.team) && match.playerA.team.length === 3)
+    ? match.playerA.team
+    : ['DB', 'PL', 'CP'];
+  const teamB = (Array.isArray(match.playerB.team) && match.playerB.team.length === 3)
+    ? match.playerB.team
+    : ['DB', 'PL', 'CP'];
+
   send(match.playerA.ws, {
     type: 'combat_start',
-    yourTeam: match.playerA.team,
-    enemyTeam: match.playerB.team,
+    yourTeam: teamA,
+    enemyTeam: teamB,
     firstTurn,
     round: 1,
     themeId: match.themeId
   });
   send(match.playerB.ws, {
     type: 'combat_start',
-    yourTeam: match.playerB.team,
-    enemyTeam: match.playerA.team,
+    yourTeam: teamB,
+    enemyTeam: teamA,
     firstTurn,
     round: 1,
     themeId: match.themeId
@@ -889,10 +896,22 @@ function executeRoundClash(matchId) {
 
   console.log(`[ROUND_CLASH] Executando Round ${match.round} no match ${matchId}.`);
 
+  // Sorteia os resultados da moeda de defesa caso algum robô use defesa neste round (Server-Authoritative)
+  const defCoinResults = {
+    A: Math.random() < 0.5,
+    B: Math.random() < 0.5
+  };
+
+  const roundInitiativeSide = (match.round % 2 === 1)
+    ? match.firstTurn
+    : (match.firstTurn === 'A' ? 'B' : 'A');
+
   broadcast(matchId, {
     type: 'clash_start',
     actionsA: match.turnActions.A,
     actionsB: match.turnActions.B,
+    defCoinResults,
+    initiativeSide: roundInitiativeSide,
     round: match.round
   });
 
