@@ -1283,6 +1283,9 @@ let isPlayerTurnReady = false;
 let isEnemyTurnReady = false;
 let isCoinDuelResolved = false;
 let coinDuelCountdownInterval = null;
+let is3DCoinFlipping = false;
+let pendingCombatStart = null;
+let isOpeningCinematicRunning = false;
 
 // Cinemática de Contagem Pré-Draft: 3, 2, 1, PREPAREM-SE!
 async function runPreDraftCinematic() {
@@ -1706,72 +1709,58 @@ function runCoinDuelUI(countdown = 3, isTiebreak = false) {
   tailsBtn.onclick = () => handlePick('tails');
 }
 
-// Anima a moeda 3D e anuncia o resultado do duelo
+// Anima a moeda 3D oficial com física procedural e anuncia o resultado do duelo
 function animateCoinDuelResult(result, winner, picks, isTiebreak = false) {
-  const coinDisc = $('versusCoinDisc');
-  const resultBanner = $('versusCoinResultBanner');
-  const headsBtn = $('versusCoinPickHeadsBtn');
-  const tailsBtn = $('versusCoinPickTailsBtn');
-  const headsSub = $('versusCoinHeadsSub');
-  const tailsSub = $('versusCoinTailsSub');
+  // Esconde o overlay 2D imediatamente para dar lugar à verdadeira Moeda 3D
+  $('versusCoinDuelOverlay')?.classList.add('hidden');
 
-  if (coinDisc) {
-    coinDisc.classList.add('flipping');
-  }
-
-  // Atualiza botões caso o oponente tenha escolhido primeiro
   const mySide = (currentMode === 'ranked' && network.side) ? network.side : 'PLAYER';
-  const myPick = picks ? picks[mySide] : (headsBtn?.classList.contains('selected') ? 'heads' : 'tails');
+  const myPick = picks ? picks[mySide] : 'heads';
+  const isWinner = (winner === mySide || winner === 'PLAYER');
 
-  if (headsBtn && tailsBtn) {
-    headsBtn.disabled = true;
-    tailsBtn.disabled = true;
-    if (myPick === 'heads') {
-      headsBtn.className = 'versus-coin-choice-btn heads selected';
-      if (headsSub) headsSub.textContent = 'VOCÊ ESCOLHEU';
-      tailsBtn.className = 'versus-coin-choice-btn tails opponent-selected';
-      if (tailsSub) tailsSub.textContent = 'ADVERSÁRIO';
-    } else {
-      tailsBtn.className = 'versus-coin-choice-btn tails selected';
-      if (tailsSub) tailsSub.textContent = 'VOCÊ ESCOLHEU';
-      headsBtn.className = 'versus-coin-choice-btn heads opponent-selected';
-      if (headsSub) headsSub.textContent = 'ADVERSÁRIO';
-    }
-  }
+  const playerGuess = (myPick === 'heads') ? 'CARA' : 'COROA';
+  const outcome = (result === 'heads') ? 'CARA' : 'COROA';
 
-  setTimeout(() => {
-    if (coinDisc) {
-      coinDisc.classList.remove('flipping');
-      coinDisc.style.transform = result === 'heads' ? 'rotateY(0deg)' : 'rotateY(180deg)';
-    }
+  const successText = isTiebreak ? '>> VITÓRIA SUPREMA NO DESEMPATE! <<' : '>> INICIATIVA CONQUISTADA! VOCÊ COMEÇA <<';
+  const failText = isTiebreak ? '>> DERROTA NO DESEMPATE SUPREMO <<' : '>> ADVERSÁRIO CONQUISTOU A INICIATIVA <<';
 
-    const isWinner = (winner === mySide || winner === 'PLAYER');
-    if (resultBanner) {
-      if (isTiebreak) {
-        resultBanner.textContent = isWinner
-          ? `⚡ ${result.toUpperCase()}! VITÓRIA DO COMBATE POR DESEMPATE SUPREMO!`
-          : `🛡 ${result.toUpperCase()}! ADVERSÁRIO VENCEU NO DESEMPATE!`;
-        resultBanner.style.color = isWinner ? '#00ff88' : '#ff4455';
-      } else {
-        resultBanner.textContent = isWinner
-          ? `⚡ ${result.toUpperCase()}! VOCÊ GANHOU A INICIATIVA DO ROUND 1!`
-          : `🛡 ${result.toUpperCase()}! ADVERSÁRIO COMEÇA COM A INICIATIVA!`;
-        resultBanner.style.color = isWinner ? '#00ff88' : '#ff4455';
-      }
-    }
+  is3DCoinFlipping = true;
 
-    // Fecha o overlay após 3.5 segundos
-    setTimeout(() => {
-      $('versusCoinDuelOverlay')?.classList.add('hidden');
-      if (currentMode === 'bot' && !isTiebreak) {
+  const engine3D = (window.gameInstance && window.gameInstance.engine3D) || (minigames && minigames.engine3D);
+
+  const onFlipFinish = () => {
+    is3DCoinFlipping = false;
+    if (currentMode === 'bot') {
+      if (!isTiebreak) {
         startCombatFromDraft(isWinner ? 'PLAYER' : 'BOT');
       }
-    }, 3500);
-  }, 1600);
+    } else {
+      // Se combat_start já tiver chegado durante o giro da moeda 3D:
+      if (pendingCombatStart) {
+        const { firstTurn, themeId, yourTeam, enemyTeam } = pendingCombatStart;
+        pendingCombatStart = null;
+        startCombatFromDraft(firstTurn, themeId, yourTeam, enemyTeam);
+      }
+    }
+  };
+
+  if (engine3D && typeof engine3D.run3DCoinFlipCinematic === 'function') {
+    engine3D.run3DCoinFlipCinematic(
+      playerGuess,
+      outcome,
+      () => {
+        onFlipFinish();
+      },
+      successText,
+      failText
+    );
+  } else {
+    setTimeout(onFlipFinish, 2500);
+  }
 }
 
 // Inicia oficialmente o combate e transita da fase de recrutamento para comando
-async function startCombatFromDraft(firstTurn, themeId = null) {
+async function startCombatFromDraft(firstTurn, themeId = null, yourTeam = null, enemyTeam = null) {
   const playerName = (account?.nickname || account?.name || 'PILOTO').toUpperCase();
   const enemyName = currentMode === 'bot' ? 'SIMULADOR IA DA TORRE' : (engine.enemyName || 'OPONENTE RANKED').toUpperCase();
 
@@ -1779,10 +1768,44 @@ async function startCombatFromDraft(firstTurn, themeId = null) {
   const currentArenaTheme = themeId ? getVersusThemeById(themeId) : getRandomVersusTheme();
   const battleBgmKey = currentArenaTheme.bgmKey;
 
-  if (board) board.setArenaTheme(currentArenaTheme);
+  // Carrega e sincroniza as equipes antes de qualquer renderização
+  if (currentMode === 'bot') {
+    if (!engine.playerTeam || engine.playerTeam.length !== 3) {
+      const validYourTeam = (selectedRobotIds && selectedRobotIds.length === 3)
+        ? selectedRobotIds
+        : ['DB', 'PL', 'CP'];
+      engine.selectPlayerTeam(validYourTeam);
+    }
+    if (!engine.enemyTeam || engine.enemyTeam.length !== 3) {
+      engine.selectEnemyTeam(engine.botPickTeam());
+    }
+  } else {
+    const validYourTeam = (Array.isArray(yourTeam) && yourTeam.length === 3)
+      ? yourTeam
+      : (selectedRobotIds && selectedRobotIds.length === 3 ? selectedRobotIds : ['DB', 'PL', 'CP']);
+    const validEnemyTeam = (Array.isArray(enemyTeam) && enemyTeam.length === 3)
+      ? enemyTeam
+      : ['DB', 'PL', 'CP'];
+
+    engine.selectPlayerTeam(validYourTeam);
+    engine.selectEnemyTeam(validEnemyTeam);
+  }
+
+  if (board) {
+    board.setArenaTheme(currentArenaTheme);
+    board.start(engine);
+  }
   if (versus3DEngine) versus3DEngine.applyTheme(currentArenaTheme);
 
-  // 1. Cinemática Grandiosa 3D Pré-Duelo com suporte ao tema da arena
+  // Trava temporariamente o timer de round para só rodar APÓS a cinemática de abertura
+  isOpeningCinematicRunning = true;
+  const turnTimer = $('versusTurnTimer');
+  if (turnTimer) {
+    turnTimer.textContent = '30s';
+    turnTimer.classList.remove('critical');
+  }
+
+  // 1. Cinemática Grandiosa 3D Pré-Duelo com suporte ao tema da arena (10 segundos)
   if (window.gameInstance && typeof window.gameInstance.runGrandDuelCinematic === 'function') {
     await window.gameInstance.runGrandDuelCinematic(
       'ARENA VIRTUAL',
@@ -1793,6 +1816,9 @@ async function startCombatFromDraft(firstTurn, themeId = null) {
       currentArenaTheme
     );
   }
+
+  // Libera a contagem do timer do round após a conclusão da cinemática
+  isOpeningCinematicRunning = false;
 
   // 2. Inicia o combate
   engine.mode = currentMode;
@@ -2505,13 +2531,16 @@ $('versusConfirmTurnBtn')?.addEventListener('click', async () => {
   if (isClashRunning) return;
 
   if (currentMode === 'ranked') {
-    // Modo online ranqueado: Coleta ações e envia ao servidor
+    // Modo online ranqueado: Coleta ações e envia ao servidor com alvos e ataques
     const actions = engine.playerTeam.map(bot => ({
       id: bot.id,
       row: bot.row,
       action: bot.action || 'rest',
-      targetRow: bot.targetRow ?? null,
-      supportTargetRow: bot.supportTargetRow ?? null
+      chosenAttackIndex: bot._chosenAttack ? bot.attacks.indexOf(bot._chosenAttack) : 0,
+      chosenAttackId: bot._chosenAttack?.id || (bot.attacks && bot.attacks[0]?.id),
+      targetRow: (bot._chosenTarget && bot._chosenTarget.row !== undefined) ? bot._chosenTarget.row : (bot.targetRow ?? bot.row),
+      defenseTargetRow: (bot._chosenDefenseTarget && bot._chosenDefenseTarget.row !== undefined) ? bot._chosenDefenseTarget.row : null,
+      supportTargetRow: (bot._chosenAllyTarget && bot._chosenAllyTarget.row !== undefined) ? bot._chosenAllyTarget.row : (bot.supportTargetRow ?? null)
     }));
 
     isPlayerTurnReady = true;
@@ -2933,6 +2962,11 @@ async function executeSimultaneousClash() {
 }
 
 function checkMatchEnded() {
+  // Só verifica se a partida acabou se ambas as equipes tiverem sido devidamente criadas com 3 robôs
+  if (!engine.playerTeam || engine.playerTeam.length < 3 || !engine.enemyTeam || engine.enemyTeam.length < 3) {
+    return false;
+  }
+
   const playerAlive = engine.playerTeam.some(r => r.isAlive && r.currentHp > 0);
   const enemyAlive  = engine.enemyTeam.some(r => r.isAlive && r.currentHp > 0);
 
@@ -2944,11 +2978,11 @@ function checkMatchEnded() {
   }
 
   // REGRA DO USUÁRIO: Vitória na hora pra quem matou os 3 robôs adversários!
-  if (!enemyAlive) {
+  if (!enemyAlive && playerAlive) {
     endMatch('PLAYER');
     return true;
   }
-  if (!playerAlive) {
+  if (!playerAlive && enemyAlive) {
     endMatch('ENEMY');
     return true;
   }
@@ -3361,14 +3395,23 @@ network.addEventListener('coin_duel_result', (e) => {
 
 // Início Oficial do Combate enviado pelo Servidor (após ambos prontos e moeda lançada)
 network.addEventListener('combat_start', (e) => {
-  const { firstTurn, themeId } = e.detail;
-  startCombatFromDraft(firstTurn, themeId);
+  const { firstTurn, themeId, yourTeam, enemyTeam } = e.detail;
+  if (is3DCoinFlipping) {
+    pendingCombatStart = { firstTurn, themeId, yourTeam, enemyTeam };
+  } else {
+    startCombatFromDraft(firstTurn, themeId, yourTeam, enemyTeam);
+  }
 });
 
 // Timer do Round (30 segundos)
 network.addEventListener('round_timer_tick', (e) => {
   const turnTimer = $('versusTurnTimer');
   if (turnTimer) {
+    if (isOpeningCinematicRunning) {
+      turnTimer.textContent = '30s';
+      turnTimer.classList.remove('critical');
+      return;
+    }
     turnTimer.textContent = `${e.detail.remaining}s`;
     if (e.detail.remaining <= 5) {
       turnTimer.classList.add('critical');
@@ -3419,8 +3462,20 @@ network.addEventListener('clash_start', async (e) => {
       const bot = engine.enemyTeam.find(r => r.row === act.row);
       if (bot) {
         bot.action = act.action || 'rest';
-        bot.targetRow = act.targetRow;
-        bot.supportTargetRow = act.supportTargetRow;
+        if (act.chosenAttackIndex !== undefined && bot.attacks && bot.attacks[act.chosenAttackIndex]) {
+          bot._chosenAttack = bot.attacks[act.chosenAttackIndex];
+        } else if (act.chosenAttackId && bot.attacks) {
+          bot._chosenAttack = bot.attacks.find(a => a.id === act.chosenAttackId) || bot.attacks[0];
+        }
+        if (act.targetRow !== undefined && act.targetRow !== null) {
+          bot._chosenTarget = engine.playerTeam.find(r => r.row === act.targetRow && r.isAlive) || engine.playerTeam.find(r => r.isAlive);
+        }
+        if (act.defenseTargetRow !== undefined && act.defenseTargetRow !== null) {
+          bot._chosenDefenseTarget = engine.enemyTeam.find(r => r.row === act.defenseTargetRow && r.isAlive) || bot;
+        }
+        if (act.supportTargetRow !== undefined && act.supportTargetRow !== null) {
+          bot._chosenAllyTarget = engine.enemyTeam.find(r => r.row === act.supportTargetRow && r.isAlive) || bot;
+        }
       }
     });
   }

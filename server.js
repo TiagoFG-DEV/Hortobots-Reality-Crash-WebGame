@@ -821,9 +821,17 @@ function startCombatPhase(matchId, firstTurn) {
 
   console.log(`[COMBAT] Match ${matchId} iniciado com iniciativa para ${firstTurn}! Tema da Arena (Sincronizado): ${match.themeId}`);
 
-  // Dispara o relógio global de 5 minutos e o primeiro timer de round de 30s
+  // Dispara o relógio global de 5 minutos
   startMatchTimer(matchId);
-  startRoundTimer(matchId);
+
+  // A contagem de 30 segundos só deve começar a correr APÓS a cinemática de abertura (10.5 segundos)
+  if (match.openingCinematicTimer) clearTimeout(match.openingCinematicTimer);
+  match.openingCinematicTimer = setTimeout(() => {
+    const m = activeMatches.get(matchId);
+    if (m && m.phase === 'combat' && m.round === 1) {
+      startRoundTimer(matchId);
+    }
+  }, 10500);
 }
 
 // Timer de 30 segundos por round (sincronizado)
@@ -893,13 +901,14 @@ function executeRoundClash(matchId) {
   match.turnActions = { A: null, B: null };
   match.round++;
 
-  // Aguarda 6 segundos para a animação do embate antes de reiniciar o timer de 30s
+  // Aguarda 10 segundos para a execução completa das animações do embate antes de reiniciar o timer de 30s
+  if (match.roundGraceTimer) clearTimeout(match.roundGraceTimer);
   match.roundGraceTimer = setTimeout(() => {
     const m = activeMatches.get(matchId);
     if (m && m.phase === 'combat') {
       startRoundTimer(matchId);
     }
-  }, 6000);
+  }, 10000);
 }
 
 // Relógio Global da Partida (5 Minutos = 300 Segundos)
@@ -966,11 +975,12 @@ function clearAllMatchTimers(matchId) {
   if (!m) return;
   if (m.draftTimer)      { clearTimeout(m.draftTimer);      m.draftTimer = null; }
   if (m.draftTick)       { clearInterval(m.draftTick);       m.draftTick = null; }
-  if (m.coinDuelTimer)   { clearTimeout(m.coinDuelTimer);   m.coinDuelTimer = null; }
-  if (m.roundTimer)      { clearTimeout(m.roundTimer);      m.roundTimer = null; }
-  if (m.roundTick)       { clearInterval(m.roundTick);       m.roundTick = null; }
-  if (m.roundGraceTimer) { clearTimeout(m.roundGraceTimer); m.roundGraceTimer = null; }
-  if (m.matchTimerTick)  { clearInterval(m.matchTimerTick);  m.matchTimerTick = null; }
+  if (m.coinDuelTimer)          { clearTimeout(m.coinDuelTimer);          m.coinDuelTimer = null; }
+  if (m.openingCinematicTimer)  { clearTimeout(m.openingCinematicTimer);  m.openingCinematicTimer = null; }
+  if (m.roundTimer)             { clearTimeout(m.roundTimer);             m.roundTimer = null; }
+  if (m.roundTick)              { clearInterval(m.roundTick);              m.roundTick = null; }
+  if (m.roundGraceTimer)        { clearTimeout(m.roundGraceTimer);        m.roundGraceTimer = null; }
+  if (m.matchTimerTick)         { clearInterval(m.matchTimerTick);         m.matchTimerTick = null; }
 }
 
 // â”€â”€ Matchmaking â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
