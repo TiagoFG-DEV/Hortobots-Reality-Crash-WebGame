@@ -236,6 +236,38 @@ export async function send2FAVerificationEmail({ nickname, email, code }) {
   const cleanEmail = email.trim().toLowerCase();
   const html = generateCyberpunkEmailHTML({ nickname, email: cleanEmail, code });
 
+  // 1. Envio via Resend HTTP API (Porta 443 HTTPS - compatível com Render sem bloqueio)
+  const resendApiKey = process.env.RESEND_API_KEY;
+  if (resendApiKey) {
+    try {
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${resendApiKey.trim()}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: process.env.RESEND_FROM || 'Hortobots <onboarding@resend.dev>',
+          to: [cleanEmail],
+          subject: `[HORTOBOTS] Código de Confirmação: ${code}`,
+          html,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || JSON.stringify(data));
+      console.log(`[2FA] ✅ E-mail enviado com sucesso via Resend HTTP API para: ${cleanEmail}`);
+      return {
+        success: true,
+        sentRealEmail: true,
+        message: `Código de verificação enviado para ${cleanEmail}. Verifique sua caixa de entrada.`
+      };
+    } catch (apiErr) {
+      console.error('[2FA] ⚠️ Erro no envio via Resend HTTP API:', apiErr.message);
+      // prossegue para tentar SMTP como fallback
+    }
+  }
+
+  // 2. Envio via SMTP Tradicional (Nodemailer)
   const transporter = getTransporter();
   let emailSent = false;
   let errorDetail = null;
@@ -254,11 +286,13 @@ export async function send2FAVerificationEmail({ nickname, email, code }) {
     } catch (err) {
       errorDetail = err.message;
       console.error(`[2FA] ❌ Erro ao enviar e-mail via SMTP (${cleanEmail}):`, err.message);
-      throw new Error(`Falha no envio para o Gmail (${cleanEmail}): ${err.message}. Verifique as credenciais SMTP no arquivo .env.pvp.`);
+      console.warn(`[2FA] 🔑 CHAVE 2FA DE SEGURANÇA PARA [${nickname}] (${cleanEmail}): >>> ${code} <<<`);
+      throw new Error(`Falha no envio para o Gmail (${cleanEmail}): ${err.message}. No Render (plano gratuito), portas SMTP são bloqueadas. Utilize Resend HTTP API ou consulte os logs.`);
     }
   } else {
-    console.warn(`[2FA] ⚠️ SMTP não configurado (SMTP_USER / SMTP_PASS ausentes no .env.pvp).`);
-    throw new Error('Servidor de e-mail SMTP não configurado. Adicione SMTP_USER e SMTP_PASS no .env.pvp.');
+    console.warn(`[2FA] ⚠️ SMTP não configurado (SMTP_USER / SMTP_PASS ausentes no .env).`);
+    console.warn(`[2FA] 🔑 CHAVE 2FA DE SEGURANÇA PARA [${nickname}] (${cleanEmail}): >>> ${code} <<<`);
+    throw new Error('Servidor de e-mail SMTP não configurado. Adicione SMTP_USER e SMTP_PASS no .env.');
   }
 
   return {
