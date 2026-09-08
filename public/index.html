@@ -995,6 +995,7 @@
               </div>
               <div class="room-peer-status" id="versusHostOpponentStatus">Aguardando desafiante conectar...</div>
               <button class="versus-action-btn ready-btn" id="versusHostReadyBtn" type="button">ESTOU PRONTO</button>
+              <button class="versus-action-btn ghost small" id="versusHostCancelRoomBtn" type="button" style="margin-top: 10px; width: 100%;">FECHAR SALA</button>
             </div>
           </div>
 
@@ -1011,7 +1012,7 @@
                 <input type="text" id="versusJoinCodeInput" class="versus-input room-code-input" placeholder="HORT-XXX"
                   maxlength="8" autocomplete="off" />
               </div>
-              <button class="versus-action-btn cyan" id="versusJoinRoomActionBtn" type="button">ENTRAR</button>
+              <button class="versus-action-btn cyan" id="versusJoinRoomActionBtn" type="button">DUELAR</button>
             </div>
 
             <!-- EXIBIÇÃO DA SALA CONECTADA / ESPERA -->
@@ -1019,8 +1020,8 @@
               <div class="room-code-label">SALA CONECTADA:</div>
               <div class="room-code-badge joined" id="versusGuestCodeBadge">HORT-???</div>
               <div class="room-peer-status highlight-status" id="versusGuestHostStatus">ESPERANDO POR DUELISTA</div>
-              <button class="versus-action-btn ready-btn active" id="versusGuestReadyBtn" type="button" disabled>ESTOU
-                PRONTO</button>
+              <button class="versus-action-btn ready-btn" id="versusGuestReadyBtn" type="button">ESTOU PRONTO</button>
+              <button class="versus-action-btn ghost small" id="versusGuestLeaveRoomBtn" type="button" style="margin-top: 10px; width: 100%;">SAIR DA SALA</button>
             </div>
           </div>
 

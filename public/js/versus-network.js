@@ -268,6 +268,10 @@ export class VersusNetwork extends EventTarget {
     this._send({ type: 'room_ready' });
   }
 
+  cancelRoomReady() {
+    this._send({ type: 'room_unready' });
+  }
+
   leaveRoom() {
     this._send({ type: 'leave_room' });
   }
@@ -332,6 +336,14 @@ export class VersusNetwork extends EventTarget {
 
       case 'self_room_ready':
         this._emit('self_room_ready', { role: msg.role });
+        break;
+
+      case 'opponent_room_unready':
+        this._emit('opponent_room_unready', { role: msg.role });
+        break;
+
+      case 'self_room_unready':
+        this._emit('self_room_unready', { role: msg.role });
         break;
 
       case 'opponent_left_room':

@@ -1005,7 +1005,22 @@ wss.on('connection', (ws) => {
         break;
       }
 
-      // â”€â”€ SAIR DA SALA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── CANCELAR PRONTIDÃO NA SALA ────────────────────────────
+      case 'room_unready': {
+        const room = activeRooms.get(client.roomCode);
+        if (!room) break;
+        const role = client.isHost ? 'host' : 'guest';
+        room.ready[role] = false;
+
+        const opponent = client.isHost ? room.guest : room.host;
+        if (opponent && opponent.ws) {
+          send(opponent.ws, { type: 'opponent_room_unready', role });
+        }
+        send(client.ws, { type: 'self_room_unready', role });
+        console.log(`[ROOM] ${client.name} (${role}) cancelou PRONTO na sala ${room.code}`);
+        break;
+      }
+
       case 'leave_room': {
         if (client.roomCode) {
           const room = activeRooms.get(client.roomCode);
@@ -1014,10 +1029,15 @@ wss.on('connection', (ws) => {
             if (other && other.ws) {
               send(other.ws, {
                 type: 'opponent_left_room',
-                msg: client.isHost ? 'O anfitriÃ£o encerrou a sala.' : 'O oponente saiu da sala.'
+                msg: client.isHost ? 'O anfitrião encerrou a sala.' : 'O oponente saiu da sala.'
               });
             }
-            activeRooms.delete(client.roomCode);
+            if (client.isHost) {
+              activeRooms.delete(client.roomCode);
+            } else {
+              room.guest = null;
+              room.ready.guest = false;
+            }
           }
           client.roomCode = null;
           client.isHost = false;

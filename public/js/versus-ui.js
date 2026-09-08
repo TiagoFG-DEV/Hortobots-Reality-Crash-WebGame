@@ -918,14 +918,14 @@ function resetCompetitiveRoomUI() {
   if (readyHostBtn) {
     readyHostBtn.disabled = false;
     readyHostBtn.classList.remove('active');
-    readyHostBtn.textContent = '[ PRONTO PARA O COMBATE ]';
+    readyHostBtn.textContent = 'ESTOU PRONTO';
   }
 
   const readyGuestBtn = $('versusGuestReadyBtn');
   if (readyGuestBtn) {
-    readyGuestBtn.disabled = true;
+    readyGuestBtn.disabled = false;
     readyGuestBtn.classList.remove('active');
-    readyGuestBtn.textContent = '[ PRONTO PARA O COMBATE ]';
+    readyGuestBtn.textContent = 'ESTOU PRONTO';
   }
 
   // Reseta painel da fila de matchmaking
@@ -953,6 +953,20 @@ $('versusCreateRoomActionBtn')?.addEventListener('click', () => {
   network.createRoom();
 });
 
+// Anfitrião: Fechar / Cancelar Sala
+$('versusHostCancelRoomBtn')?.addEventListener('click', () => {
+  network.leaveRoom();
+  resetCompetitiveRoomUI();
+  showCompetitiveStatus('Sala encerrada.');
+});
+
+// Desafiante: Sair da Sala
+$('versusGuestLeaveRoomBtn')?.addEventListener('click', () => {
+  network.leaveRoom();
+  resetCompetitiveRoomUI();
+  showCompetitiveStatus('Você saiu da sala.');
+});
+
 // Desafiante: Conectar à Sala por Código e Clicar em DUELAR
 $('versusJoinRoomActionBtn')?.addEventListener('click', () => {
   const code = ($('versusJoinCodeInput')?.value || '').trim().toUpperCase();
@@ -963,8 +977,17 @@ $('versusJoinRoomActionBtn')?.addEventListener('click', () => {
   network.joinRoom(code, true);
 });
 
-// Fila de Matchmaking: Iniciar Busca de Duelo
+// Fila de Matchmaking: Iniciar ou Cancelar Busca de Duelo
 $('versusStartQueueBtn')?.addEventListener('click', () => {
+  if (isSearchingQueue) {
+    network.leaveQueue();
+    stopQueueTimer();
+    $('versusQueueActiveBox')?.classList.add('hidden');
+    $('versusQueueInitialBox')?.classList.remove('hidden');
+    showCompetitiveStatus('Busca de duelo cancelada. Você foi removido da fila.');
+    return;
+  }
+
   if (!account || (!account.nickname && !account.name)) return;
   const rp = Number(account.rankingPoints) || 0;
   network.joinQueue(rp);
@@ -973,7 +996,7 @@ $('versusStartQueueBtn')?.addEventListener('click', () => {
   startQueueTimer();
   const statusMsg = $('versusQueueStatusMsg');
   if (statusMsg) statusMsg.textContent = 'Varrendo circuito por duelistas de ranking similar...';
-  showCompetitiveStatus('Procurando duelista no ranking... Aguarde o pareamento.');
+  showCompetitiveStatus('Procurando duelista no ranking... Clique em CANCELAR para sair da fila.');
 });
 
 // Fila de Matchmaking: Cancelar Busca
@@ -982,7 +1005,7 @@ $('versusCancelQueueBtn')?.addEventListener('click', () => {
   stopQueueTimer();
   $('versusQueueActiveBox')?.classList.add('hidden');
   $('versusQueueInitialBox')?.classList.remove('hidden');
-  showCompetitiveStatus('Busca de duelo cancelada.');
+  showCompetitiveStatus('Busca de duelo cancelada. Você foi removido da fila.');
 });
 
 // Copiar código da sala
@@ -991,22 +1014,42 @@ $('versusCopyCodeBtn')?.addEventListener('click', () => {
   navigator.clipboard.writeText(currentRoomCode).then(() => {
     const btn = $('versusCopyCodeBtn');
     if (btn) {
-      btn.textContent = '[ COPIADO! ]';
-      setTimeout(() => { btn.textContent = '[ COPIAR ]'; }, 2000);
+      btn.textContent = 'COPIADO!';
+      setTimeout(() => { btn.textContent = 'COPIAR'; }, 2000);
     }
   }).catch(() => {});
 });
 
-// Anfitrião: Confirmar Pronto (Pode confirmar a qualquer momento!)
+// Anfitrião: Confirmar ou Cancelar Pronto
 $('versusHostReadyBtn')?.addEventListener('click', () => {
-  if (isSelfReadyInRoom) return;
-  network.setRoomReady();
+  if (isSelfReadyInRoom) {
+    network.cancelRoomReady();
+    isSelfReadyInRoom = false;
+    const hostBtn = $('versusHostReadyBtn');
+    if (hostBtn) {
+      hostBtn.classList.remove('active');
+      hostBtn.textContent = 'ESTOU PRONTO';
+    }
+    showCompetitiveStatus('Prontidão cancelada. Clique em ESTOU PRONTO quando quiser duelar.');
+  } else {
+    network.setRoomReady();
+  }
 });
 
-// Desafiante: Confirmar Pronto
+// Desafiante: Confirmar ou Cancelar Pronto
 $('versusGuestReadyBtn')?.addEventListener('click', () => {
-  if (isSelfReadyInRoom) return;
-  network.setRoomReady();
+  if (isSelfReadyInRoom) {
+    network.cancelRoomReady();
+    isSelfReadyInRoom = false;
+    const guestBtn = $('versusGuestReadyBtn');
+    if (guestBtn) {
+      guestBtn.classList.remove('active');
+      guestBtn.textContent = 'ESTOU PRONTO';
+    }
+    showCompetitiveStatus('Prontidão cancelada. Clique em ESTOU PRONTO quando quiser duelar.');
+  } else {
+    network.setRoomReady();
+  }
 });
 
 // Sair da Sala / Voltar ao Menu Versus
@@ -1038,10 +1081,10 @@ network.addEventListener('room_created', (e) => {
   if (readyBtn) {
     readyBtn.disabled = false;
     readyBtn.classList.remove('active');
-    readyBtn.textContent = '[ PRONTO PARA O COMBATE ]';
+    readyBtn.textContent = 'ESTOU PRONTO';
   }
 
-  showCompetitiveStatus(`Sala ${currentRoomCode} gerada! Se clicar em PRONTO, a batalha iniciará assim que o oponente DUELAR.`);
+  showCompetitiveStatus(`Sala ${currentRoomCode} gerada! Se clicar em ESTOU PRONTO, a batalha iniciará assim que o oponente DUELAR.`);
 });
 
 network.addEventListener('room_joined', (e) => {
@@ -1057,7 +1100,7 @@ network.addEventListener('room_joined', (e) => {
     const readyBtn = $('versusHostReadyBtn');
     if (readyBtn && !isSelfReadyInRoom) {
       readyBtn.disabled = false;
-      readyBtn.textContent = '[ PRONTO PARA O COMBATE ]';
+      readyBtn.textContent = 'ESTOU PRONTO';
     }
     showCompetitiveStatus(`Desafiante ${e.detail.opponentName} inseriu o código!`);
   } else {
@@ -1081,12 +1124,13 @@ network.addEventListener('room_joined', (e) => {
 
     const readyBtn = $('versusGuestReadyBtn');
     if (readyBtn) {
-      readyBtn.disabled = true;
+      isSelfReadyInRoom = true;
+      readyBtn.disabled = false;
       readyBtn.classList.add('active');
-      readyBtn.textContent = '[ VOCÊ ESTÁ PRONTO! ]';
+      readyBtn.textContent = 'PRONTO! (CLIQUE P/ CANCELAR)';
     }
 
-    showCompetitiveStatus('ESPERANDO POR DUELISTA', true);
+    showCompetitiveStatus('Você entrou na sala e está PRONTO! Aguardando o anfitrião...', false);
   }
 });
 
@@ -1096,15 +1140,37 @@ network.addEventListener('self_room_ready', () => {
     const hostBtn = $('versusHostReadyBtn');
     if (hostBtn) {
       hostBtn.classList.add('active');
-      hostBtn.textContent = '[ PRONTO! AGUARDANDO ADVERSÁRIO... ]';
+      hostBtn.textContent = 'PRONTO! (CLIQUE P/ CANCELAR)';
     }
-    showCompetitiveStatus('Você está PRONTO! A batalha começará assim que o oponente clicar em DUELAR.', false);
+    showCompetitiveStatus('Você está PRONTO! A batalha começará assim que o oponente DUELAR. (Clique no botão para cancelar)', false);
   } else {
     const guestBtn = $('versusGuestReadyBtn');
     if (guestBtn) {
       guestBtn.classList.add('active');
-      guestBtn.textContent = '[ VOCÊ ESTÁ PRONTO! ]';
+      guestBtn.disabled = false;
+      guestBtn.textContent = 'PRONTO! (CLIQUE P/ CANCELAR)';
     }
+    showCompetitiveStatus('Você está PRONTO! (Clique no botão para cancelar)', false);
+  }
+});
+
+network.addEventListener('self_room_unready', () => {
+  isSelfReadyInRoom = false;
+  if (isRoomHost) {
+    const hostBtn = $('versusHostReadyBtn');
+    if (hostBtn) {
+      hostBtn.classList.remove('active');
+      hostBtn.textContent = 'ESTOU PRONTO';
+    }
+    showCompetitiveStatus('Prontidão cancelada.', false);
+  } else {
+    const guestBtn = $('versusGuestReadyBtn');
+    if (guestBtn) {
+      guestBtn.classList.remove('active');
+      guestBtn.disabled = false;
+      guestBtn.textContent = 'ESTOU PRONTO';
+    }
+    showCompetitiveStatus('Prontidão cancelada.', false);
   }
 });
 
@@ -1119,8 +1185,32 @@ network.addEventListener('opponent_room_ready', () => {
   }
 });
 
+network.addEventListener('opponent_room_unready', () => {
+  showCompetitiveStatus('O oponente cancelou a prontidão.', true);
+  if (isRoomHost) {
+    const oppStatus = $('versusHostOpponentStatus');
+    if (oppStatus) {
+      oppStatus.innerHTML = oppStatus.innerHTML.replace(/\s*<strong[^>]*>\[ PRONTO! \]/g, '');
+    }
+  } else {
+    const hostStatus = $('versusGuestHostStatus');
+    if (hostStatus) {
+      hostStatus.innerHTML = hostStatus.innerHTML.replace(/\s*<strong[^>]*>\[ PRONTO! \]/g, '');
+    }
+  }
+});
+
 network.addEventListener('opponent_left_room', (e) => {
   showCompetitiveStatus(e.detail.msg || 'O oponente saiu da sala.', true);
+  if (isRoomHost) {
+    const oppStatus = $('versusHostOpponentStatus');
+    if (oppStatus) oppStatus.textContent = 'Aguardando desafiante conectar... Você já pode confirmar PRONTO!';
+  } else {
+    resetCompetitiveRoomUI();
+  }
+});
+
+network.addEventListener('room_left', () => {
   resetCompetitiveRoomUI();
 });
 
