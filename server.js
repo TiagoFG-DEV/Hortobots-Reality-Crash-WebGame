@@ -736,6 +736,12 @@ function resolveCoinDuel(matchId) {
   }
 }
 
+// Temas de Arena Versus disponíveis (Server-Authoritative)
+const VERSUS_THEME_IDS = ['default', 'metallic', 'kawaii', 'matrix'];
+function pickRandomArenaTheme() {
+  return VERSUS_THEME_IDS[Math.floor(Math.random() * VERSUS_THEME_IDS.length)];
+}
+
 // Inicia a Fase Oficial de Combate em Rounds
 function startCombatPhase(matchId, firstTurn) {
   const match = activeMatches.get(matchId);
@@ -747,22 +753,29 @@ function startCombatPhase(matchId, firstTurn) {
   match.turnReady = { A: false, B: false };
   match.turnActions = { A: null, B: null };
 
+  // O SERVIDOR decide O MESMO tema para ambos os players!
+  if (!match.themeId) {
+    match.themeId = pickRandomArenaTheme();
+  }
+
   send(match.playerA.ws, {
     type: 'combat_start',
     yourTeam: match.playerA.team,
     enemyTeam: match.playerB.team,
     firstTurn,
-    round: 1
+    round: 1,
+    themeId: match.themeId
   });
   send(match.playerB.ws, {
     type: 'combat_start',
     yourTeam: match.playerB.team,
     enemyTeam: match.playerA.team,
     firstTurn,
-    round: 1
+    round: 1,
+    themeId: match.themeId
   });
 
-  console.log(`[COMBAT] Match ${matchId} iniciado com iniciativa para ${firstTurn}!`);
+  console.log(`[COMBAT] Match ${matchId} iniciado com iniciativa para ${firstTurn}! Tema da Arena (Sincronizado): ${match.themeId}`);
 
   // Dispara o relógio global de 5 minutos e o primeiro timer de round de 30s
   startMatchTimer(matchId);

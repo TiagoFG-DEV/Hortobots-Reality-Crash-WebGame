@@ -14,7 +14,7 @@ import { VersusNetwork, AccountAPI } from './versus-network.js';
 import { TerminalAudioManager, getAudio } from './terminal-audio.js';
 import { versus3DEngine } from './versus-3d.js';
 import { getRobotAttackSymbolSVG, getAttackTacticalConcept } from './robot-attack-symbols.js';
-import { getRandomVersusTheme } from './versus-themes.js';
+import { getRandomVersusTheme, getVersusThemeById } from './versus-themes.js';
 
 // ── Singletons ───────────────────────────────────────────────────────
 const engine    = new VersusEngine();
@@ -1314,9 +1314,9 @@ async function runPreDraftCinematic() {
 // ════════════════════════════════════════════════════════════════════
 async function enterUnifiedArena(mode) {
   showScreen('versusArenaScreen');
-  // Mantém Lizardilhas POP Theme durante a fase de draft
+  // Música oficial da fase de escolha dos campeões (Draft): Duel of Grand Inteligence
   const audio = getAudio();
-  if (audio.currentTrack !== 'versusLobby') audio.playBGM('versusLobby', 600);
+  if (audio) audio.playBGM('versusDraft', 600);
 
   // 1. Executa a Cinemática Pré-Draft obrigatória (3, 2, 1, PREPAREM-SE!)
   await runPreDraftCinematic();
@@ -1744,11 +1744,12 @@ function animateCoinDuelResult(result, winner, picks, isTiebreak = false) {
 }
 
 // Inicia oficialmente o combate e transita da fase de recrutamento para comando
-async function startCombatFromDraft(firstTurn) {
+async function startCombatFromDraft(firstTurn, themeId = null) {
   const playerName = (account?.nickname || account?.name || 'PILOTO').toUpperCase();
   const enemyName = currentMode === 'bot' ? 'SIMULADOR IA DA TORRE' : (engine.enemyName || 'OPONENTE RANKED').toUpperCase();
 
-  const currentArenaTheme = getRandomVersusTheme();
+  // O SERVIDOR decide o tema da arena para ambos os players no PvP online!
+  const currentArenaTheme = themeId ? getVersusThemeById(themeId) : getRandomVersusTheme();
   const battleBgmKey = currentArenaTheme.bgmKey;
 
   if (board) board.setArenaTheme(currentArenaTheme);
@@ -3305,8 +3306,8 @@ network.addEventListener('coin_duel_result', (e) => {
 
 // Início Oficial do Combate enviado pelo Servidor (após ambos prontos e moeda lançada)
 network.addEventListener('combat_start', (e) => {
-  const { firstTurn } = e.detail;
-  startCombatFromDraft(firstTurn);
+  const { firstTurn, themeId } = e.detail;
+  startCombatFromDraft(firstTurn, themeId);
 });
 
 // Timer do Round (30 segundos)

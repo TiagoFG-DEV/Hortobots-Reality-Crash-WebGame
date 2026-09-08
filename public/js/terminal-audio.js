@@ -26,9 +26,10 @@ export class TerminalAudioManager {
       storyLobby: '/audio/Lobby Theme.mp3',
       menuAlt: '/audio/Lobby Theme.mp3',
 
-      // 3. MENUS E TELAS DO MODO VERSUS (Obrigatório: Lizardilhas POP Theme.mp3)
+      // 3. MENUS E TELAS DO MODO VERSUS (Lizardilhas POP Theme no Lobby, Duel of Grand Inteligence no Draft)
       versusLobby: '/audio/Lizardilhas POP Theme.mp3',
-      versusDraft: '/audio/Lizardilhas POP Theme.mp3',
+      versusDraft: '/audio/Duel of Grand Inteligence.mp3',
+      duelGrandIntelligence: '/audio/Duel of Grand Inteligence.mp3',
       popTheme: '/audio/Lizardilhas POP Theme.mp3',
       versusBattle: '/audio/Energetic Battle Tendence.mp3',
       versusVictory: '/audio/The Final Credits.mp3',

@@ -439,7 +439,8 @@ export class VersusNetwork extends EventTarget {
           yourTeam: msg.yourTeam,
           enemyTeam: msg.enemyTeam,
           firstTurn: msg.firstTurn,
-          round: msg.round || 1
+          round: msg.round || 1,
+          themeId: msg.themeId || null
         });
         break;
 

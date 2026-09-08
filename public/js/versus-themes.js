@@ -126,6 +126,11 @@ export function getRandomVersusTheme() {
   return VERSUS_ARENA_THEMES[idx];
 }
 
+export function getVersusThemeById(id) {
+  if (!id) return getRandomVersusTheme();
+  return VERSUS_ARENA_THEMES.find(t => t.id === id) || VERSUS_ARENA_THEMES[0];
+}
+
 // ════════════════════════════════════════════════════════════════════
 // RENDERIZADOR DE FORMAS PARALLAX PROCEDURAIS NO CANVAS 2D DO TABULEIRO
 // ════════════════════════════════════════════════════════════════════
