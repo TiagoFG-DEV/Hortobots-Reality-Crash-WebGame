@@ -163,7 +163,7 @@ async function main() {
   // Cria servidor HTTP local para capturar o callback automaticamente
   server = http.createServer((req, res) => {
     const reqUrl = new URL(req.url, `http://localhost:${PORT}`);
-    if (reqUrl.pathname === '/oauth2callback') {
+    if (reqUrl.pathname === '/oauth2callback' || reqUrl.pathname === '/' || !reqUrl.pathname) {
       const code = reqUrl.searchParams.get('code');
       const error = reqUrl.searchParams.get('error');
 
