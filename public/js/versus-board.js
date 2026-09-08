@@ -82,7 +82,7 @@ export class VersusBoard {
 
       const candidates = this.targetSelectionMode.type === 'attack'
         ? (this.engine?.enemyTeam || []).filter(r => r && r.isAlive)
-        : (this.engine?.playerTeam || []).filter(r => r && r.isAlive);
+        : (this.engine?.playerTeam || []).filter(r => r); // Suporte: inclui mortos (revival)
 
       let found = null;
       for (const cand of candidates) {
@@ -113,7 +113,7 @@ export class VersusBoard {
       if (this.targetSelectionMode) {
         const candidates = this.targetSelectionMode.type === 'attack'
           ? (this.engine?.enemyTeam || []).filter(r => r && r.isAlive)
-          : (this.engine?.playerTeam || []).filter(r => r && r.isAlive);
+          : (this.engine?.playerTeam || []).filter(r => r); // Suporte: inclui mortos (revival)
 
         for (const cand of candidates) {
           const base = this._cellCenter(cand.col, cand.row);
@@ -344,7 +344,7 @@ export class VersusBoard {
       // 1. Identifica os robôs candidatos a alvo (os 3 adversários no ataque, os aliados no suporte)
       const candidates = (this.targetSelectionMode.type === 'attack')
         ? (this.engine?.enemyTeam || []).filter(r => r && r.isAlive)
-        : (this.engine?.playerTeam || []);
+        : (this.engine?.playerTeam || []); // Suporte: todos (vivos + caídos para revival)
 
       const actorRobot = this.targetSelectionMode.robot;
 
@@ -850,7 +850,7 @@ export class VersusBoard {
     // 3.5. Destaque de Alvo no Tabuleiro (Modo de Mira Direta no Tabuleiro)
     if (this.targetSelectionMode) {
       const isCandidate = (this.targetSelectionMode.type === 'attack' && robot.side === 'ENEMY' && robot.isAlive)
-                       || (this.targetSelectionMode.type === 'support' && robot.side === 'PLAYER');
+                       || (this.targetSelectionMode.type === 'support' && robot.side === 'PLAYER'); // Inclui mortos (revival)
 
       if (isCandidate) {
         const candColor = this.targetSelectionMode.type === 'attack' ? '#ff3344' : '#00ff88';
@@ -907,13 +907,14 @@ export class VersusBoard {
         ctx.font = isHovered ? '900 11px monospace' : '900 10px monospace';
         ctx.fillStyle = isHovered ? '#ffffff' : candColor;
         ctx.textAlign = 'center';
+        const isDeadTarget = !robot.isAlive;
         const actionTxt = isHovered
           ? (this.targetSelectionMode.type === 'attack' ? '[ CLIQUE PARA ATACAR ]'
              : this.targetSelectionMode.type === 'defense' ? '[ CLIQUE PARA PROTEGER ]'
-             : '[ CLIQUE PARA ESCOLHER ]')
+             : isDeadTarget ? '[ CLIQUE PARA REVIVER ]' : '[ CLIQUE PARA ESCOLHER ]')
           : (this.targetSelectionMode.type === 'attack' ? '[ MIRAR ]'
              : this.targetSelectionMode.type === 'defense' ? '[ PROTEGER ]'
-             : '[ SELECIONAR ]');
+             : isDeadTarget ? '[ REVIVER ]' : '[ SELECIONAR ]');
         ctx.fillText(actionTxt, x, y - r - 16);
 
         // Retículo tático de foco diretamente no centro do robô 2D ao passar o cursor

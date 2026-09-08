@@ -2327,8 +2327,13 @@ async function executeSimultaneousClash() {
     versus3DEngine.trigger3DSupportHelix(supporter.side, supporter.homeRow);
 
     // O alvo de suporte foi decidido antecipadamente na fase de comando (não altera no meio do combate)
+    // Fallback: prioriza aliado caído (revival), depois o mais danificado vivo
     const target = supporter._chosenAllyTarget
-      || (isPlayer ? supporter : (s.team.find(r => r.isAlive && r.currentHp < r.maxHp) || supporter));
+      || (isPlayer ? supporter : (
+        s.team.find(r => !r.isAlive) // Aliado caído primeiro (revival!)
+        || s.team.filter(r => r.isAlive).sort((a, b) => a.currentHp - b.currentHp)[0]
+        || supporter
+      ));
 
     const events = engine.resolveSupport(supporter, target);
     for (const ev of events) {
