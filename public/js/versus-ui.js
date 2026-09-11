@@ -1642,7 +1642,21 @@ function runCoinDuelUI(countdown = 3, isTiebreak = false) {
   tailsBtn.disabled = true;
   headsBtn.className = 'versus-coin-choice-btn heads';
   tailsBtn.className = 'versus-coin-choice-btn tails';
-  coinDisc.className = 'versus-coin-disc';
+  
+  if (coinDisc) {
+    coinDisc.className = 'versus-coin-disc';
+    coinDisc.style.background = 'transparent'; // Remove a imagem 2D de background do CSS
+    coinDisc.style.boxShadow = 'none'; // Remove box shadow do placeholder 2D
+    
+    // Injeta e renderiza a Moeda 3D girando lentamente no lugar da imagem 2D
+    const engine3D = (window.gameInstance && window.gameInstance.engine3D) || (typeof minigames !== 'undefined' && minigames.engine3D);
+    if (engine3D && typeof engine3D.renderIdle3DCoin === 'function') {
+      if (window.currentIdleCoin) {
+        window.currentIdleCoin.dispose();
+      }
+      window.currentIdleCoin = engine3D.renderIdle3DCoin('versusCoinDisc');
+    }
+  }
 
   overlay.classList.remove('hidden');
   isCoinDuelResolved = false;
@@ -1714,6 +1728,13 @@ function runCoinDuelUI(countdown = 3, isTiebreak = false) {
 function animateCoinDuelResult(result, winner, picks, isTiebreak = false) {
   // Esconde o overlay 2D imediatamente para dar lugar à verdadeira Moeda 3D
   $('versusCoinDuelOverlay')?.classList.add('hidden');
+  
+  if (window.currentIdleCoin) {
+    window.currentIdleCoin.dispose();
+    window.currentIdleCoin = null;
+    const coinDisc = $('versusCoinDisc');
+    if (coinDisc) coinDisc.innerHTML = '';
+  }
 
   const mySide = (currentMode === 'ranked' && network.side) ? network.side : 'PLAYER';
   const myPick = picks ? picks[mySide] : 'heads';
@@ -2535,7 +2556,7 @@ $('versusConfirmTurnBtn')?.addEventListener('click', async () => {
   if (isClashRunning) return;
 
   if (currentMode === 'ranked') {
-    // Modo online ranqueado: Coleta ações e envia ao servidor com alvos e ataques
+    // Modo online ranqueado: Coleta ações e envia ao servidor com alvos, ataques e resultado do minigame
     const actions = engine.playerTeam.map(bot => ({
       id: bot.id,
       row: bot.row,
@@ -2544,7 +2565,9 @@ $('versusConfirmTurnBtn')?.addEventListener('click', async () => {
       chosenAttackId: bot._chosenAttack?.id || (bot.attacks && bot.attacks[0]?.id),
       targetRow: (bot._chosenTarget && bot._chosenTarget.row !== undefined) ? bot._chosenTarget.row : (bot.targetRow ?? bot.row),
       defenseTargetRow: (bot._chosenDefenseTarget && bot._chosenDefenseTarget.row !== undefined) ? bot._chosenDefenseTarget.row : null,
-      supportTargetRow: (bot._chosenAllyTarget && bot._chosenAllyTarget.row !== undefined) ? bot._chosenAllyTarget.row : (bot.supportTargetRow ?? null)
+      supportTargetRow: (bot._chosenAllyTarget && bot._chosenAllyTarget.row !== undefined) ? bot._chosenAllyTarget.row : (bot.supportTargetRow ?? null),
+      // minigameResult e executado no momento do clash para nao bloquear o envio das acoes
+      minigameResult: null
     }));
 
     isPlayerTurnReady = true;
@@ -2670,8 +2693,10 @@ async function executeSimultaneousClash() {
       });
     } else {
       if (isPlayer) {
+        // Player: moeda 3D oficial - escolhe CARA ou COROA na interface 2D e delega para o motor 3D
         defSuccess = await minigames.runCoinFlip(defBot.color);
       } else {
+        // Bot/Enemy adversario: mesma probabilidade 50/50 identica ao player
         defSuccess = Math.random() < 0.5;
       }
     }
@@ -2784,14 +2809,34 @@ async function executeSimultaneousClash() {
       // Minigame proposto (desempenho proporcional de 0 a 100%)
       let minigameResult = 1.0;
       if (currentMode === 'ranked') {
-        minigameResult = 1.0; // Em PvP online, ataques utilizam precisão tática integral sem bloquear a tela do oponente
+        // PvP Online: O player local faz o minigame normalmente.
+        // O resultado e convertido em ratio (true=1.0, false=0.0) e sera enviado junto com as acoes.
+        // O lado inimigo usa o resultado que o oponente enviou no submitTurn (armazenado em _pvpMinigameResult).
+        if (isPlayer) {
+          const atk = attacker._chosenAttack || attacker.attacks[0];
+          const mgRaw = await minigames.run(atk.minigame, attacker.color, attacker.name);
+          minigameResult = (typeof mgRaw === 'number') ? mgRaw : (mgRaw ? 1.0 : 0.0);
+        } else {
+          // Usa o resultado que o oponente enviou previamente (ou 1.0 como fallback seguro)
+          minigameResult = (typeof attacker._pvpMinigameResult === 'number')
+            ? attacker._pvpMinigameResult
+            : 1.0;
+        }
       } else {
         if (isPlayer) {
           const atk = attacker._chosenAttack || attacker.attacks[0];
           minigameResult = await minigames.run(atk.minigame, attacker.color, attacker.name);
         } else {
-          // Bot adversário: precisão proporcional de 70% a 100% ou erro (0.0)
-          minigameResult = Math.random() < 0.75 ? (0.70 + Math.random() * 0.30) : 0.0;
+          // Bot adversario: mesma curva de dificuldade que o player.
+          // 50% de chance de acertar (como cara ou coroa), com variacao de qualidade proporcional.
+          const hitRoll = Math.random();
+          if (hitRoll < 0.50) {
+            // Acertou — qualidade aleatoria entre 50% e 100%
+            minigameResult = 0.50 + Math.random() * 0.50;
+          } else {
+            // Errou — 0 de dano
+            minigameResult = 0.0;
+          }
         }
       }
 
@@ -3516,6 +3561,9 @@ network.addEventListener('clash_start', async (e) => {
         }
         if (act.supportTargetRow !== undefined && act.supportTargetRow !== null) {
           bot._chosenAllyTarget = engine.enemyTeam.find(r => r.row === act.supportTargetRow && r.isAlive) || bot;
+        }
+        if (act.minigameResult !== undefined && act.minigameResult !== null) {
+          bot._pvpMinigameResult = act.minigameResult;
         }
       }
     });

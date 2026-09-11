@@ -1727,5 +1727,94 @@ export class Terminal3DEngine {
     this.preTitleStreams = null;
     this.preTitleIsWarping = false;
   }
+
+  // =========================================================================
+  // 7. MOEDA 3D IDLE (Para a Tela de Duelo de Iniciativa)
+  // =========================================================================
+  renderIdle3DCoin(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container || typeof THREE === 'undefined') return null;
+
+    container.innerHTML = '';
+    const width = container.clientWidth || 300;
+    const height = container.clientHeight || 300;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100);
+    camera.position.set(0, 0, 10);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(this._getPixelRatio());
+    container.appendChild(renderer.domElement);
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.4);
+    scene.add(ambientLight);
+
+    const mainLight = new THREE.DirectionalLight(0xfff5cc, 2.8);
+    mainLight.position.set(6, 16, 10);
+    scene.add(mainLight);
+
+    const rimLight = new THREE.PointLight(0x00ff66, 2.5, 30);
+    rimLight.position.set(-8, -2, 6);
+    scene.add(rimLight);
+
+    const cyanLight = new THREE.PointLight(0x00e5ff, 2.2, 30);
+    cyanLight.position.set(8, 2, -6);
+    scene.add(cyanLight);
+
+    const textureLoader = new THREE.TextureLoader();
+    const caraTexture = this.caraIconTexture || textureLoader.load('/img/cara-icon.png');
+    
+    // Simplificando textura da coroa para idle
+    const cvs = document.createElement('canvas');
+    cvs.width = 1024; cvs.height = 1024;
+    const ctx = cvs.getContext('2d');
+    const grad = ctx.createRadialGradient(512, 512, 60, 512, 512, 500);
+    grad.addColorStop(0, '#fffbe6'); grad.addColorStop(0.25, '#f5cb23');
+    grad.addColorStop(0.65, '#d4af37'); grad.addColorStop(1, '#664d08');
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, 1024, 1024);
+    
+    ctx.fillStyle = '#14041a'; ctx.beginPath(); ctx.arc(512, 512, 340, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 16; ctx.stroke();
+    // Diadema
+    ctx.fillStyle = '#ffd700'; ctx.beginPath(); ctx.roundRect(280, 640, 464, 60, 12); ctx.fill();
+    const coroaTexture = new THREE.CanvasTexture(cvs);
+
+    const goldEdgeMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.96, roughness: 0.22 });
+    const faceCaraMat = new THREE.MeshStandardMaterial({ map: caraTexture, color: 0xffffff, metalness: 0.55, roughness: 0.32 });
+    const faceCoroaMat = new THREE.MeshStandardMaterial({ map: coroaTexture, metalness: 0.88, roughness: 0.28 });
+
+    const coinGroup = new THREE.Group();
+    const coinCylinderGeo = new THREE.CylinderGeometry(3.6, 3.6, 0.65, 20, 1, false);
+    const coinMesh = new THREE.Mesh(coinCylinderGeo, [goldEdgeMat, faceCaraMat, faceCoroaMat]);
+    
+    // Rotate coin mesh to show face correctly on Y axis spin
+    coinMesh.rotation.x = Math.PI / 2;
+    coinGroup.add(coinMesh);
+
+    const rimGeo = new THREE.TorusGeometry(3.38, 0.16, 12, 20);
+    const rimMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.98, roughness: 0.18 });
+    const frontRim = new THREE.Mesh(rimGeo, rimMat); frontRim.position.z = 0.32; coinGroup.add(frontRim);
+    const backRim = new THREE.Mesh(rimGeo, rimMat); backRim.position.z = -0.32; coinGroup.add(backRim);
+
+    scene.add(coinGroup);
+
+    let animId = null;
+    const animate = () => {
+      animId = requestAnimationFrame(animate);
+      coinGroup.rotation.y += 0.02; // Giro lento em pé
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    return {
+      dispose: () => {
+        cancelAnimationFrame(animId);
+        renderer.dispose();
+      }
+    };
+  }
 }
 

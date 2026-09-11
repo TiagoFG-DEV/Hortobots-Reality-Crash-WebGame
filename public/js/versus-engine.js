@@ -10,7 +10,7 @@ export const VERSUS_ROBOTS = {
     attacks: [
       { id: 'db_l1', name: 'Impacto Térmico', level: 1, energyCost: 1, minigame: 'click_targets', desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
       { id: 'db_l2', name: 'Garras QTE', level: 2, energyCost: 3, minigame: 'arrow_qte', desc: 'Custo: 3 EN · 50% ATK' },
-      { id: 'db_l3', name: 'Firewall Infernal', level: 3, energyCost: 5, minigame: 'gravity_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
+      { id: 'db_l3', name: 'Expurgo Térmico Supremo', level: 3, energyCost: 5, minigame: 'click_targets', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
       name: 'Muralha Tripla de Fogo',
@@ -31,7 +31,7 @@ export const VERSUS_ROBOTS = {
     attacks: [
       { id: 'pl_l1', name: 'Deslize Glacial', level: 1, energyCost: 1, minigame: 'swipe_path', desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
       { id: 'pl_l2', name: 'Combo Glaciar', level: 2, energyCost: 3, minigame: 'typing_sprint', desc: 'Custo: 3 EN · 50% ATK' },
-      { id: 'pl_l3', name: 'Blizzard Plataforma', level: 3, energyCost: 5, minigame: 'platform_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
+      { id: 'pl_l3', name: 'Condutor Criogênico Supremo', level: 3, energyCost: 5, minigame: 'swipe_path', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
       name: 'Condensador Glacial',
@@ -52,7 +52,7 @@ export const VERSUS_ROBOTS = {
     attacks: [
       { id: 'cp_l1', name: 'Laço Circular', level: 1, energyCost: 1, minigame: 'circle_click', desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
       { id: 'cp_l2', name: 'Código do Xerife', level: 2, energyCost: 3, minigame: 'dual_keys', desc: 'Custo: 3 EN · 50% ATK' },
-      { id: 'cp_l3', name: 'Pólvora Digital', level: 3, energyCost: 5, minigame: 'shooter_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
+      { id: 'cp_l3', name: 'Sincronizador Supremo', level: 3, energyCost: 5, minigame: 'circle_click', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
       name: 'Blindagem de Balística Dourada',
@@ -73,7 +73,7 @@ export const VERSUS_ROBOTS = {
     attacks: [
       { id: 'pb_l1', name: 'Reflexo Prismático', level: 1, energyCost: 1, minigame: 'mirror_sequence', desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
       { id: 'pb_l2', name: 'Teste de Reação', level: 2, energyCost: 3, minigame: 'reaction_test', desc: 'Custo: 3 EN · 50% ATK' },
-      { id: 'pb_l3', name: 'Órbita Caótica', level: 3, energyCost: 5, minigame: 'orbit_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
+      { id: 'pb_l3', name: 'Alinhamento Prismático Supremo', level: 3, energyCost: 5, minigame: 'mirror_sequence', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
       name: 'Matriz Bio-Prismática',
@@ -94,7 +94,7 @@ export const VERSUS_ROBOTS = {
     attacks: [
       { id: 'tv_l1', name: 'Talho Veloz', level: 1, energyCost: 1, minigame: 'slash_draw', desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
       { id: 'tv_l2', name: 'Sequência Tesla', level: 2, energyCost: 3, minigame: 'arrow_sequence', desc: 'Custo: 3 EN · 50% ATK' },
-      { id: 'tv_l3', name: 'Coração de Ferro', level: 3, energyCost: 5, minigame: 'green_heart_dodge', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
+      { id: 'tv_l3', name: 'Lâmina Suprema de Titânio', level: 3, energyCost: 5, minigame: 'slash_draw', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
       name: 'Barreira Tesla de Espinhos',
