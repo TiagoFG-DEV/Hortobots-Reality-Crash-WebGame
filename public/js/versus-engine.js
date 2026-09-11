@@ -6,107 +6,107 @@
 export const VERSUS_ROBOTS = {
   DB: {
     id: 'DB', name: 'Dino-Byte', color: '#ff3344', colorName: 'RED',
-    baseHp: 10, baseAtk: 15, baseEnergy: 0,
+    baseHp: 20, baseAtk: 15, baseEnergy: 0,
     attacks: [
-      { id: 'db_l1', name: 'Impacto Térmico', level: 1, energyCost: 1, minigame: 'click_targets', desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
-      { id: 'db_l2', name: 'Garras QTE', level: 2, energyCost: 3, minigame: 'arrow_qte', desc: 'Custo: 3 EN · 50% ATK' },
+      { id: 'db_l1', name: 'Impacto Térmico', level: 1, energyCost: 3, minigame: 'click_targets', desc: 'Custo: 3 EN · 25% ATK (Mín 1)' },
+      { id: 'db_l2', name: 'Garras QTE', level: 2, energyCost: 4, minigame: 'arrow_qte', desc: 'Custo: 4 EN · 50% ATK' },
       { id: 'db_l3', name: 'Expurgo Térmico Supremo', level: 3, energyCost: 5, minigame: 'click_targets', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
       name: 'Muralha Tripla de Fogo',
-      desc: 'O ÚNICO com escudo para os 3 robôs (5 HP cada, dura 2 rounds). Custo: 0 EN.',
-      shieldHp: 5, rounds: 2, targets: 'all', shieldColor: '#ff3344', energyCost: 0,
+      desc: 'Escudo ABSOLUTO nos 3 aliados — anula o próximo ataque (2 rounds). Se atingido: escudo quebra e robô fica TONTO. Custo: 0 EN.',
+      rounds: 2, targets: 'all', shieldColor: '#ff3344', energyCost: 0,
       effectType: 'group_shield',
     },
     support: {
       name: 'Reparo de Grupo',
-      desc: 'Cura até 4 HP ou revive com 10 HP. Custo: 2 EN.',
+      desc: 'Cura até 4 HP ou revive com 20 HP. Custo: 1 EN.',
       effect: { type: 'heal', amount: 4, target: 'one' },
-      energyCost: 2,
+      energyCost: 1,
     },
   },
   PL: {
     id: 'PL', name: 'Penlinux', color: '#00e5ff', colorName: 'CYAN',
-    baseHp: 10, baseAtk: 15, baseEnergy: 0,
+    baseHp: 20, baseAtk: 15, baseEnergy: 0,
     attacks: [
-      { id: 'pl_l1', name: 'Deslize Glacial', level: 1, energyCost: 1, minigame: 'swipe_path', desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
-      { id: 'pl_l2', name: 'Combo Glaciar', level: 2, energyCost: 3, minigame: 'typing_sprint', desc: 'Custo: 3 EN · 50% ATK' },
+      { id: 'pl_l1', name: 'Deslize Glacial', level: 1, energyCost: 3, minigame: 'swipe_path', desc: 'Custo: 3 EN · 25% ATK (Mín 1)' },
+      { id: 'pl_l2', name: 'Combo Glaciar', level: 2, energyCost: 4, minigame: 'typing_sprint', desc: 'Custo: 4 EN · 50% ATK' },
       { id: 'pl_l3', name: 'Condutor Criogênico Supremo', level: 3, energyCost: 5, minigame: 'swipe_path', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
       name: 'Condensador Glacial',
-      desc: 'Escudo individual de 10 HP no aliado escolhido + concede +2 Energia imediata. Dura 2 rounds. Custo: 0 EN.',
-      shieldHp: 10, rounds: 2, targets: 'single', shieldColor: '#00e5ff', energyCost: 0,
+      desc: 'Escudo ABSOLUTO no aliado escolhido + concede +2 Energia imediata (2 rounds). Se atingido: escudo quebra e robô fica TONTO. Custo: 0 EN.',
+      rounds: 2, targets: 'single', shieldColor: '#00e5ff', energyCost: 0,
       energyBonus: 2, effectType: 'energy_boost',
     },
     support: {
       name: 'Cura Progressiva',
-      desc: 'Cura até 4 HP ou revive com 10 HP. Custo: 2 EN.',
+      desc: 'Cura até 4 HP ou revive com 20 HP. Custo: 1 EN.',
       effect: { type: 'heal', amount: 4, target: 'one' },
-      energyCost: 2,
+      energyCost: 1,
     },
   },
   CP: {
     id: 'CP', name: 'Cowputer-Moo', color: '#ffd700', colorName: 'GOLD',
-    baseHp: 10, baseAtk: 15, baseEnergy: 0,
+    baseHp: 20, baseAtk: 15, baseEnergy: 0,
     attacks: [
-      { id: 'cp_l1', name: 'Laço Circular', level: 1, energyCost: 1, minigame: 'circle_click', desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
-      { id: 'cp_l2', name: 'Código do Xerife', level: 2, energyCost: 3, minigame: 'dual_keys', desc: 'Custo: 3 EN · 50% ATK' },
+      { id: 'cp_l1', name: 'Laço Circular', level: 1, energyCost: 3, minigame: 'circle_click', desc: 'Custo: 3 EN · 25% ATK (Mín 1)' },
+      { id: 'cp_l2', name: 'Código do Xerife', level: 2, energyCost: 4, minigame: 'dual_keys', desc: 'Custo: 4 EN · 50% ATK' },
       { id: 'cp_l3', name: 'Sincronizador Supremo', level: 3, energyCost: 5, minigame: 'circle_click', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
       name: 'Blindagem de Balística Dourada',
-      desc: 'Escudo individual de 10 HP no aliado escolhido + sobrecarga de +2 ATK. Dura 2 rounds. Custo: 0 EN.',
-      shieldHp: 10, rounds: 2, targets: 'single', shieldColor: '#ffd700', energyCost: 0,
+      desc: 'Escudo ABSOLUTO no aliado escolhido + sobrecarga de +2 ATK (2 rounds). Se atingido: escudo quebra e robô fica TONTO. Custo: 0 EN.',
+      rounds: 2, targets: 'single', shieldColor: '#ffd700', energyCost: 0,
       atkBonus: 2, effectType: 'attack_boost',
     },
     support: {
       name: 'Kit de Campo',
-      desc: 'Cura até 4 HP ou revive com 10 HP. Custo: 2 EN.',
+      desc: 'Cura até 4 HP ou revive com 20 HP. Custo: 2 EN.',
       effect: { type: 'heal', amount: 4, target: 'one' },
       energyCost: 2,
     },
   },
   PB: {
     id: 'PB', name: 'Pavabyte', color: '#ff69b4', colorName: 'PINK',
-    baseHp: 10, baseAtk: 15, baseEnergy: 0,
+    baseHp: 20, baseAtk: 15, baseEnergy: 0,
     attacks: [
-      { id: 'pb_l1', name: 'Reflexo Prismático', level: 1, energyCost: 1, minigame: 'mirror_sequence', desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
-      { id: 'pb_l2', name: 'Teste de Reação', level: 2, energyCost: 3, minigame: 'reaction_test', desc: 'Custo: 3 EN · 50% ATK' },
+      { id: 'pb_l1', name: 'Reflexo Prismático', level: 1, energyCost: 3, minigame: 'mirror_sequence', desc: 'Custo: 3 EN · 25% ATK (Mín 1)' },
+      { id: 'pb_l2', name: 'Teste de Reação', level: 2, energyCost: 4, minigame: 'reaction_test', desc: 'Custo: 4 EN · 50% ATK' },
       { id: 'pb_l3', name: 'Alinhamento Prismático Supremo', level: 3, energyCost: 5, minigame: 'mirror_sequence', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
       name: 'Matriz Bio-Prismática',
-      desc: 'Escudo individual de 10 HP no aliado escolhido + regenera +2 HP por round durado. Dura 2 rounds. Custo: 0 EN.',
-      shieldHp: 10, rounds: 2, targets: 'single', shieldColor: '#ff69b4', energyCost: 0,
+      desc: 'Escudo ABSOLUTO no aliado escolhido + regenera +2 HP por round (2 rounds). Se atingido: escudo quebra e robô fica TONTO. Custo: 0 EN.',
+      rounds: 2, targets: 'single', shieldColor: '#ff69b4', energyCost: 0,
       hpPerRound: 2, effectType: 'regen_hp',
     },
     support: {
       name: 'Sobrecarga de Cura',
-      desc: 'Cura até 4 HP ou revive com 10 HP. Custo: 2 EN.',
+      desc: 'Cura até 4 HP ou revive com 20 HP. Custo: 2 EN.',
       effect: { type: 'heal', amount: 4, target: 'one' },
       energyCost: 2,
     },
   },
   TV: {
     id: 'TV', name: 'Tigervex', color: '#ff8c00', colorName: 'ORANGE',
-    baseHp: 10, baseAtk: 15, baseEnergy: 0,
+    baseHp: 20, baseAtk: 15, baseEnergy: 0,
     attacks: [
-      { id: 'tv_l1', name: 'Talho Veloz', level: 1, energyCost: 1, minigame: 'slash_draw', desc: 'Custo: 1 EN · 25% ATK (Mín 1)' },
-      { id: 'tv_l2', name: 'Sequência Tesla', level: 2, energyCost: 3, minigame: 'arrow_sequence', desc: 'Custo: 3 EN · 50% ATK' },
+      { id: 'tv_l1', name: 'Talho Veloz', level: 1, energyCost: 3, minigame: 'slash_draw', desc: 'Custo: 3 EN · 25% ATK (Mín 1)' },
+      { id: 'tv_l2', name: 'Sequência Tesla', level: 2, energyCost: 4, minigame: 'arrow_sequence', desc: 'Custo: 4 EN · 50% ATK' },
       { id: 'tv_l3', name: 'Lâmina Suprema de Titânio', level: 3, energyCost: 5, minigame: 'slash_draw', desc: 'Custo: 5 EN · 110% ATK (Máx 20)' },
     ],
     defense: {
       name: 'Barreira Tesla de Espinhos',
-      desc: 'Escudo individual de 10 HP no aliado escolhido + contra-ataque elétrico (reflete 3 de dano ao atacante). Dura 2 rounds. Custo: 0 EN.',
-      shieldHp: 10, rounds: 2, targets: 'single', shieldColor: '#ff8c00', energyCost: 0,
-      reflectDamage: 3, effectType: 'reflect',
+      desc: 'Escudo ABSOLUTO no aliado escolhido (2 rounds). Ao quebrar: descarga elétrica causa 3 HP no atacante e robô fica TONTO. Custo: 0 EN.',
+      rounds: 2, targets: 'single', shieldColor: '#ff8c00', energyCost: 0,
+      reflectBreakDamage: 3, effectType: 'reflect_break',
     },
     support: {
       name: 'Pulso de Reparo',
-      desc: 'Cura até 4 HP ou revive com 10 HP. Custo: 2 EN.',
+      desc: 'Cura até 4 HP ou revive com 20 HP. Custo: 1 EN.',
       effect: { type: 'heal', amount: 4, target: 'one' },
-      energyCost: 2,
+      energyCost: 1,
     },
   },
 };
@@ -128,6 +128,8 @@ export function createVersusRobot(templateId, slot, side) {
     hotEffect: null,
     isAlive: true,
     isSelected: false,
+    isStunned: false,        // TONTO: robô atordoado nao pode usar defesa nem receber escudo
+    stunRoundsLeft: 0,       // Rounds restantes de atordoamento
     action: null, // 'attack' | 'defense' | 'support'
     attackHitsThisRound: 0,
     col: side === 'PLAYER' ? 0 : 4,
@@ -342,20 +344,16 @@ export class VersusEngine {
   }
 
   _applyDamage(target, targetTeam, rawDamage, events, attacker = null) {
-    let damage = rawDamage;
-
-    // REGRA DO USUÁRIO:
-    // Se o ataque for mais forte que o escudo, o escudo desconta o próprio HP do ataque
-    // e o robô alvo recebe o resultado da subtração (Dano - HP do escudo).
-    if (target.shield && target.shield.hp > 0) {
-      const shieldHp = target.shield.hp;
-
-      // Efeito do escudo do TV: Contra-ataque de espinhos elétricos (reflete dano ao atacante)
-      if (target.shield.reflectDamage && attacker && attacker.isAlive) {
-        const refDmg = target.shield.reflectDamage;
+    // NOVO SISTEMA DE ESCUDO ABSOLUTO:
+    // O escudo anula QUALQUER dano completamente.
+    // Ao ser atingido: escudo quebra imediatamente e robô fica TONTO por 2 rounds.
+    if (target.shield && target.shield.active) {
+      // Efeito especial do TV (Barreira Tesla): descarga elétrica no atacante ao quebrar
+      if (target.shield.reflectBreakDamage && attacker && attacker.isAlive) {
+        const refDmg = target.shield.reflectBreakDamage;
         attacker.currentHp = Math.max(0, attacker.currentHp - refDmg);
         events.push({
-          type: 'shield_reflect',
+          type: 'shield_reflect_break',
           target: target.id,
           targetName: target.name,
           attacker: attacker.id,
@@ -369,21 +367,23 @@ export class VersusEngine {
         }
       }
 
-      if (damage >= shieldHp) {
-        damage -= shieldHp;
-        target.shield.hp = 0;
-        target.shield = null;
-        events.push({ type: 'shield_break', target: target.id, absorbed: shieldHp, remainingDamage: damage });
-      } else {
-        target.shield.hp -= damage;
-        events.push({ type: 'shield_hit', target: target.id, absorbed: damage, remaining: target.shield.hp });
-        damage = 0;
-      }
+      // Quebra o escudo e aplica atordoamento (TONTO)
+      target.shield = null;
+      target.isStunned = true;
+      target.stunRoundsLeft = 2;
+      events.push({
+        type: 'shield_break_stun',
+        target: target.id,
+        targetName: target.name,
+        stunRounds: 2
+      });
+      return false; // Dano 100% anulado — robô nao pode morrer por ataque com escudo
     }
 
-    if (damage > 0) {
-      target.currentHp = Math.max(0, target.currentHp - damage);
-      events.push({ type: 'damage', target: target.id, damage, hp: target.currentHp });
+    // Sem escudo: dano direto ao HP
+    if (rawDamage > 0) {
+      target.currentHp = Math.max(0, target.currentHp - rawDamage);
+      events.push({ type: 'damage', target: target.id, damage: rawDamage, hp: target.currentHp });
     }
 
     if (target.currentHp <= 0 && target.isAlive) {
@@ -396,7 +396,7 @@ export class VersusEngine {
 
   _onKill(attacker, events) {
     attacker.currentHp = Math.min(attacker.maxHp, attacker.currentHp + 2);
-    attacker.currentEnergy = Math.min(10, attacker.currentEnergy + 1);
+    attacker.currentEnergy = Math.min(5, attacker.currentEnergy + 1); // cap maximo e 5
     const side = attacker.side;
     this.medals[side]++;
     events.push({
@@ -419,22 +419,21 @@ export class VersusEngine {
     const myTeam = defenderRobot.side === 'PLAYER' ? this.playerTeam : this.enemyTeam;
     const def = defenderRobot.defense;
 
+    // Escudo absoluto: sem HP, so um flag active. Ao ser atacado: quebra e stun.
     const makeShield = (targetBot) => ({
-      hp: Math.min(10, def.shieldHp || 10),
-      maxHp: Math.min(10, def.shieldHp || 10),
+      active: true,                              // Escudo absoluto — anula 100% de qualquer ataque
       color: def.shieldColor,
       targets: def.targets,
       roundsLeft: 2,
-      hpPerRound: def.hpPerRound || 0,
-      reflectDamage: def.reflectDamage || 0,
-      energyPerRound: def.energyPerRound || 0,
+      hpPerRound: def.hpPerRound || 0,           // PB: regenera HP por round enquanto ativo
+      reflectBreakDamage: def.reflectBreakDamage || 0, // TV: dano ao atacante quando o escudo quebra
       sourceRobotId: defenderRobot.id,
     });
 
     if (def.targets === 'all') {
-      // REGRA DO USUÁRIO: O ÚNICO que pode dar escudo pros 3 é o DB, o único, e o escudo dele é de apenas 5 HP.
+      // DB: escudo absoluto para os 3 robos aliados (exceto TONTOS)
       myTeam.forEach(r => {
-        if (r.isAlive) {
+        if (r.isAlive && !r.isStunned) { // Robo TONTO nao pode receber escudo
           r.shield = makeShield(r);
         }
       });
@@ -442,23 +441,33 @@ export class VersusEngine {
         type: 'defense_all',
         defender: defenderRobot.id,
         defenderName: defenderRobot.name,
-        shieldHp: 5,
         shieldColor: def.shieldColor,
         roundsLeft: 2
       });
     } else {
-      // REGRA DO USUÁRIO: O resto tem que escolher um para dar escudo (até 10 HP) com efeito único!
-      const target = (chosenTarget && chosenTarget.isAlive)
-        ? chosenTarget
-        : (defenderRobot._chosenDefenseTarget && defenderRobot._chosenDefenseTarget.isAlive)
-          ? defenderRobot._chosenDefenseTarget
-          : defenderRobot;
+      // Escolhe o alvo do escudo — TONTOS nao podem receber escudo
+      let target = null;
+      const candidates = [
+        chosenTarget,
+        defenderRobot._chosenDefenseTarget,
+        defenderRobot,
+        ...myTeam
+      ];
+      for (const c of candidates) {
+        if (c && c.isAlive && !c.isStunned) { target = c; break; }
+      }
+
+      if (!target || target.isStunned) {
+        // Nenhum aliado valido para receber o escudo
+        events.push({ type: 'shield_blocked_stun', defender: defenderRobot.id, defenderName: defenderRobot.name });
+        return events;
+      }
 
       target.shield = makeShield(target);
 
-      // Efeitos específicos únicos de cada robô:
+      // Efeitos especificos de cada robo ao ativar o escudo:
       if (def.energyBonus) {
-        target.currentEnergy = Math.min(10, target.currentEnergy + def.energyBonus);
+        target.currentEnergy = Math.min(5, target.currentEnergy + def.energyBonus);
         events.push({ type: 'shield_energy_buff', target: target.id, targetName: target.name, amount: def.energyBonus });
       }
       if (def.atkBonus) {
@@ -468,8 +477,8 @@ export class VersusEngine {
       if (def.hpPerRound) {
         events.push({ type: 'shield_regen_buff', target: target.id, targetName: target.name, amount: def.hpPerRound });
       }
-      if (def.reflectDamage) {
-        events.push({ type: 'shield_reflect_buff', target: target.id, targetName: target.name, amount: def.reflectDamage });
+      if (def.reflectBreakDamage) {
+        events.push({ type: 'shield_reflect_buff', target: target.id, targetName: target.name, amount: def.reflectBreakDamage });
       }
 
       events.push({
@@ -478,7 +487,6 @@ export class VersusEngine {
         defenderName: defenderRobot.name,
         target: target.id,
         targetName: target.name,
-        shieldHp: target.shield.hp,
         shieldColor: def.shieldColor,
         roundsLeft: 2,
         effectDesc: def.desc
@@ -500,13 +508,15 @@ export class VersusEngine {
     }
     supporterRobot.currentEnergy -= cost;
 
-    // REGRA DO USUÁRIO: revive com 10 HP mesmo, esquece reviver com 50%!
+    // Revive com 20 HP (novo HP maximo) e limpa o atordoamento
     if (targetRobot && (!targetRobot.isAlive || targetRobot.currentHp <= 0)) {
-      targetRobot.currentHp = 10;
-      targetRobot.maxHp = 10;
+      targetRobot.currentHp = 20;
+      targetRobot.maxHp = 20;
       targetRobot.isAlive = true;
       targetRobot.shield = null;
-      events.push({ type: 'revive', target: targetRobot.id, targetName: targetRobot.name, hp: 10 });
+      targetRobot.isStunned = false;   // Revive limpa o atordoamento
+      targetRobot.stunRoundsLeft = 0;
+      events.push({ type: 'revive', target: targetRobot.id, targetName: targetRobot.name, hp: 20 });
       return events;
     }
 
@@ -594,15 +604,25 @@ export class VersusEngine {
   _processShieldDurations() {
     const allRobots = [...this.playerTeam, ...this.enemyTeam];
     allRobots.forEach(r => {
-      if (r.shield && r.isAlive) {
-        // Efeito do escudo do PB: regenera 2 de HP por round durado
+      // Processa duracao do escudo (expirar naturalmente apos 2 rounds)
+      if (r.shield && r.shield.active && r.isAlive) {
+        // Efeito especial do PB: regenera HP enquanto o escudo esta ativo
         if (r.shield.hpPerRound && r.shield.hpPerRound > 0) {
           r.currentHp = Math.min(r.maxHp, r.currentHp + r.shield.hpPerRound);
         }
 
         r.shield.roundsLeft = (r.shield.roundsLeft !== undefined ? r.shield.roundsLeft : 2) - 1;
         if (r.shield.roundsLeft <= 0) {
-          r.shield = null;
+          r.shield = null; // Escudo expirou naturalmente
+        }
+      }
+
+      // Processa contagem regressiva do atordoamento (TONTO)
+      if (r.isStunned) {
+        r.stunRoundsLeft = Math.max(0, (r.stunRoundsLeft || 0) - 1);
+        if (r.stunRoundsLeft <= 0) {
+          r.isStunned = false;
+          r.stunRoundsLeft = 0;
         }
       }
     });
@@ -612,11 +632,11 @@ export class VersusEngine {
     const allRobots = [...this.playerTeam, ...this.enemyTeam];
     allRobots.forEach(r => {
       if (r.isAlive) {
-        // Base +1 de energia por round para todos os vivos
-        r.currentEnergy = Math.min(10, r.currentEnergy + 1);
-        // Se poupou energia (ação rest ou sem ação), ganha +1 bônus
+        // Base +1 de energia por round (maximo 5)
+        r.currentEnergy = Math.min(5, r.currentEnergy + 1);
+        // Se poupou energia (acao rest ou sem acao), ganha +1 bonus
         if (r.action === 'rest' || !r.action) {
-          r.currentEnergy = Math.min(10, r.currentEnergy + 1);
+          r.currentEnergy = Math.min(5, r.currentEnergy + 1);
         }
       }
     });
@@ -675,8 +695,8 @@ export class VersusEngine {
     const aliveBot = this.enemyTeam.filter(r => r.isAlive);
     if (aliveBot.length === 0) return null;
 
-    // Robôs com pelo menos 1 de energia podem atacar (no Round 1 com 0 de energia, ninguém ataca)
-    const attackersWithEnergy = aliveBot.filter(r => r.currentEnergy >= 1);
+    // Ataque minimo custa 3 EN agora. Robo TONTO pode atacar.
+    const attackersWithEnergy = aliveBot.filter(r => r.currentEnergy >= 3);
     let attacker = null;
     let chosenAttack = null;
 
@@ -687,22 +707,23 @@ export class VersusEngine {
       if (!chosenAttack) attacker = null;
     }
 
-    // Escudo custa 0 de energia: robô vivo sem escudo pode erguer barreira
-    const defenderCandidates = aliveBot.filter(r => r !== attacker);
-    const defender = defenderCandidates.find(r => !r.shield) || defenderCandidates[0] || (attacker ? null : aliveBot[0]);
+    // Escudo: robo TONTO NAO pode usar defesa. Robo com escudo ja ativo tambem nao precisa.
+    const defenderCandidates = aliveBot.filter(r => r !== attacker && !r.isStunned);
+    const defender = defenderCandidates.find(r => !r.shield) || defenderCandidates[0] || null;
 
-    // Alvo do escudo do bot: se não for DB (que dá escudo pros 3), escolhe 1 aliado para proteger
+    // Alvo do escudo: escolhe aliado nao-tonto com menos HP
     let defenderTarget = null;
     if (defender && defender.defense?.targets !== 'all') {
-      const candidates = [...aliveBot].sort((a, b) => a.currentHp - b.currentHp);
+      const candidates = [...aliveBot].filter(r => !r.isStunned).sort((a, b) => a.currentHp - b.currentHp);
       defenderTarget = candidates[0] || defender;
     }
 
-    // Suporte custa 2 de energia
-    const supporterCandidates = aliveBot.filter(r => r !== attacker && r !== defender && r.currentEnergy >= 2);
+    // Suporte: custo varia por robo (1 ou 2 EN)
+    const supCost = r => r.support?.energyCost || 1;
+    const supporterCandidates = aliveBot.filter(r => r !== attacker && r !== defender && r.currentEnergy >= supCost(r));
     const supporter = supporterCandidates[0] || null;
 
-    // Alvo de suporte: aliado caído (revive com 10 HP) ou mais danificado
+    // Alvo de suporte: aliado caido (revive com 20 HP) ou mais danificado
     const deadAlly = this.enemyTeam.find(r => !r.isAlive);
     const supportTarget = deadAlly || this.enemyTeam.filter(r => r.isAlive).sort((a, b) => a.currentHp - b.currentHp)[0];
 
@@ -740,7 +761,8 @@ export class VersusEngine {
       }
     }
 
-    if (actions.defender && actions.defender !== actions.attacker) {
+    // Robo TONTO nao pode usar defesa
+    if (actions.defender && actions.defender !== actions.attacker && !actions.defender.isStunned) {
       actions.defender.action = 'defense';
       actions.defender._chosenDefenseTarget = actions.defenderTarget || actions.defender;
     }

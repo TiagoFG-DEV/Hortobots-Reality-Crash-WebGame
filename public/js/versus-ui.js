@@ -2138,14 +2138,17 @@ function renderCommandCards() {
     if (!bot.isAlive) {
       buttonsHTML = `<div class="robot-cmd-fallen-msg">[ COMBATENTE CAÍDO — USE SUPORTE PARA REVIVER ]</div>`;
     } else {
-      const canAtk = bot.currentEnergy >= 1;
-      const supCost = bot.support?.energyCost || 2;
+      const atkCost = bot.attacks[0]?.energyCost || 3;
+      const canAtk = bot.currentEnergy >= atkCost;
+      const supCost = bot.support?.energyCost || 1;
       const canSup = bot.currentEnergy >= supCost;
 
       const isAtkActive = bot.action === 'attack';
       const isDefActive = bot.action === 'defense';
       const isSupActive = bot.action === 'support';
       const isRestActive = bot.action === 'rest' || !bot.action;
+
+      const isStunned = bot.isStunned;
 
       buttonsHTML = `
         <div class="robot-cmd-action-buttons">
@@ -2154,14 +2157,14 @@ function renderCommandCards() {
                   ${isAtkTaken || !canAtk ? 'disabled' : ''}
                   aria-label="Ataque">
             ${ATK_ICON_SVG}
-            <span class="cmd-action-cost-pill">1 EN</span>
+            <span class="cmd-action-cost-pill">${atkCost} EN</span>
           </button>
-          <button class="cmd-action-icon-btn def ${isDefActive ? 'selected' : ''} ${isDefTaken ? 'locked-role' : ''}"
+          <button class="cmd-action-icon-btn def ${isDefActive ? 'selected' : ''} ${isDefTaken || isStunned ? 'locked-role' : ''}"
                   data-robot="${bot.id}" data-action="defense"
-                  ${isDefTaken ? 'disabled' : ''}
+                  ${isDefTaken || isStunned ? 'disabled' : ''}
                   aria-label="Defesa">
             ${DEF_ICON_SVG}
-            <span class="cmd-action-cost-pill">0 EN</span>
+            <span class="cmd-action-cost-pill">${isStunned ? 'TONTO' : '0 EN'}</span>
           </button>
           <button class="cmd-action-icon-btn sup ${isSupActive ? 'selected' : ''} ${isSupTaken || !canSup ? 'locked-role' : ''}"
                   data-robot="${bot.id}" data-action="support"
@@ -2660,6 +2663,8 @@ async function executeSimultaneousClash() {
   ].filter(Boolean);
 
   for (const defBot of defRobots) {
+    if (defBot.isStunned) continue; // Segurança extra: robô tonto não defende
+
     const isPlayer = defBot.side === 'PLAYER';
     const stepCol = isPlayer ? 1 : 3;
 
@@ -2850,23 +2855,22 @@ async function executeSimultaneousClash() {
         const aCenter = board._cellCenter(attacker.col, attacker.row);
 
         for (const ev of events) {
-          if (ev.type === 'shield_hit') {
-            board.emitFloatingText(`ESCUDO: -${ev.absorbed}`, tCenter.x, tCenter.y - 30, '#00e5ff', 15);
-            addLog(`[ESCUDO] Escudo de ${target.name} absorveu ${ev.absorbed} de dano! (${ev.remaining} restantes)`, 'defense');
-            setNarratorInfo(`ESCUDO ABSORVEU (-${ev.absorbed})`, `Escudo de ${target.name} absorveu o impacto! (${ev.remaining} HP restantes)`, DEF_ICON_SVG, '#00e5ff', '[ ESCUDO ]');
-          } else if (ev.type === 'shield_break') {
+          if (ev.type === 'shield_break_stun') {
             await board.animateShieldBreak(target);
-            addLog(`[ESCUDO QUEBRADO] Escudo de ${target.name} QUEBROU!`, 'miss');
-            setNarratorInfo(`ESCUDO QUEBRADO!`, `A barreira defensiva de ${target.name} estilhaçou!`, DEF_ICON_SVG, '#ff4455', '[ QUEBRA DE ESCUDO ]');
+            board.emitFloatingText(`ESCUDO QUEBRADO!`, tCenter.x, tCenter.y - 30, '#00e5ff', 16);
+            board.emitFloatingText(`TONTO! (${ev.stunRounds}R)`, tCenter.x, tCenter.y - 50, '#a9a9a9', 18);
+            if (typeof board.animateStunEffect === 'function') board.animateStunEffect(target);
+            addLog(`[ESCUDO QUEBRADO] Escudo de ${target.name} anulou o impacto e QUEBROU! O robô ficou TONTO por ${ev.stunRounds} rounds!`, 'miss');
+            setNarratorInfo(`ESCUDO QUEBRADO!`, `A barreira de ${target.name} absorveu tudo, mas o robô ficou TONTO!`, DEF_ICON_SVG, '#ff4455', '[ QUEBRA DE ESCUDO ]');
+          } else if (ev.type === 'shield_reflect_break') {
+            board.emitFloatingText(`REFLEXÃO: -${ev.damage} HP`, aCenter.x, aCenter.y - 30, '#ff8c00', 16);
+            board.emitParticles(aCenter.x, aCenter.y, '#ff8c00', 25, { speed: 5 });
+            addLog(`[CONTRA-ATAQUE ELÉTRICO] Escudo de ${target.name} quebrou e refletiu ${ev.damage} de dano em ${attacker.name}!`, 'miss');
+            setNarratorInfo(`CONTRA-ATAQUE ELÉTRICO`, `Escudo refletiu ${ev.damage} de dano de volta em ${attacker.name} ao quebrar!`, REST_ICON_SVG, '#ffd700', '[ REFLEXÃO ]');
           } else if (ev.type === 'damage') {
             board.emitFloatingText(`-${ev.damage} HP`, tCenter.x, tCenter.y - 45, '#ff3344', 20);
             addLog(`[ATAQUE] ${attacker.name} atingiu ${target.name}! -${ev.damage} HP (Restante: ${ev.hp})`, 'attack');
             setNarratorInfo(`IMPACTO DIRETO (-${ev.damage} HP)`, `${attacker.name} atingiu ${target.name}! (HP restante: ${ev.hp})`, ATK_ICON_SVG, '#ff4455', '[ IMPACTO ]');
-          } else if (ev.type === 'shield_reflect') {
-            board.emitFloatingText(`REFLEXÃO: -${ev.damage} HP`, aCenter.x, aCenter.y - 30, '#ff8c00', 16);
-            board.emitParticles(aCenter.x, aCenter.y, '#ff8c00', 25, { speed: 5 });
-            addLog(`[CONTRA-ATAQUE ELÉTRICO] Escudo de ${target.name} refletiu ${ev.damage} de dano em ${attacker.name}!`, 'miss');
-            setNarratorInfo(`CONTRA-ATAQUE ELÉTRICO`, `Escudo refletiu ${ev.damage} de dano de volta em ${attacker.name}!`, REST_ICON_SVG, '#ffd700', '[ REFLEXÃO ]');
           } else if (ev.type === 'robot_down') {
             addLog(`[DESTRUIÇÃO] ${ev.targetName || target.name} TOMBOU em combate!`, 'kill');
             getAudio().playPowerUp();
@@ -3165,7 +3169,8 @@ function updateStatusPanel() {
     pPanel.innerHTML = '';
     engine.playerTeam.forEach(bot => {
       const pct = Math.max(0, Math.min(100, Math.floor((bot.currentHp / bot.maxHp) * 100)));
-      const shieldInfo = bot.shield ? ` <span style="color:#00e5ff;font-weight:800;">[ESC:${bot.shield.hp}HP]</span>` : '';
+      const shieldInfo = bot.shield ? ` <span style="color:#00e5ff;font-weight:800;">[ESC: ATIVO]</span>` : '';
+      const stunInfo = bot.isStunned ? ` <span style="color:#a9a9a9;font-weight:800;">[TONTO:${bot.stunRoundsLeft}R]</span>` : '';
       const atkColor = bot.attackPower >= 20 ? '#ff1133' : '#ffd700';
       const atkInfo = bot.isAlive ? ` <span style="color:${atkColor};font-weight:800;">[ATK:${bot.attackPower}]</span>` : '';
       const row = document.createElement('div');
@@ -3176,7 +3181,7 @@ function updateStatusPanel() {
           <div class="compact-bot-hp-fill" style="width:${pct}%;background:${pct > 30 ? '#00ff88' : '#ff4455'}"></div>
         </div>
         <span style="font-size:0.92rem;font-weight:800;color:#ffffff;text-shadow:0 0 4px rgba(255,255,255,0.4);min-width:125px;">
-          ${bot.isAlive ? `<strong>${bot.currentHp}</strong>/${bot.maxHp} HP${shieldInfo}${atkInfo}` : '<span style="color:#ff3344;">DOWN</span>'}
+          ${bot.isAlive ? `<strong>${bot.currentHp}</strong>/${bot.maxHp} HP${shieldInfo}${stunInfo}${atkInfo}` : '<span style="color:#ff3344;">DOWN</span>'}
         </span>
       `;
       pPanel.appendChild(row);
@@ -3188,7 +3193,8 @@ function updateStatusPanel() {
     ePanel.innerHTML = '';
     engine.enemyTeam.forEach(bot => {
       const pct = Math.max(0, Math.min(100, Math.floor((bot.currentHp / bot.maxHp) * 100)));
-      const shieldInfo = bot.shield ? ` <span style="color:#00e5ff;font-weight:800;">[ESC:${bot.shield.hp}HP]</span>` : '';
+      const shieldInfo = bot.shield ? ` <span style="color:#00e5ff;font-weight:800;">[ESC: ATIVO]</span>` : '';
+      const stunInfo = bot.isStunned ? ` <span style="color:#a9a9a9;font-weight:800;">[TONTO:${bot.stunRoundsLeft}R]</span>` : '';
       const atkColor = bot.attackPower >= 20 ? '#ff1133' : '#ffd700';
       const atkInfo = bot.isAlive ? ` <span style="color:${atkColor};font-weight:800;">[ATK:${bot.attackPower}]</span>` : '';
       const row = document.createElement('div');
@@ -3199,7 +3205,7 @@ function updateStatusPanel() {
           <div class="compact-bot-hp-fill" style="width:${pct}%;background:${pct > 30 ? '#00ff88' : '#ff4455'}"></div>
         </div>
         <span style="font-size:0.92rem;font-weight:800;color:#ffffff;text-shadow:0 0 4px rgba(255,255,255,0.4);min-width:125px;">
-          ${bot.isAlive ? `<strong>${bot.currentHp}</strong>/${bot.maxHp} HP${shieldInfo}${atkInfo}` : '<span style="color:#ff3344;">DOWN</span>'}
+          ${bot.isAlive ? `<strong>${bot.currentHp}</strong>/${bot.maxHp} HP${shieldInfo}${stunInfo}${atkInfo}` : '<span style="color:#ff3344;">DOWN</span>'}
         </span>
       `;
       ePanel.appendChild(row);

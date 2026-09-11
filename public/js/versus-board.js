@@ -944,6 +944,11 @@ export class VersusBoard {
       this._drawShield(robot, x, y, r);
     }
 
+    // 4.5 Stun (Tonto) Effect
+    if (robot.isStunned) {
+      this._drawStunEffect(x, y, r);
+    }
+
     // 5. HoT (Regen) Spiral Particles
     if (robot.hotEffect) {
       this._drawHoTEffect(x, y, r);
@@ -1265,6 +1270,32 @@ export class VersusBoard {
     ctx.beginPath();
     ctx.arc(x, y, r + 6, 0, Math.PI * 2);
     ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  _drawStunEffect(x, y, r) {
+    const ctx = this.ctx;
+    const t = this.time * 0.03; // Lentidão característica do stun
+    ctx.save();
+    ctx.strokeStyle = 'rgba(169, 169, 169, 0.6)'; // Cinza escuro/médio
+    ctx.lineWidth = 3;
+    ctx.setLineDash([8, 12]);
+    
+    // Anel externo rodando devagar
+    ctx.lineDashOffset = t;
+    ctx.beginPath();
+    ctx.arc(x, y, r + 10 + Math.sin(t*2)*2, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Anel interno rodando no sentido oposto
+    ctx.lineDashOffset = -t * 1.5;
+    ctx.beginPath();
+    ctx.arc(x, y, r + 5 + Math.cos(t*2)*2, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    // Zzz ou tonto particles flutuando? Adicionado em animateStunEffect
+
     ctx.setLineDash([]);
     ctx.restore();
   }
@@ -1766,6 +1797,13 @@ export class VersusBoard {
     this.emitFloatingText('[ ESCUDO QUEBRADO! ]', x, y - 42, '#ff3344', 18);
     this.shake(14);
     await this._wait(650);
+  }
+
+  animateStunEffect(robot) {
+    if (!robot) return;
+    const pos = this._cellCenter(robot.col, robot.row);
+    // Emite partículas cinzas lentas e erráticas para simular atordoamento inicial
+    this.emitParticles(pos.x, pos.y, '#a9a9a9', 20, { speed: 1.5, gravity: -0.05 }); // partículas subindo devagar
   }
 
   async animateRevive(robot) {
