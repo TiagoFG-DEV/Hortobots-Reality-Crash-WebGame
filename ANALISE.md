@@ -888,3 +888,7 @@ O proprietário autorizou explicitamente enviar o projeto ao GitHub ao terminar 
 ### Portão de publicação
 
 Antes do envio: conferir que o remoto continua na base esperada, executar a suíte, validar sintaxe dos módulos alterados, conferir JSON e `git diff --check` com reconhecimento de CRLF. Após o envio: confirmar o hash remoto e registrar o resultado nesta seção. Não incluir automaticamente alterações independentes do outro checkout nem credenciais em texto claro no diário.
+
+### Resultado da publicação
+
+O pacote 1.1 passou por `npm test` (dez grupos do simulador Versus), checagem sintática de 12 arquivos JavaScript, leitura dos JSONs de versão/arte e `git -c core.whitespace=cr-at-eol diff --check`. A resposta `/api/server-info` foi atualizada no código para `1.1.0`; não houve teste de uma implantação pública em execução nesta rodada. Os 21 blobs foram comparados aos identificadores locais, e a árvore publicada coincidiu com a árvore do commit local. O primeiro commit remoto da versão é `2742d589158c344cd848e2c673bc70f906776cfb`, confirmado em `main`. O envio via Git local aguardou autenticação; a publicação foi concluída pela conexão GitHub autenticada nesta sessão. As alterações independentes do checkout principal continuam locais.
