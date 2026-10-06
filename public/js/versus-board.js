@@ -4,6 +4,7 @@
 // ausência de linhas retas (ondas senoidais orgânicas) e combate cadenciado (~2.5s)
 // ═══════════════════════════════════════════════════════════════════
 import { VERSUS_ARENA_THEMES, VersusParallaxRenderer } from './versus-themes.js';
+import { combatSprites, COMBAT_SPRITE_STATES } from './combat-sprites.js';
 
 export class VersusBoard {
   constructor(canvas) {
@@ -142,6 +143,9 @@ export class VersusBoard {
             return;
           }
         }
+        const onCancel = this.targetSelectionMode.onCancel;
+        this.cancelTargetSelection();
+        if (onCancel) onCancel();
         return;
       }
 
@@ -151,8 +155,8 @@ export class VersusBoard {
     });
   }
 
-  startTargetSelection(robot, type, onSelect) {
-    this.targetSelectionMode = { robot, type, onSelect };
+  startTargetSelection(robot, type, onSelect, onCancel = null) {
+    this.targetSelectionMode = { robot, type, onSelect, onCancel };
     window.targetSelectionMode = this.targetSelectionMode;
     this.hoveredRobot = null;
     this.canvas.style.cursor = 'default';
@@ -783,6 +787,12 @@ export class VersusBoard {
     }
 
     if (!robot.isAlive) {
+      const drewDefeatSprite = combatSprites.draw(ctx, robot, COMBAT_SPRITE_STATES.DEFEAT,
+        { x: x - 42, y: y - 50, width: 84, height: 84 }, { time: performance.now(), flipX: robot.side === 'ENEMY' });
+      if (drewDefeatSprite) {
+        this._drawRobotMiniHUD(robot, x, y, 24);
+        return;
+      }
       // Downed robot with corrupted glitch halo
       ctx.save();
       ctx.globalAlpha = 0.25;
@@ -850,7 +860,7 @@ export class VersusBoard {
     // 3.5. Destaque de Alvo no Tabuleiro (Modo de Mira Direta no Tabuleiro)
     if (this.targetSelectionMode) {
       const isCandidate = (this.targetSelectionMode.type === 'attack' && robot.side === 'ENEMY' && robot.isAlive)
-                       || (this.targetSelectionMode.type === 'support' && robot.side === 'PLAYER'); // Inclui mortos (revival)
+                       || (this.targetSelectionMode.type !== 'attack' && robot.side === 'PLAYER'); // Suporte inclui mortos
 
       if (isCandidate) {
         const candColor = this.targetSelectionMode.type === 'attack' ? '#ff3344' : '#00ff88';
@@ -954,7 +964,12 @@ export class VersusBoard {
       this._drawHoTEffect(x, y, r);
     }
 
-    // 6. Robot Body Gradient & Core
+    const spriteState = robot.spriteState || COMBAT_SPRITE_STATES.IDLE;
+    const drewSprite = combatSprites.draw(ctx, robot, spriteState,
+      { x: x - 42, y: y - 50, width: 84, height: 84 }, { time: performance.now(), flipX: robot.side === 'ENEMY' });
+
+    // 6. Robot Body Gradient & Core (fallback sem sprite)
+    if (!drewSprite) {
     ctx.save();
     ctx.shadowColor = robot.color;
     ctx.shadowBlur = 10;
@@ -978,6 +993,7 @@ export class VersusBoard {
 
     // 7. Graphic Avatar Glyph (Retro Terminal Style)
     this._drawAvatarGlyph(robot.id, x, y, r, robot.color);
+    }
 
     // 8. Dynamic HP Bar & Energy Indicators below
     this._drawRobotMiniHUD(robot, x, y, r);
@@ -1512,6 +1528,7 @@ export class VersusBoard {
     const from = this._cellCenter(attacker.col, attacker.row);
     const to = this._cellCenter(target.col, target.row);
 
+    attacker.spriteState = COMBAT_SPRITE_STATES.ATTACK;
     // 1. Attacker charge-up (0.3s)
     this.emitParticles(from.x, from.y, attacker.color, 20, { speed: 4 });
     this.shake(5);
@@ -1544,6 +1561,7 @@ export class VersusBoard {
     if (typeof onImpactCallback === 'function') {
       await onImpactCallback();
     }
+    target.spriteState = COMBAT_SPRITE_STATES.HURT;
 
     // 4. Impact Explosion on Target!
     this.shake(14);
@@ -1553,6 +1571,8 @@ export class VersusBoard {
     this.emitParticles(to.x, to.y, attacker.color, 35, { speed: 6, gravity: 0.15 });
     this.emitParticles(to.x, to.y, '#ffffff', 20, { speed: 8, shape: 'star' });
     await this._wait(350);
+    attacker.spriteState = COMBAT_SPRITE_STATES.IDLE;
+    target.spriteState = target.isAlive ? COMBAT_SPRITE_STATES.IDLE : COMBAT_SPRITE_STATES.DEFEAT;
   }
 
   // ── Full Miss Sequence ──────────────────────────────────────────
@@ -1585,6 +1605,7 @@ export class VersusBoard {
 
   // ── Full Defense Sequence (~2.0s total) ───────────────────────────
   async animateDefenseSequence(defender, shieldType = 'holográfico', color = null) {
+    defender.spriteState = COMBAT_SPRITE_STATES.DEFEND;
     const shieldColor = color || defender.color || '#00ff88';
     const from = this._cellCenter(defender.col, defender.row);
 
@@ -1602,6 +1623,7 @@ export class VersusBoard {
     this.emitFloatingText('+ESCUDO [3 HP · 2R]', from.x, from.y - 45, shieldColor, 16);
     this.shake(6);
     await this._wait(600);
+    defender.spriteState = COMBAT_SPRITE_STATES.IDLE;
   }
 
   // ── Full Revive Sequence ──────────────────────────────────────────
@@ -1618,6 +1640,8 @@ export class VersusBoard {
 
   // ── Full Support Sequence (~2.0s total) ───────────────────────────
   async animateSupportSequence(supporter, target, healAmount, energyAmount, isRevive = false) {
+    supporter.spriteState = COMBAT_SPRITE_STATES.HEAL;
+    target.spriteState = COMBAT_SPRITE_STATES.HEAL;
     const from = this._cellCenter(supporter.col, supporter.row);
     const to = this._cellCenter(target.col, target.row);
 
@@ -1652,6 +1676,8 @@ export class VersusBoard {
       this.emitFloatingText('REVIVIDO!', to.x, to.y - 70, '#00e5ff', 20);
     }
     await this._wait(500);
+    supporter.spriteState = COMBAT_SPRITE_STATES.IDLE;
+    target.spriteState = COMBAT_SPRITE_STATES.IDLE;
   }
 
   // ── Fast action feedback helpers ──────────────────────────────────
@@ -1723,21 +1749,26 @@ export class VersusBoard {
   }
 
   async animateHit(robot, damage, color = '#ff3344') {
+    robot.spriteState = COMBAT_SPRITE_STATES.HURT;
     const pos = this._cellCenter(robot.col, robot.row);
     this.emitParticles(pos.x, pos.y, color, 25, { speed: 5, gravity: 0.1 });
     this.emitFloatingText(`-${damage} HP`, pos.x, pos.y - 35, color, 20);
     this.shake(12);
     await this._wait(350);
+    robot.spriteState = robot.isAlive ? COMBAT_SPRITE_STATES.IDLE : COMBAT_SPRITE_STATES.DEFEAT;
   }
 
   async animateHeal(robot, amount) {
+    robot.spriteState = COMBAT_SPRITE_STATES.HEAL;
     const pos = this._cellCenter(robot.col, robot.row);
     this.emitParticles(pos.x, pos.y, '#00ff88', 18, { speed: 2.5 });
     this.emitFloatingText(`+${amount} HP`, pos.x, pos.y - 35, '#00ff88', 18);
     await this._wait(350);
+    robot.spriteState = COMBAT_SPRITE_STATES.IDLE;
   }
 
   async animateKill(robot) {
+    robot.spriteState = COMBAT_SPRITE_STATES.DEFEAT;
     const pos = this._cellCenter(robot.col, robot.row);
     this.emitParticles(pos.x, pos.y, robot.color, 45, { speed: 7, gravity: 0.2 });
     this.emitParticles(pos.x, pos.y, '#ffffff', 25, { speed: 9, shape: 'star' });

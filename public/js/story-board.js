@@ -1,3 +1,5 @@
+import { combatSprites, COMBAT_SPRITE_STATES } from './combat-sprites.js';
+
 // ═══════════════════════════════════════════════════════════════════
 // story-board.js — Tabuleiro Canvas 2D Tático do Modo História (Invasão)
 // Estética: Retro Terminal CRT, avatares gráficos, grade tática viva,
@@ -187,6 +189,7 @@ export class StoryBoard {
       if (this.targetSelectionMode.type === 'ally') {
         const isRevive = !!(this.targetSelectionMode.item && this.targetSelectionMode.item.revive);
         const candidates = this.allies.filter(a => a && (isRevive ? a.currentHp <= 0 : a.currentHp > 0));
+        let selected = false;
         for (const cand of candidates) {
           const cx = cand.currentX !== undefined ? cand.currentX : cand.homeX;
           const cy = cand.currentY !== undefined ? cand.currentY : cand.homeY;
@@ -201,11 +204,14 @@ export class StoryBoard {
             if (typeof onSelect === 'function') {
               onSelect(cand);
             }
+            selected = true;
             break;
           }
         }
+        if (!selected) this.cancelTargetSelection();
       } else {
         const candidates = this.enemies.filter(en => en && en.currentHp > 0);
+        let selected = false;
         for (const cand of candidates) {
           const cx = cand.currentX !== undefined ? cand.currentX : cand.homeX;
           const cy = cand.currentY !== undefined ? cand.currentY : cand.homeY;
@@ -220,9 +226,11 @@ export class StoryBoard {
             if (typeof onSelect === 'function') {
               onSelect(cand);
             }
+            selected = true;
             break;
           }
         }
+        if (!selected) this.cancelTargetSelection();
       }
     });
 
@@ -237,6 +245,7 @@ export class StoryBoard {
     this.targetSelectionMode = { type: 'attack', attacker, onSelect };
     this.hoveredEnemy = null;
     this.hoveredAlly = null;
+    this.onCancelSelection = null;
 
     const overlay = document.getElementById('storyTargetOverlay');
     if (overlay) overlay.classList.remove('hidden');
@@ -338,6 +347,7 @@ export class StoryBoard {
     const targetY = target.homeY;
     const color = attacker.color || (isPlayer ? (attacker.color || '#ff3344') : '#ff2a85');
 
+    attacker.spriteState = COMBAT_SPRITE_STATES.ATTACK;
     // 1. Dash para frente (~0.22s)
     const forwardX = isPlayer ? startX + (this.W * 0.28) : startX - (this.W * 0.28);
     await this._tweenRobotPos(attacker, startX, startY, forwardX, startY, 220);
@@ -382,6 +392,7 @@ export class StoryBoard {
 
     // Texto Flutuante de Dano ou Esquiva
     if (damage > 0) {
+      target.spriteState = COMBAT_SPRITE_STATES.HURT;
       this.floatingTexts.push({
         x: targetX,
         y: targetY - 24,
@@ -410,6 +421,8 @@ export class StoryBoard {
 
     // 4. Retorno suave para a base (~0.24s)
     await this._tweenRobotPos(attacker, forwardX, startY, startX, startY, 240);
+    attacker.spriteState = COMBAT_SPRITE_STATES.IDLE;
+    target.spriteState = target.currentHp <= 0 ? COMBAT_SPRITE_STATES.DEFEAT : COMBAT_SPRITE_STATES.IDLE;
 
     // 5. DELAY PÓS-ATAQUE DELIBERADO: Permite contemplar o resultado, a drenagem de HP e as mensagens
     await this._wait(options.postDelay || 1100);
@@ -760,6 +773,12 @@ export class StoryBoard {
     const t = this.time;
 
     if (robot.currentHp <= 0) {
+      const drewDefeatSprite = combatSprites.draw(ctx, robot, COMBAT_SPRITE_STATES.DEFEAT,
+        { x: x - 42, y: y - 50, width: 84, height: 84 }, { time: performance.now(), flipX: !isAllied });
+      if (drewDefeatSprite) {
+        this._drawRobotMiniHUD(robot, x, y, 24, isAllied);
+        return;
+      }
       // Robô abatido com halo de corrupção
       ctx.save();
       ctx.globalAlpha = 0.25;
@@ -874,7 +893,14 @@ export class StoryBoard {
       ctx.restore();
     }
 
-    // 5. Robot Body Gradient & Metallic Core
+    const spriteState = isActing && (!robot.spriteState || robot.spriteState === COMBAT_SPRITE_STATES.IDLE)
+      ? COMBAT_SPRITE_STATES.AWAITING_ACTION
+      : (robot.spriteState || COMBAT_SPRITE_STATES.IDLE);
+    const drewSprite = combatSprites.draw(ctx, robot, spriteState,
+      { x: x - 42, y: y - 50, width: 84, height: 84 }, { time: performance.now(), flipX: !isAllied });
+
+    // 5. Robot Body Gradient & Metallic Core (fallback sem sprite)
+    if (!drewSprite) {
     ctx.save();
     const isEnemy = !isAllied;
     const glowCol = isEnemy ? (robot.glowColor || '#ff2a85') : (robot.glowColor || robot.color);
@@ -909,6 +935,7 @@ export class StoryBoard {
     // 6. Graphic Avatar Glyph (Retro Cyber Vector Style idêntico ao Versus)
     const code = robot.code || this._normalizeBotId(robot.id, robot.name);
     this._drawAvatarGlyph(code, x, y, r, robot.color);
+    }
 
     // 7. Mini HUD (HP Bar, Ghost Damage, Energy Pips e Nome)
     this._drawRobotMiniHUD(robot, x, y, r, isAllied);

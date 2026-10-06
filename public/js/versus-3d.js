@@ -431,7 +431,7 @@ export class Versus3DEngine {
         // Durante o modo de seleção de alvos, destaca apenas os pedestais dos candidatos sob os robôs 2D
         if (window.targetSelectionMode) {
           const isTargetCand = (window.targetSelectionMode.type === 'attack' && bot.side === 'ENEMY' && bot.isAlive)
-                            || (window.targetSelectionMode.type === 'support' && bot.side === 'PLAYER');
+                            || (window.targetSelectionMode.type !== 'attack' && bot.side === 'PLAYER');
           if (isTargetCand) {
             ped.group.visible = true;
             const candHex = (window.targetSelectionMode.type === 'attack') ? 0xff3344 : 0x00ff88;

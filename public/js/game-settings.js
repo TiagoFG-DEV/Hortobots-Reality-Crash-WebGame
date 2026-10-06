@@ -10,6 +10,7 @@ export const DEFAULT_SETTINGS = {
   graphics: 'high',     // 'low' | 'medium' | 'high'
   scanlines: true,      // Overlay CRT Scanlines
   glow: true,           // Brilhos fosfóricos e sombras de neon
+  combatTerminals: false, // Registro de combate e terminal narrativo
   masterMute: false,    // Mute geral de áudio
   bgmVolume: 80,        // 0 a 100
   sfxVolume: 90         // 0 a 100
@@ -20,6 +21,7 @@ class GameSettingsManager {
     this.settings = { ...DEFAULT_SETTINGS };
     this.listeners = new Set();
     this.load();
+    this.apply();
   }
 
   load() {
@@ -117,7 +119,10 @@ class GameSettingsManager {
       body.classList.remove('low-glow');
     }
 
-    // 4. Áudio
+    // 4. Terminais auxiliares de combate. Desligados por padrão para ampliar a arena.
+    body.classList.toggle('combat-terminals-enabled', !!this.settings.combatTerminals);
+
+    // 5. Áudio
     if (window.gameAudio) {
       if (typeof window.gameAudio.setMasterMute === 'function') {
         window.gameAudio.setMasterMute(this.settings.masterMute);

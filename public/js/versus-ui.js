@@ -1302,7 +1302,7 @@ async function runPreDraftCinematic() {
     { count: '3', title: 'PREPAREM-SE!' },
     { count: '2', title: 'PREPAREM-SE!' },
     { count: '1', title: 'PREPAREM-SE!' },
-    { count: '⚡', title: 'FASE DE RECRUTAMENTO!' }
+    { count: '[ ATIVO ]', title: 'FASE DE RECRUTAMENTO!' }
   ];
 
   for (const step of steps) {
@@ -1914,6 +1914,7 @@ function resetTurnTagsAndButton() {
 // FLUXO TÁTICO: SELEÇÃO DE ALVOS 100% DIRETA NO TABULEIRO (SEM MENUS!)
 // ════════════════════════════════════════════════════════════════════
 let selectedDeckRobotId = null;
+let activeTargetContext = null;
 
 function openTargetSelection(robot, type) {
   const overlay = $('versusTargetOverlay');
@@ -1940,6 +1941,15 @@ function openTargetSelection(robot, type) {
     }
   }
 
+  const rollback = robot._pendingTargetRollback || {
+    action: robot.action,
+    target: robot._chosenTarget || null,
+    allyTarget: robot._chosenAllyTarget || null,
+    defenseTarget: robot._chosenDefenseTarget || null
+  };
+  delete robot._pendingTargetRollback;
+  activeTargetContext = { robot, rollback };
+
   // 1. Menu lateral desliza para fora imediatamente
   $('versusLeftDeck')?.classList.add('slide-out');
 
@@ -1964,13 +1974,14 @@ function openTargetSelection(robot, type) {
       }
 
       // Fecha o overlay orientador e traz o menu lateral de volta!
-      closeTargetSelection();
+      activeTargetContext = null;
+      closeTargetSelection(false);
       renderCommandCards();
-    });
+    }, () => closeTargetSelection(true));
   }
 }
 
-function closeTargetSelection() {
+function closeTargetSelection(restorePrevious = false) {
   const overlay = $('versusTargetOverlay');
   if (overlay) overlay.classList.add('hidden');
 
@@ -1980,15 +1991,45 @@ function closeTargetSelection() {
   if (board && board.targetSelectionMode) {
     board.cancelTargetSelection();
   }
+
+  if (restorePrevious && activeTargetContext) {
+    const { robot, rollback } = activeTargetContext;
+    const snapshots = rollback.team || [{ robot, ...rollback }];
+    snapshots.forEach(snapshot => {
+      snapshot.robot.action = snapshot.action;
+      snapshot.robot._chosenTarget = snapshot.target;
+      snapshot.robot._chosenAllyTarget = snapshot.allyTarget;
+      snapshot.robot._chosenDefenseTarget = snapshot.defenseTarget;
+    });
+    addLog(`[AÇÃO CANCELADA] ${robot.name} cancelou a seleção de alvo.`, 'info');
+  }
+  activeTargetContext = null;
+  renderCommandCards();
+  resetNarratorToStatus();
 }
 
 // Tecla ESC para cancelar seleção e trazer menu de volta
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && board && board.targetSelectionMode) {
-    closeTargetSelection();
-    renderCommandCards();
+    closeTargetSelection(true);
   }
 });
+
+document.addEventListener('click', (event) => {
+  if (!board?.targetSelectionMode) return;
+  if (event.target.closest('#termSettingsBtn, #gameSettingsModal')) return;
+  if (event.target === board.canvas) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  closeTargetSelection(true);
+}, true);
+
+document.addEventListener('keydown', (event) => {
+  if (!board?.targetSelectionMode || event.key === 'Escape') return;
+  if (event.target.closest?.('#termSettingsBtn, #gameSettingsModal')) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}, true);
 
 // SVGs de Símbolos Táticos Cibernéticos (Sem Emojis, Vetores Limpos)
 const ATK_ICON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19L19 5M19 5h-5M19 5v5"/><path d="M19 19L5 5M5 5h5M5 5v5"/></svg>`;
@@ -2103,6 +2144,9 @@ function renderCommandCards() {
 
   engine.playerTeam.forEach((bot) => {
     const isCardSelected = (bot.id === selectedDeckRobotId);
+    if (!isClashRunning && bot.isAlive) {
+      bot.spriteState = isCardSelected ? 'awaiting_action' : 'idle';
+    }
     const card = document.createElement('div');
     card.className = `robot-command-card ${isCardSelected ? 'card-selected' : ''} ${!bot.isAlive ? 'fallen' : ''}`;
     card.id = `robot-cmd-${bot.id}`;
@@ -2392,6 +2436,14 @@ function attachCommandCardListeners() {
         return;
       }
 
+      const teamRollback = engine.playerTeam.map(teamRobot => ({
+        robot: teamRobot,
+        action: teamRobot.action,
+        target: teamRobot._chosenTarget || null,
+        allyTarget: teamRobot._chosenAllyTarget || null,
+        defenseTarget: teamRobot._chosenDefenseTarget || null
+      }));
+
       // Desmarca a mesma função de outros robôs (cada função é 100% exclusiva)
       engine.playerTeam.forEach(r => {
         if (r.id !== robot.id && r.action === action) {
@@ -2402,6 +2454,13 @@ function attachCommandCardListeners() {
         }
       });
 
+      robot._pendingTargetRollback = {
+        action: robot.action,
+        target: robot._chosenTarget || null,
+        allyTarget: robot._chosenAllyTarget || null,
+        defenseTarget: robot._chosenDefenseTarget || null,
+        team: teamRollback
+      };
       robot.action = action;
       getAudio().playPowerUp();
 
@@ -2411,6 +2470,7 @@ function attachCommandCardListeners() {
           getAudio().playAccessDenied();
           addLog(`[ENERGIA] ${robot.name} não possui energia suficiente para atacar (${robot.currentEnergy}/${minCost} EN)!`, 'miss');
           robot.action = 'rest';
+          delete robot._pendingTargetRollback;
           renderCommandCards();
           resetNarratorToStatus();
           return;
@@ -2423,6 +2483,7 @@ function attachCommandCardListeners() {
           getAudio().playAccessDenied();
           addLog(`[ENERGIA] ${robot.name} não possui energia suficiente para suporte (${robot.currentEnergy}/${supCost} EN)!`, 'miss');
           robot.action = 'rest';
+          delete robot._pendingTargetRollback;
           renderCommandCards();
           resetNarratorToStatus();
           return;
@@ -2432,6 +2493,7 @@ function attachCommandCardListeners() {
         if (robot.id !== 'DB') {
           openTargetSelection(robot, 'defense');
         } else {
+          delete robot._pendingTargetRollback;
           addLog(`[ESCUDO COLETIVO] Dino-Byte concederá Muralha de 5 HP sobre toda a equipe.`, 'defense');
         }
       }
@@ -3240,6 +3302,12 @@ function showPhaseBanner(title, subtitle, type = 'normal', duration = 1400) {
 // ════════════════════════════════════════════════════════════════════
 async function endMatch(winner) {
   const playerWon = winner === 'PLAYER';
+  (engine.playerTeam || []).forEach(bot => {
+    bot.spriteState = playerWon && bot.isAlive ? 'victory' : 'defeat';
+  });
+  (engine.enemyTeam || []).forEach(bot => {
+    bot.spriteState = !playerWon && bot.isAlive ? 'victory' : 'defeat';
+  });
   let mmrInfo = null;
 
   try {

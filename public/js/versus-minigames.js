@@ -1177,7 +1177,7 @@ export class VersusMinigames {
         displayEl.innerHTML = `
           <div class="dual-key-pair">
             <span class="key-badge" style="border-color:${color};box-shadow:0 0 25px ${color}44;">${c[2].split('+')[0].trim()}</span>
-            <span class="key-plus" style="color:${color};">⚡</span>
+            <span class="key-plus" style="color:${color};">+</span>
             <span class="key-badge" style="border-color:${color};box-shadow:0 0 25px ${color}44;">${c[2].split('+')[1].trim()}</span>
           </div>
           <div style="color:#ffd700;margin-top:12px;font-weight:bold;letter-spacing:1px;">FASE: ${step + 1} / ${seq.length}</div>

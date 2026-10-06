@@ -544,7 +544,7 @@ app.get('/api/server-info', (req, res) => {
     pvpMode: PVP_MODE,
     port: PORT,
     wsPort: PORT,
-    version: '1.0.0'
+    version: '1.1.0'
   });
 });
 

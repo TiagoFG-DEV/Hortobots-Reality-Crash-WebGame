@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "states": [
+    "idle",
+    "awaiting_action",
+    "attack",
+    "hurt",
+    "heal",
+    "defend",
+    "victory",
+    "defeat"
+  ],
+  "actors": {
+    "dinobyte": {},
+    "cowputer": {},
+    "penlinux": {},
+    "tigervex": {},
+    "pavabyte": {},
+    "quezadilhas": {},
+    "corrupted_dino_tut": {},
+    "cowputer_boss": {},
+    "penlinux_boss": {},
+    "titan_tiger": {},
+    "titan_pava": {},
+    "fled_titan_tigervex": {},
+    "fled_titan_pavabyte": {},
+    "sentinela_bit": {},
+    "trojan_scout": {},
+    "firewall_viper": {},
+    "cyber_coyote": {},
+    "glitch_spider": {},
+    "kernel_drone": {},
+    "malware_golem": {},
+    "puppet_1": {},
+    "puppet_2": {},
+    "puppet_3": {},
+    "grande_inteligencia_boss": {}
+  }
+}

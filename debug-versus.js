@@ -31,8 +31,8 @@ const header = (msg) => {
 const section = (msg) => {
   console.log(`\n${C.bold}${C.yellow}── ${msg} ──${C.reset}`);
 };
-const ok = (msg) => console.log(`  ${C.green}✔ ${msg}${C.reset}`);
-const fail = (msg) => console.log(`  ${C.red}✘ ${msg}${C.reset}`);
+const ok = (msg) => console.log(`  ${C.green}[OK] ${msg}${C.reset}`);
+const fail = (msg) => console.log(`  ${C.red}[FALHA] ${msg}${C.reset}`);
 const info = (msg) => console.log(`  ${C.dim}» ${msg}${C.reset}`);
 
 // ═══════════════════════════════════════════════════════════
@@ -278,28 +278,28 @@ function applyDamage(attacker, target, targetTeam, rawDamage, state) {
     const shieldAbsorb = Math.min(target.shield.hp, damage);
     target.shield.hp -= shieldAbsorb;
     damage -= shieldAbsorb;
-    state.log(`  🛡️  Escudo de ${target.name} absorveu ${shieldAbsorb} de dano (${target.shield.hp}HP restante)`);
+    state.log(`  [ESCUDO] Escudo de ${target.name} absorveu ${shieldAbsorb} de dano (${target.shield.hp}HP restante)`);
 
     // If shield is group-type (DB), break for all if damage exceeded shield
     if (target.shield.targets === 'all' && rawDamage > target.shield.hp + shieldAbsorb) {
-      state.log(`  💥 ESCUDO DE GRUPO QUEBRADO! Todos os aliados perdem escudo.`);
+      state.log(`  [IMPACTO] ESCUDO DE GRUPO QUEBRADO! Todos os aliados perdem escudo.`);
       targetTeam.forEach(r => { if (r.shield && r.shield.targets === 'all') r.shield = null; });
     } else if (target.shield.hp <= 0) {
       target.shield = null;
-      state.log(`  🔴 Escudo de ${target.name} destruído!`);
+      state.log(`  [ALERTA] Escudo de ${target.name} destruído!`);
     }
   }
 
   // Apply remaining damage
   if (damage > 0) {
     target.currentHp = Math.max(0, target.currentHp - damage);
-    state.log(`  💢 ${target.name} recebe ${damage} de dano → HP: ${target.currentHp}/${target.baseHp}`);
+    state.log(`  [DANO] ${target.name} recebe ${damage} de dano → HP: ${target.currentHp}/${target.baseHp}`);
   }
 
   // Check if dead
   if (target.currentHp <= 0 && target.isAlive) {
     target.isAlive = false;
-    state.log(`  💀 ${target.name} foi DERRUBADO!`);
+    state.log(`  [KO] ${target.name} foi DERRUBADO!`);
     return true; // kill
   }
   return false; // no kill
@@ -312,7 +312,7 @@ function onKill(attacker, killerSide, state) {
   attacker.currentHp = Math.min(attacker.baseHp, attacker.currentHp + 15);
   attacker.currentEnergy += 3;
   state.medals[killerSide]++;
-  state.log(`  🏅 KILL! ${attacker.name} ganhou +15HP, +3 Energia. Medalhas ${killerSide}: ${state.medals[killerSide]}`);
+  state.log(`  [MEDALHA] KILL! ${attacker.name} ganhou +15HP, +3 Energia. Medalhas ${killerSide}: ${state.medals[killerSide]}`);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -320,7 +320,7 @@ function onKill(attacker, killerSide, state) {
 // ═══════════════════════════════════════════════════════════
 function applyShield(robot, team, state) {
   const def = robot.defense;
-  state.log(`  🛡️  ${robot.name} ativou: ${def.name}`);
+  state.log(`  [ESCUDO] ${robot.name} ativou: ${def.name}`);
 
   if (def.targets === 'all') {
     team.forEach(r => {
@@ -349,12 +349,12 @@ function applyShield(robot, team, state) {
 // ═══════════════════════════════════════════════════════════
 function applySupport(robot, targetRobot, state) {
   if (robot.currentEnergy < robot.support.energyCost) {
-    state.log(`  ⚡ ${robot.name} sem energia para suporte!`);
+    state.log(`  [ENERGIA] ${robot.name} sem energia para suporte!`);
     return false;
   }
   robot.currentEnergy -= robot.support.energyCost;
   const eff = robot.support.effect;
-  state.log(`  💊 ${robot.name} usa ${robot.support.name} em ${targetRobot.name}`);
+  state.log(`  [SUPORTE] ${robot.name} usa ${robot.support.name} em ${targetRobot.name}`);
 
   if (eff.type === 'heal') {
     targetRobot.currentHp = Math.min(targetRobot.baseHp, targetRobot.currentHp + eff.amount);
@@ -389,7 +389,7 @@ function reviveRobot(deadRobot, state) {
   deadRobot.currentHp = Math.floor(deadRobot.baseHp / 2); // 100
   deadRobot.isAlive = true;
   deadRobot.shield = null;
-  state.log(`  💚 ${deadRobot.name} REVIVIDO com ${deadRobot.currentHp}HP!`);
+  state.log(`  [REVIVE] ${deadRobot.name} REVIVIDO com ${deadRobot.currentHp}HP!`);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -400,7 +400,7 @@ function processHotEffects(team, state) {
     if (robot.hotEffect && robot.isAlive) {
       robot.currentHp = Math.min(robot.baseHp, robot.currentHp + robot.hotEffect.amount);
       robot.hotEffect.roundsLeft--;
-      state.log(`  🟢 HoT: ${robot.name} +${robot.hotEffect.amount}HP (${robot.hotEffect.roundsLeft} rounds restantes)`);
+      state.log(`  [CURA] HoT: ${robot.name} +${robot.hotEffect.amount}HP (${robot.hotEffect.roundsLeft} rounds restantes)`);
       if (robot.hotEffect.roundsLeft <= 0) {
         robot.hotEffect = null;
       }
@@ -408,7 +408,7 @@ function processHotEffects(team, state) {
     // CP shield energy regen
     if (robot.shield && robot.shield.energyPerRound) {
       robot.currentEnergy += robot.shield.energyPerRound;
-      state.log(`  ⚡ Escudo CP: ${robot.name} +${robot.shield.energyPerRound} energia`);
+      state.log(`  [ENERGIA] Escudo CP: ${robot.name} +${robot.shield.energyPerRound} energia`);
     }
   });
 }
@@ -432,12 +432,12 @@ function simulateTurn(state, attackerSide) {
   const target = aliveEnemies[0];  // First enemy in line
   const chosenAttack = attacker.attacks[Math.min(attacker.attackHitsThisRound, 2)]; // escalate level
 
-  log(`\n  🗡️  ${attacker.name} usa ${chosenAttack.name} (L${chosenAttack.level}, minigame: ${chosenAttack.minigame})`);
+  log(`\n  [ATAQUE] ${attacker.name} usa ${chosenAttack.name} (L${chosenAttack.level}, minigame: ${chosenAttack.minigame})`);
 
   if (attacker.currentEnergy < chosenAttack.energyCost) {
     // Fallback to level 1 if no energy
     const fallback = attacker.attacks[0];
-    log(`  ⚡ Sem energia para L${chosenAttack.level}, usando ${fallback.name}`, C.yellow);
+    log(`  [ENERGIA] Sem energia para L${chosenAttack.level}, usando ${fallback.name}`, C.yellow);
   }
 
   const attackSuccess = simulateMinigame(chosenAttack.minigame);
@@ -456,7 +456,7 @@ function simulateTurn(state, attackerSide) {
 
   // --- DEFENSE ACTION ---
   const defender = aliveAllies.length > 1 ? aliveAllies[1] : aliveAllies[0];
-  log(`\n  🛡️  ${defender.name} tenta defesa: ${defender.defense.name}`);
+  log(`\n  [DEFESA] ${defender.name} tenta defesa: ${defender.defense.name}`);
   const coinSuccess = simulateCoinFlip();
   if (coinSuccess) {
     ok(`Moeda acertou! Escudo ativado.`);
@@ -469,7 +469,7 @@ function simulateTurn(state, attackerSide) {
   if (aliveAllies.length > 2) {
     const supporter = aliveAllies[2];
     const supportTarget = aliveAllies[0]; // support the attacker
-    log(`\n  💊 ${supporter.name} usa suporte em ${supportTarget.name}`);
+    log(`\n  [SUPORTE] ${supporter.name} usa suporte em ${supportTarget.name}`);
 
     // TV support heals all
     if (supporter.id === 'TV') {
@@ -531,14 +531,14 @@ function displayStatus(state) {
     console.log(`    ${C.red}${r.name.padEnd(15)}${C.reset} HP: ${hpBar} ${r.currentHp}/${r.baseHp} E:${r.currentEnergy} ${status}${shield}`);
   });
 
-  console.log(`\n  🏅 Medalhas: ${C.cyan}PLAYER: ${state.medals.PLAYER}${C.reset} | ${C.red}ENEMY: ${state.medals.ENEMY}${C.reset}`);
+  console.log(`\n  [MEDALHAS] ${C.cyan}PLAYER: ${state.medals.PLAYER}${C.reset} | ${C.red}ENEMY: ${state.medals.ENEMY}${C.reset}`);
 }
 
 // ═══════════════════════════════════════════════════════════
 // RUN DEBUG SIMULATION
 // ═══════════════════════════════════════════════════════════
 async function runDebug() {
-  header('HORTOBOTS — DEBUG VERSUS MODE v1.5b');
+  header('HORTOBOTS — DEBUG VERSUS MODE v1.1');
 
   // ─── TEST 1: Robot Selection ───
   section('TESTE 1: Seleção de Robôs');
@@ -663,7 +663,7 @@ async function runDebug() {
   displayBoard(state);
 
   if (winner) {
-    header(`🏆 VENCEDOR: ${winner}`);
+    header(`[VENCEDOR] ${winner}`);
     ok(`${winner} ganhou com ${state.medals[winner]} medalhas!`);
   } else {
     log(`\n  Simulação de 5 rounds completa. Sem vencedor ainda.`, C.yellow);
@@ -694,7 +694,7 @@ async function runDebug() {
   deadBot.isAlive = false;
   reviveRobot(deadBot, winState);
   if (deadBot.isAlive && deadBot.currentHp === 100) {
-    ok(`${deadBot.name} revivido com ${deadBot.currentHp}HP ✔`);
+    ok(`${deadBot.name} revivido com ${deadBot.currentHp}HP`);
   } else {
     fail(`Revive falhou!`);
   }
@@ -712,7 +712,7 @@ async function runDebug() {
   ok('Condição de vitória (10 medalhas)');
   ok('Sistema de revive (50% HP)');
 
-  log(`\n${C.bold}${C.green}✅ TODOS OS SISTEMAS PASSARAM! Pronto para implementação da UI.${C.reset}\n`);
+  log(`\n${C.bold}${C.green}[OK] TODOS OS SISTEMAS PASSARAM! Pronto para implementação da UI.${C.reset}\n`);
 }
 
 runDebug().catch(err => {

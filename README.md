@@ -1,10 +1,10 @@
-# HORTOBOTS: REALITY CRASH // A TORRE VIRTUAL (v1.0 OFICIAL)
+# HORTOBOTS: REALITY CRASH // A TORRE VIRTUAL (v1.1 OFICIAL)
 
 <p align="center">
   <a href="https://hortobots-reality-crash-webgame.onrender.com" target="_blank">
     <img src="https://img.shields.io/badge/JOGAR_ONLINE-ONRENDER.COM-00ff66?style=for-the-badge&logo=googlechrome&logoColor=black" alt="Jogar Online">
   </a>
-  <img src="https://img.shields.io/badge/Versão-1.0_Oficial-ffd700?style=for-the-badge&logo=retroarch&logoColor=black" alt="Versão 1.0 Oficial">
+  <img src="https://img.shields.io/badge/Versão-1.1_Oficial-ffd700?style=for-the-badge&logo=retroarch&logoColor=black" alt="Versão 1.1 Oficial">
   <img src="https://img.shields.io/badge/Banco_de_Dados-Supabase_PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase PostgreSQL">
   <img src="https://img.shields.io/badge/PvP-WebSockets_Realtime-00e5ff?style=for-the-badge&logo=websocket&logoColor=black" alt="WebSockets PvP">
   <img src="https://img.shields.io/badge/Gráficos_3D-Three.js_WebGL-00ff66?style=for-the-badge&logo=three.js&logoColor=black" alt="Three.js">
@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  🎮 <strong>Link Funcional para Jogar:</strong> <a href="https://hortobots-reality-crash-webgame.onrender.com" target="_blank"><strong>https://hortobots-reality-crash-webgame.onrender.com</strong></a>
+  <strong>Link Funcional para Jogar:</strong> <a href="https://hortobots-reality-crash-webgame.onrender.com" target="_blank"><strong>https://hortobots-reality-crash-webgame.onrender.com</strong></a>
 </p>
 
 ---
@@ -25,7 +25,7 @@
 
 ## Sumário Executivo
 
-- [1. Novidades da Versão 1.0 Oficial](#1-novidades-da-versão-10-oficial)
+- [1. Novidades da Versão 1.1 Oficial](#1-novidades-da-versão-11-oficial)
 - [2. Arquitetura e Stack Técnica](#2-arquitetura-e-stack-técnica)
 - [3. Modo Versus Online (PvP Competitivo)](#3-modo-versus-online-pvp-competitivo)
 - [4. Banco de Dados e Autenticação (Supabase)](#4-banco-de-dados-e-autenticação-supabase)
@@ -37,7 +37,15 @@
 
 ---
 
-## 1. Novidades da Versão 1.0 Oficial
+## 1. Novidades da Versão 1.1 Oficial
+
+- **Mira cancelável:** ataques, itens e ações direcionadas podem ser cancelados clicando fora dos alvos ou pressionando `Esc`. Durante a mira, os demais comandos ficam bloqueados, exceto as configurações.
+- **Arena em foco:** Registro de Combate e Terminal Narrativo compartilham uma única opção, desativada por padrão. O fundo preenche as áreas disponíveis sem distorcer o tabuleiro.
+- **Sprites preparados:** personagens que aparecem no tabuleiro possuem pontos de extensão para oito estados animados, com aparência procedural preservada na ausência de arte.
+- **Party em cartões de identidade:** informações de combate reorganizadas em cards compactos e responsivos, com área reservada para o primeiro quadro do sprite.
+- **Moeda 3D:** a arte de CARA foi redimensionada e ajustada para ficar proporcional à COROA e responder à iluminação.
+
+### Histórico da versão 1.0
 
 - **Tela de Pré-Título [ ESPAÇO ]**: Tela imersiva escura com animação em pixel-art de tecla mecânica sendo clicada, garantindo conformidade com as políticas de autoplay de navegadores modernos e liberando o áudio com transição de fade lento duplo (~1.9s).
 - **Moeda 3D com Textura Oficial**: O lado "CARA" da moeda tridimensional no Three.js agora utiliza a textura oficial do cowboy lagarto (`cara-icon.png`), mantendo 100% da física de arremesso, 4 quiques suspensivos e iluminação metálica.
@@ -58,7 +66,7 @@
 ## 2. Arquitetura e Stack Técnica
 
 ```
-HORTOBOTS REALITY CRASH (v1.0)
+HORTOBOTS REALITY CRASH (v1.1)
  ├── Frontend (Client-side)
  │    ├── Three.js (WebGL 3D) -> Torre de transmissão & Moeda 3D física
  │    ├── CSS3 CRT Engine -> Bulbo de tubo, scanlines, vinheta, aberração esférica

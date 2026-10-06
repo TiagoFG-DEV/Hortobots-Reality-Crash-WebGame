@@ -59,6 +59,59 @@ export class Terminal3DEngine {
     return Math.min(window.devicePixelRatio || 1, maxDpr);
   }
 
+  _createCaraCoinTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 1024;
+    const ctx = canvas.getContext('2d');
+    const texture = new THREE.CanvasTexture(canvas);
+
+    const drawBase = () => {
+      const gold = ctx.createRadialGradient(430, 390, 80, 512, 512, 510);
+      gold.addColorStop(0, '#fff2a8');
+      gold.addColorStop(0.3, '#d7ad2a');
+      gold.addColorStop(0.72, '#8a6810');
+      gold.addColorStop(1, '#3a2904');
+      ctx.fillStyle = gold;
+      ctx.fillRect(0, 0, 1024, 1024);
+      ctx.fillStyle = '#140b18';
+      ctx.beginPath();
+      ctx.arc(512, 512, 340, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#d9ad27';
+      ctx.lineWidth = 16;
+      ctx.stroke();
+    };
+
+    const drawIcon = (image) => {
+      drawBase();
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(512, 512, 282, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.globalAlpha = 0.82;
+      ctx.filter = 'saturate(0.72) brightness(0.76) contrast(1.08)';
+      ctx.drawImage(image, 230, 230, 564, 564);
+      ctx.restore();
+      texture.needsUpdate = true;
+    };
+
+    drawBase();
+    const sourceImage = this.caraIconTexture?.image;
+    if (sourceImage?.complete && sourceImage.naturalWidth) {
+      drawIcon(sourceImage);
+    } else {
+      const image = new Image();
+      image.onload = () => drawIcon(image);
+      image.src = '/img/cara-icon.png';
+    }
+
+    texture.generateMipmaps = true;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    return texture;
+  }
+
   // =========================================================================
   // 1. CINEMÁTICA 3D DE SUBIDA DA TORRE (ESCADA EM ESPIRAL / ASCENSÃO HELICOIDAL)
   // =========================================================================
@@ -1315,11 +1368,7 @@ export class Terminal3DEngine {
     };
 
     // 1. Textura da Face CARA carregada a partir do ícone oficial cara-icon.png
-    const textureLoader = new THREE.TextureLoader();
-    const caraTexture = this.caraIconTexture || textureLoader.load('/img/cara-icon.png');
-    caraTexture.generateMipmaps = true;
-    caraTexture.minFilter = THREE.LinearMipmapLinearFilter;
-    caraTexture.magFilter = THREE.LinearFilter;
+    const caraTexture = this._createCaraCoinTexture();
 
     const coroaTexture = createFaceCanvas('COROA');
 
@@ -1335,9 +1384,9 @@ export class Terminal3DEngine {
     // Top Face (+Y) = CARA (index 1) com a textura oficial cara-icon.png
     const faceCaraMat = new THREE.MeshStandardMaterial({
       map: caraTexture,
-      color: 0xffffff,
-      metalness: 0.55,
-      roughness: 0.32
+      color: 0xe0d4b0,
+      metalness: 0.82,
+      roughness: 0.34
     });
 
     // Bottom Face (-Y) = COROA (index 2)
@@ -1764,8 +1813,7 @@ export class Terminal3DEngine {
     cyanLight.position.set(8, 2, -6);
     scene.add(cyanLight);
 
-    const textureLoader = new THREE.TextureLoader();
-    const caraTexture = this.caraIconTexture || textureLoader.load('/img/cara-icon.png');
+    const caraTexture = this._createCaraCoinTexture();
     
     // Simplificando textura da coroa para idle
     const cvs = document.createElement('canvas');
@@ -1783,7 +1831,7 @@ export class Terminal3DEngine {
     const coroaTexture = new THREE.CanvasTexture(cvs);
 
     const goldEdgeMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.96, roughness: 0.22 });
-    const faceCaraMat = new THREE.MeshStandardMaterial({ map: caraTexture, color: 0xffffff, metalness: 0.55, roughness: 0.32 });
+    const faceCaraMat = new THREE.MeshStandardMaterial({ map: caraTexture, color: 0xe0d4b0, metalness: 0.82, roughness: 0.34 });
     const faceCoroaMat = new THREE.MeshStandardMaterial({ map: coroaTexture, metalness: 0.88, roughness: 0.28 });
 
     const coinGroup = new THREE.Group();

@@ -4,6 +4,7 @@ import { TerminalMinigames } from './terminal-minigames.js';
 import { Terminal3DEngine } from './terminal-3d.js';
 import { StoryBoard } from './story-board.js';
 import { getRobotAttackSymbolSVG, getAttackTacticalConcept } from './robot-attack-symbols.js';
+import { combatSprites, COMBAT_SPRITE_STATES } from './combat-sprites.js';
 
 // ===================================================
 // CONSTANTES & TABELA DE TIPOS ELEMENTAIS
@@ -837,6 +838,25 @@ export class TerminalGameApp {
     if (btnAttack) btnAttack.onclick = () => this.renderAttackSubMenu();
     if (btnDefense) btnDefense.onclick = () => this.renderDefenseSubMenu();
     if (btnItem) btnItem.onclick = () => this.renderItemSubMenu();
+
+    // Durante a mira, nenhum controle de jogo pode receber o clique.
+    // Configurações continuam acessíveis e o canvas decide entre alvo válido e cancelamento.
+    document.addEventListener('click', (event) => {
+      if (!this.storyBoard?.targetSelectionMode) return;
+      if (event.target.closest('#termSettingsBtn, #gameSettingsModal')) return;
+      if (event.target === this.storyBoard.canvas) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      this.storyBoard.cancelTargetSelection();
+    }, true);
+
+    document.addEventListener('keydown', (event) => {
+      if (!this.storyBoard?.targetSelectionMode) return;
+      if (event.target.closest?.('#termSettingsBtn, #gameSettingsModal')) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if (event.key === 'Escape') this.storyBoard.cancelTargetSelection();
+    }, true);
   }
 
   advanceOrSkipDialogue() {
@@ -925,6 +945,16 @@ export class TerminalGameApp {
       };
     }
 
+    const combatTerminalsCheck = document.getElementById('settingsToggleCombatTerminals');
+    if (combatTerminalsCheck) {
+      combatTerminalsCheck.onchange = (e) => {
+        if (window.gameSettings) {
+          window.gameSettings.set('combatTerminals', e.target.checked);
+        }
+        this.audio.playKeyClack();
+      };
+    }
+
     // Toggle de Mute no Modal
     const muteBtn = document.getElementById('settingsMuteToggleBtn');
     if (muteBtn) {
@@ -986,6 +1016,9 @@ export class TerminalGameApp {
 
     const glowCheck = document.getElementById('settingsToggleGlow');
     if (glowCheck) glowCheck.checked = !!s.glow;
+
+    const combatTerminalsCheck = document.getElementById('settingsToggleCombatTerminals');
+    if (combatTerminalsCheck) combatTerminalsCheck.checked = !!s.combatTerminals;
 
     // Mute
     const muteBtn = document.getElementById('settingsMuteToggleBtn');
@@ -2018,55 +2051,60 @@ export class TerminalGameApp {
 
       const card = document.createElement('div');
       card.className = `pokemon-card-slot ${isActive ? 'active-party' : ''}`;
+      const visualContent = `<div class="party-id-fallback">${bot.avatar}</div>`;
       card.innerHTML = `
-        <div class="pokemon-card-header">
-          <div style="display: flex; gap: 12px; align-items: center;">
-            <div class="robot-avatar-badge">${bot.avatar}</div>
-            <div>
-              <div class="char-name-glow ${bot.badgeClass}">${bot.name}</div>
-              <div style="font-size: 0.82rem; color: var(--term-dim); margin-top: 2px;">Tipo: ${bot.type} | Nível: ${bot.level} | ATK: ${bot.attackPower}</div>
-            </div>
+        <div class="party-id-header">
+          <span class="party-id-kicker">REGISTRO DE COMBATENTE</span>
+          <span class="party-id-code">${bot.avatar}</span>
+        </div>
+        <div class="party-id-main">
+          <div class="party-id-portrait">${visualContent}</div>
+          <div class="party-id-identity">
+            <div class="char-name-glow ${bot.badgeClass}">${bot.name}</div>
+            <div class="party-id-meta"><span>TIPO</span><strong>${bot.type}</strong></div>
+            <div class="party-id-meta"><span>NÍVEL</span><strong>${bot.level}</strong></div>
+            <div class="party-id-meta"><span>ATAQUE</span><strong>${bot.attackPower}</strong></div>
           </div>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 8px; margin: 8px 0;">
-          <div>
-            <div style="display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: 800;">
+        <div class="party-id-vitals">
+          <div class="party-id-vital hp-vital">
+            <div class="party-id-vital-label">
               <span style="color: #ffffff; text-shadow: 0 0 4px rgba(255,255,255,0.4);">HP: <strong>${bot.currentHp}</strong>/${bot.maxHp}</span>
               <span style="color: #00ff66;">${Math.floor(hpPct)}%</span>
             </div>
             <div class="pokemon-bar-track"><div class="pokemon-bar-fill-hp" style="width: ${hpPct}%;"></div></div>
           </div>
 
-          <div>
-            <div style="display: flex; justify-content: space-between; font-size: 0.78rem;">
+          <div class="party-id-vital">
+            <div class="party-id-vital-label">
               <span>Energia: ${bot.currentEnergy}/${bot.maxEnergy} EN (+${bot.energyPerRound}/rodada)</span>
               <span style="color: #ffd700;">${Math.floor(energyPct)}%</span>
             </div>
             <div class="pokemon-bar-track"><div class="pokemon-bar-fill-energy" style="width: ${energyPct}%;"></div></div>
           </div>
 
-          <div>
-            <div style="display: flex; justify-content: space-between; font-size: 0.78rem;">
-              <span>Progresso de XP (Nível ${bot.level}): ${bot.xp}/${bot.xpToNext}</span>
+          <div class="party-id-vital">
+            <div class="party-id-vital-label">
+              <span>XP: ${bot.xp}/${bot.xpToNext}</span>
               <span style="color: var(--term-accent);">${Math.floor(xpPct)}%</span>
             </div>
             <div class="pokemon-bar-track"><div class="pokemon-bar-fill-xp" style="width: ${xpPct}%;"></div></div>
           </div>
         </div>
 
-        <div class="robot-moves-list" style="margin-bottom: 16px;">
-          <div style="font-size: 0.8rem; color: var(--term-accent); font-weight: 700; margin-bottom: 4px;">// ARSENAL DE COMBATE //</div>
+        <div class="robot-moves-list party-id-arsenal">
+          <div class="party-id-section-title">ARSENAL DE COMBATE</div>
           ${bot.moves.map((m, i) => {
             const req = m.unlockLevel || 1;
             const isUnlocked = bot.level >= req;
-            return `<div style="font-size: 0.8rem; margin-bottom: 3px;">• <strong>${m.name}</strong> (${m.cost} EN) - ${isUnlocked ? `<span style="color: var(--term-fg);">${m.desc}</span>` : `<span style="color: var(--term-alert);">[ BLOQUEADO - NÍVEL ${req} ]</span>`}</div>`;
+            return `<div class="party-id-move ${isUnlocked ? '' : 'locked'}"><span class="party-id-move-tier">L${i + 1}</span><div><strong>${m.name}</strong><span>${m.cost} EN</span><p>${isUnlocked ? m.desc : `[ BLOQUEADO - NÍVEL ${req} ]`}</p></div></div>`;
           }).join('')}
-          ${bot.finisher ? `<div style="font-size: 0.8rem; color: #ffd700; margin-top: 6px;">[FINALIZADOR] <strong>${bot.finisher.name}</strong> (10 EN) - ${bot.level >= (bot.finisher.unlockLevel || 2) ? '<span style="color: var(--term-fg);">[ DESBLOQUEADO ]</span>' : '<span style="color: var(--term-alert);">[ BLOQUEADO - NÍVEL 2 ]</span>'}</div>` : ''}
+          ${bot.finisher ? `<div class="party-id-move finisher ${bot.level >= (bot.finisher.unlockLevel || 2) ? '' : 'locked'}"><span class="party-id-move-tier">F</span><div><strong>${bot.finisher.name}</strong><span>${bot.finisher.cost ?? 10} EN</span><p>${bot.level >= (bot.finisher.unlockLevel || 2) ? '[ DESBLOQUEADO ]' : `[ BLOQUEADO - NÍVEL ${bot.finisher.unlockLevel || 2} ]`}</p></div></div>` : ''}
         </div>
 
-        <div style="margin-top: auto; padding-top: 10px;">
-          <button class="term-btn ${isActive ? 'alert' : 'gold'} btn-party-toggle" style="width: 100%; padding: 12px; font-size: 0.95rem; font-weight: 700;">
+        <div class="party-id-action">
+          <button class="term-btn ${isActive ? 'alert' : 'gold'} btn-party-toggle">
             ${isActive ? '[ REMOVER DA PARTY ATIVA ]' : '[ COLOCAR NA PARTY ATIVA ]'}
           </button>
         </div>
@@ -2092,6 +2130,7 @@ export class TerminalGameApp {
       };
 
       container.appendChild(card);
+      combatSprites.mountPoster(card.querySelector('.party-id-portrait'), bot, COMBAT_SPRITE_STATES.IDLE);
     });
   }
 
@@ -2552,6 +2591,7 @@ export class TerminalGameApp {
 
       enemies.push({
         id: `enemy_${i}_${Date.now()}`,
+        spriteId: tmpl.spriteId || tmpl.name,
         name: `${tmpl.name} (Nvl ${floorLvl})`,
         type: tmpl.type,
         badgeClass: tmpl.type === 'Fogo' ? 'char-badge-fogo' : tmpl.type === 'Terra' ? 'char-badge-terra' : tmpl.type === 'Gelo' ? 'char-badge-gelo' : tmpl.type === 'Elétrico' ? 'char-badge-eletrico' : 'char-badge-luz',
@@ -2596,6 +2636,7 @@ export class TerminalGameApp {
 
       this.currentEnemies = [{
         id: 'fled_titan_boss',
+        spriteId: `fled_titan_${String(titanKey).toLowerCase()}`,
         name: `${tmpl.name} Super-Corrompido`,
         type: tmpl.type,
         badgeClass: 'char-badge-corrupt',
@@ -2971,6 +3012,7 @@ export class TerminalGameApp {
         // 2. Dispara a execução do ataque (minigame, dash e dano)
         this.executePlayerAttack(bot, move, targetEnemy);
       });
+      this.storyBoard.onCancelSelection = () => this.renderAttackSubMenu();
     } else {
       this.executePlayerAttack(bot, move, aliveEnemies[0]);
     }
@@ -3055,9 +3097,11 @@ export class TerminalGameApp {
 
     document.getElementById('btnDefCoinCara').onclick = async () => {
       subContainer.classList.add('hidden');
+      currentBot.spriteState = COMBAT_SPRITE_STATES.DEFEND;
       await this.showTurnActionCinematic(currentBot.name, 'MANOBRA ESQUIVA (CARA)', true);
       const res = await this.minigames.runCoinFlipModal('CARA');
       currentBot.defenseStance = res.won ? 'DODGE_SUCCESS' : 'DODGE_FAIL';
+      currentBot.spriteState = COMBAT_SPRITE_STATES.IDLE;
 
       // ANDAR 1 TUTORIAL: 3 Defesas para o Dino-Byte reiniciar sem poluição de contadores
       const currentFloor = TOWER_FLOORS[this.currentFloorIndex];
@@ -3076,9 +3120,11 @@ export class TerminalGameApp {
 
     document.getElementById('btnDefCoinCoroa').onclick = async () => {
       subContainer.classList.add('hidden');
+      currentBot.spriteState = COMBAT_SPRITE_STATES.DEFEND;
       await this.showTurnActionCinematic(currentBot.name, 'MANOBRA ESQUIVA (COROA)', true);
       const res = await this.minigames.runCoinFlipModal('COROA');
       currentBot.defenseStance = res.won ? 'DODGE_SUCCESS' : 'DODGE_FAIL';
+      currentBot.spriteState = COMBAT_SPRITE_STATES.IDLE;
 
       // ANDAR 1 TUTORIAL: 3 Defesas para o Dino-Byte reiniciar sem poluição de contadores
       const currentFloor = TOWER_FLOORS[this.currentFloorIndex];
@@ -3177,7 +3223,9 @@ export class TerminalGameApp {
         await this.showTurnActionCinematic(currentBot.name, `USOU ${item.name} EM ${targetAlly.name}`, true);
 
         // 3. Aplica o efeito do item
+        const previousHp = targetAlly.currentHp;
         const msg = item.apply(targetAlly);
+        if (targetAlly.currentHp > previousHp) targetAlly.spriteState = COMBAT_SPRITE_STATES.HEAL;
         this.inventory[key]--;
         if (this.inventory[key] <= 0) delete this.inventory[key];
 
@@ -3185,6 +3233,7 @@ export class TerminalGameApp {
         this.combatLogs.push(`> ITEM USADO: ${msg}`);
         this.renderBattleArena();
         await new Promise(r => setTimeout(r, 600));
+        if (targetAlly.spriteState === COMBAT_SPRITE_STATES.HEAL) targetAlly.spriteState = COMBAT_SPRITE_STATES.IDLE;
         this.advanceTurn();
       });
 
@@ -3734,6 +3783,12 @@ export class TerminalGameApp {
   // ==========================================
   async handleBattleVictory() {
     const currentFloor = TOWER_FLOORS[this.currentFloorIndex];
+    (this.activeBattlers || []).forEach(bot => {
+      if (bot.currentHp > 0) bot.spriteState = COMBAT_SPRITE_STATES.VICTORY;
+    });
+    (this.currentEnemies || []).forEach(enemy => {
+      enemy.spriteState = COMBAT_SPRITE_STATES.DEFEAT;
+    });
     this.audio.fadeOutBGM(600);
     this.audio.playVictoryFanfare();
 
@@ -3946,6 +4001,12 @@ export class TerminalGameApp {
   // DERROTA DE BATALHA (RETORNO AO PONTO SEGURO)
   // ==========================================
   handleBattleDefeat() {
+    (this.activeBattlers || []).forEach(bot => {
+      bot.spriteState = COMBAT_SPRITE_STATES.DEFEAT;
+    });
+    (this.currentEnemies || []).forEach(enemy => {
+      if (enemy.currentHp > 0) enemy.spriteState = COMBAT_SPRITE_STATES.VICTORY;
+    });
     const overlay = document.getElementById('defeatCinematicOverlay');
     const safeFloor = TOWER_FLOORS[this.lastCheckpointFloorIndex] || TOWER_FLOORS[0];
 
