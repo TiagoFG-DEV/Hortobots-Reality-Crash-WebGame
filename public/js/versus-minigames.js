@@ -148,57 +148,51 @@ export class VersusMinigames {
   // Regra universal: player segue o mouse APENAS com botão esquerdo pressionado
   // AbortController limpa todos os event listeners ao final de cada minigame
   // Retorno: resolve({ won: boolean, score: number })
-  // ════════════════════════════════════════════════════════════════
+  // ===================================================================
+  // NIVEL 1: ESQUIVA HIPER-FRENETICA & DIFICULDADE QUADRUPLICADA
+  // Velocidades 1.5x a velocidade limite do player, alta densidade (35+ objetos), cadencia rapida
+  // ===================================================================
 
-  // L3-DB: Expurgo Térmico — Esquiva Dracônica (meteoritos caindo)
-  _dbDodge(color, name) {
+  // 1. DINOBYTE: CHUVA MASSIVA DE METEOROS IRREGULARES VELOZES
+  _dbDodge(color, name, opts = {}) {
     return new Promise(resolve => {
       const W = 520, H = 320;
-      const duration = 10000;
+      const duration = opts.duration || (opts.isFinisher ? 7000 : 13000);
+      const isFinisher = Boolean(opts.isFinisher);
 
       this.overlay.innerHTML = this._buildMgLayout(
         color, name,
-        'EXPURGO TERMICO — ESQUIVA DRACONICA',
-        'DESVIE DOS METEORITOS! PRESSIONE E MOVA PARA MANOBRAR O NUCLEO!',
+        'EXPURGO TERMICO - TEMPESTADE METEORICA',
+        'ALERTA MAXIMO! CHUVA MASSIVA DE METEOROS! DESVIE SEM PARAR!',
         duration, true
       );
 
-      // Ajusta canvas para 520x320
       const canvas = this.overlay.querySelector('canvas');
       canvas.width = W; canvas.height = H;
       const ctx = canvas.getContext('2d');
       const timerEl = this.overlay.querySelector('.vmg-timer');
 
-      // Gera 40 estrelas estáticas no início
       const estrelas = [];
-      for (let i = 0; i < 40; i++) {
-        estrelas.push({
-          x: Math.random() * W,
-          y: Math.random() * H,
-          r: Math.random() < 0.5 ? 1 : 2
-        });
+      for (let i = 0; i < 45; i++) {
+        estrelas.push({ x: Math.random() * W, y: Math.random() * H, r: Math.random() < 0.5 ? 1 : 2 });
       }
 
-      // Estado do player
-      const player = { x: W / 2, y: H - 50, size: 16 };
+      const player = { x: W / 2, y: H - 40, size: 12 };
       let mousePressed = false;
       let mouseTarget = { x: player.x, y: player.y };
 
-      // Estado dos meteoritos
       const meteoritos = [];
-      let velocidadeBase = 2;
       let hits = 0;
       let invulneravel = false;
       let invTimer = 0;
       let piscarContador = 0;
       let running = true;
       const start = performance.now();
+      let lastSpawn = 0;
 
-      // AbortController para limpar listeners
       const ac = new AbortController();
       const sig = ac.signal;
 
-      // Helpers de posição do canvas
       const getPosCanvas = (e) => {
         const rect = canvas.getBoundingClientRect();
         const sx = W / rect.width, sy = H / rect.height;
@@ -206,46 +200,30 @@ export class VersusMinigames {
         return { x: (cl.clientX - rect.left) * sx, y: (cl.clientY - rect.top) * sy };
       };
 
-      // Eventos de mouse — controle por pressão
-      canvas.addEventListener('mousedown', (e) => {
-        mousePressed = true;
-        mouseTarget = getPosCanvas(e);
-      }, { signal: sig });
-      canvas.addEventListener('mousemove', (e) => {
-        if (mousePressed) mouseTarget = getPosCanvas(e);
-      }, { signal: sig });
+      canvas.addEventListener('mousedown', (e) => { mousePressed = true; mouseTarget = getPosCanvas(e); }, { signal: sig });
+      canvas.addEventListener('mousemove', (e) => { if (mousePressed) mouseTarget = getPosCanvas(e); }, { signal: sig });
       canvas.addEventListener('mouseup', () => { mousePressed = false; }, { signal: sig });
       canvas.addEventListener('mouseleave', () => { mousePressed = false; }, { signal: sig });
-
-      // Touch — equivalente a mousedown+mousemove
-      canvas.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        mousePressed = true;
-        mouseTarget = getPosCanvas(e);
-      }, { signal: sig, passive: false });
-      canvas.addEventListener('touchmove', (e) => {
-        e.preventDefault();
-        if (mousePressed) mouseTarget = getPosCanvas(e);
-      }, { signal: sig, passive: false });
+      canvas.addEventListener('touchstart', (e) => { e.preventDefault(); mousePressed = true; mouseTarget = getPosCanvas(e); }, { signal: sig, passive: false });
+      canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (mousePressed) mouseTarget = getPosCanvas(e); }, { signal: sig, passive: false });
       canvas.addEventListener('touchend', () => { mousePressed = false; }, { signal: sig });
 
-      // Spawna um meteorito
       const spawnMeteorito = () => {
-        const rx = 12 + Math.random() * 8;   // 12-20
-        const ry = 8 + Math.random() * 6;    // 8-14
+        const r = 2.8 + Math.random() * 4.2;
+        const isFast = Math.random() < 0.5;
+        const vel = isFast ? (8.5 + Math.random() * 4.5) : (6.0 + Math.random() * 2.8);
         meteoritos.push({
-          x: rx + Math.random() * (W - rx * 2),
-          y: -20,
-          rx, ry,
-          vel: velocidadeBase,
-          rastro: []  // partículas de rastro laranja
+          x: 8 + Math.random() * (W - 16),
+          y: -15 - Math.random() * 30,
+          r,
+          vel,
+          vx: (Math.random() - 0.5) * 2.5,
+          color: isFast ? '#ff0033' : '#ff4400'
         });
       };
 
-      // Spawna 3 meteoritos iniciais
-      for (let i = 0; i < 3; i++) spawnMeteorito();
-
-      let ultimaAceleracao = 0;
+      const initialCount = isFinisher ? 14 : 26;
+      for (let i = 0; i < initialCount; i++) spawnMeteorito();
 
       const loop = () => {
         if (!running) return;
@@ -254,32 +232,34 @@ export class VersusMinigames {
         const timeLeft = Math.max(0, (duration - elapsed) / 1000);
         if (timerEl) timerEl.textContent = timeLeft.toFixed(1) + 's';
 
-        // Acelera velocidade a cada 2s
-        const segPassados = Math.floor(elapsed / 2000);
-        if (segPassados > ultimaAceleracao) {
-          ultimaAceleracao = segPassados;
-          velocidadeBase = 2 + segPassados * 0.1;
+        // Spawn a cada 65ms para manter mais de 35 meteoros na tela
+        const spawnCadence = isFinisher ? 110 : 60;
+        if (elapsed - lastSpawn > spawnCadence) {
+          lastSpawn = elapsed;
+          const maxAllowed = isFinisher ? 24 : 48;
+          if (meteoritos.length < maxAllowed) {
+            spawnMeteorito();
+            spawnMeteorito();
+            if (Math.random() < 0.6) spawnMeteorito();
+          }
         }
 
-        // Movimento do player (lerp suave) — apenas se pressionado
         if (mousePressed) {
-          player.x += (mouseTarget.x - player.x) * 0.18;
-          player.y += (mouseTarget.y - player.y) * 0.18;
+          player.x += (mouseTarget.x - player.x) * 0.28;
+          player.y += (mouseTarget.y - player.y) * 0.28;
         }
-        // Limita player ao canvas
         player.x = Math.max(player.size / 2, Math.min(W - player.size / 2, player.x));
         player.y = Math.max(player.size / 2, Math.min(H - player.size / 2, player.y));
 
-        // Atualiza invulnerabilidade
         if (invulneravel) {
           invTimer -= 16;
           piscarContador++;
           if (invTimer <= 0) { invulneravel = false; piscarContador = 0; }
         }
 
-        // Fundo preto com estrelas
-        ctx.fillStyle = '#000000';
+        ctx.fillStyle = '#010002';
         ctx.fillRect(0, 0, W, H);
+
         ctx.fillStyle = '#ffffff';
         estrelas.forEach(s => {
           ctx.beginPath();
@@ -287,64 +267,50 @@ export class VersusMinigames {
           ctx.fill();
         });
 
-        // Atualiza e desenha meteoritos
         for (let i = meteoritos.length - 1; i >= 0; i--) {
           const m = meteoritos[i];
-          // Adiciona partículas de rastro antes de mover
-          m.rastro.push({ x: m.x, y: m.y, life: 1.0 });
-          if (m.rastro.length > 4) m.rastro.shift();
-
           m.y += m.vel;
+          m.x += m.vx;
 
-          // Rastro laranja
-          m.rastro.forEach((p, pi) => {
-            p.life -= 0.25;
-            ctx.save();
-            ctx.globalAlpha = Math.max(0, p.life) * 0.7;
-            ctx.fillStyle = '#ff8800';
-            ctx.beginPath();
-            ctx.ellipse(p.x, p.y - pi * 3, m.rx * 0.7, m.ry * 0.7, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.restore();
-          });
-
-          // Desenha meteorito
           ctx.save();
-          ctx.fillStyle = '#ff4400';
-          ctx.shadowColor = '#ff4400';
+          ctx.strokeStyle = 'rgba(255, 40, 0, 0.45)';
+          ctx.lineWidth = m.r * 1.4;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(m.x, m.y);
+          ctx.lineTo(m.x - m.vx * 3, m.y - m.vel * 2.2);
+          ctx.stroke();
+
+          ctx.fillStyle = m.color;
+          ctx.shadowColor = m.color;
           ctx.shadowBlur = 10;
           ctx.beginPath();
-          ctx.ellipse(m.x, m.y, m.rx, m.ry, 0, 0, Math.PI * 2);
+          ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = '#ffff66';
+          ctx.beginPath();
+          ctx.arc(m.x, m.y, m.r * 0.4, 0, Math.PI * 2);
           ctx.fill();
           ctx.restore();
 
-          // Saiu pela base — spawna novo
-          if (m.y > H + 30) {
+          if (m.y > H + 25 || m.x < -20 || m.x > W + 20) {
             meteoritos.splice(i, 1);
-            if (meteoritos.length < 6) spawnMeteorito();
             continue;
           }
 
-          // Manter máx 6
-          while (meteoritos.length > 6) meteoritos.shift();
-
-          // Hit detection
           if (!invulneravel) {
             const dist = Math.hypot(player.x - m.x, player.y - m.y);
-            if (dist < 20) {
+            if (dist < (player.size / 2 + m.r)) {
               hits++;
               invulneravel = true;
-              invTimer = 800;
-              this._shake(8);
+              invTimer = 350;
+              this._shake(10);
               try { getAudio().playAccessDenied(); } catch (e) {}
             }
           }
         }
 
-        // Garante pelo menos 1 meteorito sempre
-        if (meteoritos.length === 0) spawnMeteorito();
-
-        // Desenha player (pisca durante invulnerabilidade)
         const mostrarPlayer = !invulneravel || (Math.floor(piscarContador / 4) % 2 === 0);
         if (mostrarPlayer) {
           ctx.save();
@@ -358,18 +324,16 @@ export class VersusMinigames {
           ctx.restore();
         }
 
-        // HUD de hits
-        ctx.fillStyle = '#ff4400';
+        ctx.fillStyle = '#ff3344';
         ctx.font = 'bold 11px monospace';
         ctx.textAlign = 'left';
-        ctx.fillText(`IMPACTOS: ${hits}`, 10, 20);
+        ctx.fillText(`IMPACTOS: ${hits} | METEOROS: ${meteoritos.length}`, 10, 20);
 
-        // Fim do jogo
         if (timeLeft <= 0) {
           running = false;
           ac.abort();
           this._stop();
-          const score = Math.max(0.0, 1.0 - hits * 0.15);
+          const score = Math.max(0.0, 1.0 - hits * 0.12);
           const won = score > 0.0;
           this._showResult(canvas, won, won ? `SOBREVIVEU! SCORE: ${score.toFixed(2)}` : 'ELIMINADO! TODOS OS PONTOS PERDIDOS!');
           setTimeout(() => resolve({ won, score }), 950);
@@ -379,16 +343,17 @@ export class VersusMinigames {
     });
   }
 
-  // L3-CP: Laco Magnetico — Arena do Xerife (laco giratório)
-  _cpDodge(color, name) {
+  // 2. COWPUTER: VORTICE TRIPLO HIPER-ACELERADO
+  _cpDodge(color, name, opts = {}) {
     return new Promise(resolve => {
       const W = 520, H = 320;
-      const duration = 10000;
+      const duration = opts.duration || (opts.isFinisher ? 7000 : 13000);
+      const isFinisher = Boolean(opts.isFinisher);
 
       this.overlay.innerHTML = this._buildMgLayout(
         color, name,
-        'LACO MAGNETICO — ARENA DO XERIFE',
-        'DESVIE DO LACO GIRATORIO! PERMANECA PROXIMO AO CENTRO PARA SOBREVIVER!',
+        'LACO MAGNETICO - VORTICE DO XERIFE',
+        'VORTICE TRIPLO HIPER-RAPIDO! FIQUE PERTO DO CENTRO E FUJA DAS BORDAS!',
         duration, true
       );
 
@@ -397,23 +362,21 @@ export class VersusMinigames {
       const ctx = canvas.getContext('2d');
       const timerEl = this.overlay.querySelector('.vmg-timer');
 
-      // Player começa no centro
-      const player = { x: W / 2, y: H / 2, size: 14 };
+      const player = { x: W / 2, y: H / 2, size: 12 };
       let mousePressed = false;
       let mouseTarget = { x: player.x, y: player.y };
 
-      // Estado do laco
-      let rotacao = 0;
-      let velRotacao = 0.03;
+      let r1 = 0, r2 = Math.PI / 3, r3 = (Math.PI * 2) / 3;
+      let v1 = isFinisher ? 0.07 : 0.10;
+      let v2 = isFinisher ? -0.06 : -0.095;
+      let v3 = isFinisher ? 0.08 : 0.12;
       let hits = 0;
       let invulneravel = false;
       let invTimer = 0;
       let piscarContador = 0;
       let running = true;
       const start = performance.now();
-      let ultimaAceleracao = 0;
-
-      // Zona de perigo nas bordas: cresce 2px/s
+      let lastAccel = 0;
       let bordaPerigo = 0;
 
       const ac = new AbortController();
@@ -434,19 +397,13 @@ export class VersusMinigames {
       canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (mousePressed) mouseTarget = getPosCanvas(e); }, { signal: sig, passive: false });
       canvas.addEventListener('touchend', () => { mousePressed = false; }, { signal: sig });
 
-      // Distância aproximada de um ponto (px,py) a uma elipse centrada (cx,cy) com semeixos rx,ry girada por ang
       const distPontoElipse = (px, py, cx, cy, rx, ry, ang) => {
-        // Transforma ponto para sistema local da elipse (sem rotação)
-        const dx = px - cx;
-        const dy = py - cy;
+        const dx = px - cx, dy = py - cy;
         const cosA = Math.cos(-ang), sinA = Math.sin(-ang);
         const lx = dx * cosA - dy * sinA;
         const ly = dx * sinA + dy * cosA;
-        // Distância ao ponto mais próximo na elipse
-        const nx = lx / rx;
-        const ny = ly / ry;
+        const nx = lx / rx, ny = ly / ry;
         const d = Math.sqrt(nx * nx + ny * ny);
-        // Distância da borda da elipse
         return Math.abs(Math.sqrt(lx * lx + ly * ly) - Math.sqrt((lx / (d || 1)) * rx * (lx / (d || 1)) * rx + (ly / (d || 1)) * ry * (ly / (d || 1)) * ry));
       };
 
@@ -457,91 +414,114 @@ export class VersusMinigames {
         const timeLeft = Math.max(0, (duration - elapsed) / 1000);
         if (timerEl) timerEl.textContent = timeLeft.toFixed(1) + 's';
 
-        // Acelera rotação a cada 1s, máx 0.18 rad/frame
-        const segPassados = Math.floor(elapsed / 1000);
-        if (segPassados > ultimaAceleracao) {
-          ultimaAceleracao = segPassados;
-          velRotacao = Math.min(0.18, 0.03 + segPassados * 0.004);
+        const pStep = Math.floor(elapsed / 500);
+        if (pStep > lastAccel) {
+          lastAccel = pStep;
+          v1 = Math.min(0.34, v1 + 0.015);
+          v2 = Math.max(-0.31, v2 - 0.012);
+          v3 = Math.min(0.36, v3 + 0.016);
         }
 
-        // Zona de perigo cresce 2px/s
-        bordaPerigo = (elapsed / 1000) * 2;
+        bordaPerigo = (elapsed / 1000) * 5.8;
 
-        rotacao += velRotacao;
+        r1 += v1;
+        r2 += v2;
+        r3 += v3;
 
-        // Movimento do player — somente com mouse pressionado
         if (mousePressed) {
-          player.x += (mouseTarget.x - player.x) * 0.18;
-          player.y += (mouseTarget.y - player.y) * 0.18;
+          player.x += (mouseTarget.x - player.x) * 0.26;
+          player.y += (mouseTarget.y - player.y) * 0.26;
         }
         player.x = Math.max(player.size / 2, Math.min(W - player.size / 2, player.x));
         player.y = Math.max(player.size / 2, Math.min(H - player.size / 2, player.y));
 
-        // Atualiza invulnerabilidade
         if (invulneravel) {
           invTimer -= 16;
           piscarContador++;
           if (invTimer <= 0) { invulneravel = false; piscarContador = 0; }
         }
 
-        // Fundo preto
-        ctx.fillStyle = '#000000';
+        ctx.fillStyle = '#060400';
         ctx.fillRect(0, 0, W, H);
 
-        // Zona de perigo nas bordas (vermelho semitransparente)
-        const bp = Math.min(bordaPerigo, Math.min(W, H) / 2 - 20);
+        const bp = Math.min(bordaPerigo, Math.min(W, H) / 2 - 25);
         if (bp > 0) {
-          ctx.fillStyle = 'rgba(255, 0, 0, 0.18)';
-          // Borda superior
+          ctx.fillStyle = 'rgba(255, 30, 0, 0.35)';
           ctx.fillRect(0, 0, W, bp);
-          // Borda inferior
           ctx.fillRect(0, H - bp, W, bp);
-          // Borda esquerda
           ctx.fillRect(0, 0, bp, H);
-          // Borda direita
           ctx.fillRect(W - bp, 0, bp, H);
+          ctx.strokeStyle = '#ff3300';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(bp, bp, W - bp * 2, H - bp * 2);
         }
 
-        // Desenha laco (elipse girando)
         const cx = W / 2, cy = H / 2;
-        const rx = 130, ry = 70;
+        const rx1 = 150, ry1 = 78;
+        const rx2 = 115, ry2 = 62;
+        const rx3 = 80,  ry3 = 45;
+
         ctx.save();
         ctx.translate(cx, cy);
-        ctx.rotate(rotacao);
+        ctx.rotate(r1);
         ctx.strokeStyle = color;
-        ctx.lineWidth = 12;
+        ctx.lineWidth = 10;
         ctx.shadowColor = color;
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 12;
         ctx.beginPath();
-        ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, rx1, ry1, 0, 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
 
-        // Verifica hit com o laco
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(r2);
+        ctx.strokeStyle = '#ff8800';
+        ctx.lineWidth = 8;
+        ctx.shadowColor = '#ff8800';
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, rx2, ry2, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+
+        if (!isFinisher) {
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.rotate(r3);
+          ctx.strokeStyle = '#ff2244';
+          ctx.lineWidth = 7;
+          ctx.shadowColor = '#ff2244';
+          ctx.shadowBlur = 10;
+          ctx.beginPath();
+          ctx.ellipse(0, 0, rx3, ry3, 0, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+
         if (!invulneravel) {
-          // Distância do centro do player ao laco
-          const distLaco = distPontoElipse(player.x, player.y, cx, cy, rx, ry, rotacao);
-          if (distLaco < 8) {
+          const d1 = distPontoElipse(player.x, player.y, cx, cy, rx1, ry1, r1);
+          const d2 = distPontoElipse(player.x, player.y, cx, cy, rx2, ry2, r2);
+          const d3 = !isFinisher ? distPontoElipse(player.x, player.y, cx, cy, rx3, ry3, r3) : 999;
+          if (d1 < 9 || d2 < 8 || d3 < 7) {
             hits++;
             invulneravel = true;
-            invTimer = 800;
-            this._shake(8);
+            invTimer = 400;
+            this._shake(9);
             try { getAudio().playAccessDenied(); } catch (e) {}
           }
-          // Verifica hit com zona de borda perigosa
           if (bp > 0) {
             const naZonaBorda = player.x < bp || player.x > W - bp || player.y < bp || player.y > H - bp;
             if (naZonaBorda) {
               hits++;
               invulneravel = true;
-              invTimer = 800;
-              this._shake(8);
+              invTimer = 400;
+              this._shake(9);
               try { getAudio().playAccessDenied(); } catch (e) {}
             }
           }
         }
 
-        // Desenha player (pisca durante invulnerabilidade)
         const mostrarPlayer = !invulneravel || (Math.floor(piscarContador / 4) % 2 === 0);
         if (mostrarPlayer) {
           ctx.save();
@@ -552,19 +532,18 @@ export class VersusMinigames {
           ctx.restore();
         }
 
-        // HUD
-        ctx.fillStyle = '#aaaaaa';
+        ctx.fillStyle = '#ffd700';
         ctx.font = 'bold 11px monospace';
         ctx.textAlign = 'left';
-        ctx.fillText(`IMPACTOS: ${hits}  VEL.LACO: ${velRotacao.toFixed(3)}`, 10, 20);
+        ctx.fillText(`IMPACTOS: ${hits} | VORTICE: ${v1.toFixed(3)} rad/f`, 10, 20);
 
         if (timeLeft <= 0) {
           running = false;
           ac.abort();
           this._stop();
-          const score = Math.max(0.0, 1.0 - hits * 0.15);
+          const score = Math.max(0.0, 1.0 - hits * 0.12);
           const won = score > 0.0;
-          this._showResult(canvas, won, won ? `DESVIOU! SCORE: ${score.toFixed(2)}` : 'LAÇADO! PONTUAÇÃO ZERO!');
+          this._showResult(canvas, won, won ? `DESVIOU! SCORE: ${score.toFixed(2)}` : 'LACADO! PONTUACAO ZERO!');
           setTimeout(() => resolve({ won, score }), 950);
         }
       };
@@ -572,17 +551,17 @@ export class VersusMinigames {
     });
   }
 
-  // L3-PL: Tundra Artica — Esquiva Polar (fisica de gelo, estalactites)
-  _plDodge(color, name) {
+  // 3. PENLINUX: AVALANCHE ARTICA COM VENTO FURACAO
+  _plDodge(color, name, opts = {}) {
     return new Promise(resolve => {
       const W = 520, H = 320;
-      const duration = 10000;
+      const duration = opts.duration || (opts.isFinisher ? 7000 : 13000);
+      const isFinisher = Boolean(opts.isFinisher);
 
-      // Layout customizado com indicador de vento externo
       this.overlay.innerHTML = this._buildMgLayout(
         color, name,
-        'TUNDRA ARTICA — ESQUIVA POLAR',
-        'DESVIE DAS ESTALACTITES! CUIDADO COM O VENTO GELADO E O CONTROLE ESCORREGADIO!',
+        'TUNDRA ARTICA - BLIZZARD DE GELO',
+        'AVALANCHE SUPREMA! DESVIE DAS DEZENAS DE ESTALACTITES SOB VENTO FURACAO!',
         duration, true
       );
 
@@ -591,37 +570,24 @@ export class VersusMinigames {
       const ctx = canvas.getContext('2d');
       const timerEl = this.overlay.querySelector('.vmg-timer');
 
-      // Adiciona indicador de vento ao HTML
       const wrap = this.overlay.querySelector('.vmg-wrap');
       const ventoDivEl = document.createElement('div');
-      ventoDivEl.id = 'vento-indicador';
-      ventoDivEl.style.cssText = 'color:#00e5ff;font-family:monospace;font-weight:900;font-size:0.9rem;text-align:center;padding:4px;letter-spacing:2px;text-shadow:0 0 8px #00e5ff;';
-      ventoDivEl.textContent = 'VENTO: NORTE';
-      wrap.appendChild(ventoDivEl);
+      ventoDivEl.style.cssText = 'color:#00e5ff;font-size:0.85rem;font-weight:bold;text-align:center;padding:2px 0;letter-spacing:2px;font-family:monospace;';
+      ventoDivEl.textContent = 'VENTO ARTICO: ATIVO';
+      const statusBar = wrap?.querySelector('.vmg-status-bar');
+      if (statusBar && statusBar.parentNode) {
+        statusBar.parentNode.insertBefore(ventoDivEl, statusBar.nextSibling);
+      }
 
-      // Player com física de gelo
-      const player = { x: W / 2, y: H - 50, size: 14, vx: 0, vy: 0 };
-      const velMax = 4;
+      const player = { x: W / 2, y: H - 40, size: 12, vx: 0, vy: 0 };
+      const velMax = 6.2;
       let mousePressed = false;
       let mouseTarget = { x: player.x, y: player.y };
 
-      // Vento
       const dirVento = ['NORTE', 'SUL', 'LESTE', 'OESTE'];
-      let ventoAtual = 'NORTE';
-      let ventoForca = { x: 0, y: -0.3 };
+      let ventoForca = { x: 0, y: 0 };
+      let ultimoVento = 0;
 
-      // Estalactites estáticas decorativas no topo (5-7 triângulos)
-      const estaDecorat = [];
-      const numDec = 5 + Math.floor(Math.random() * 3);
-      for (let i = 0; i < numDec; i++) {
-        estaDecorat.push({
-          x: 30 + (i / (numDec - 1)) * (W - 60),
-          largura: 20 + Math.random() * 20,
-          altura: 20 + Math.random() * 30
-        });
-      }
-
-      // Estalactites que caem
       const estalactites = [];
       let hits = 0;
       let invulneravel = false;
@@ -629,7 +595,11 @@ export class VersusMinigames {
       let piscarContador = 0;
       let running = true;
       const start = performance.now();
-      let ultimoVento = 0;
+
+      const estaDecorat = [];
+      for (let i = 0; i < 20; i++) {
+        estaDecorat.push({ x: 12 + i * 26, largura: 14 + Math.random() * 8, altura: 16 + Math.random() * 18 });
+      }
 
       const ac = new AbortController();
       const sig = ac.signal;
@@ -651,28 +621,27 @@ export class VersusMinigames {
 
       const sortearVento = () => {
         const dir = dirVento[Math.floor(Math.random() * 4)];
-        ventoAtual = dir;
-        if (dir === 'NORTE') ventoForca = { x: 0, y: -0.3 };
-        else if (dir === 'SUL') ventoForca = { x: 0, y: 0.3 };
-        else if (dir === 'LESTE') ventoForca = { x: 0.3, y: 0 };
-        else ventoForca = { x: -0.3, y: 0 };
-        if (ventoDivEl) ventoDivEl.textContent = `VENTO: ${dir}`;
+        if (dir === 'NORTE') ventoForca = { x: 0, y: -0.90 };
+        else if (dir === 'SUL') ventoForca = { x: 0, y: 0.90 };
+        else if (dir === 'LESTE') ventoForca = { x: 0.90, y: 0 };
+        else ventoForca = { x: -0.90, y: 0 };
+        if (ventoDivEl) ventoDivEl.textContent = `VENTO ARTICO: ${dir} (FORCA MAXIMA)`;
       };
 
       const spawnEstalactite = () => {
-        const largura = 10 + Math.random() * 8;   // 10-18px
-        const altura = 40 + Math.random() * 40;   // 40-80px
+        const largura = 7 + Math.random() * 8;
+        const altura = 35 + Math.random() * 45;
         estalactites.push({
           x: largura + Math.random() * (W - largura * 2),
           y: -altura,
           largura,
           altura,
-          vel: 2 + Math.random() * 1.5  // 2-3.5px/frame
+          vel: (isFinisher ? 5.0 : 7.2) + Math.random() * 3.5
         });
       };
 
-      // Spawna estalactites iniciais
-      for (let i = 0; i < 3; i++) spawnEstalactite();
+      const initialCount = isFinisher ? 10 : 18;
+      for (let i = 0; i < initialCount; i++) spawnEstalactite();
 
       let ultimoSpawn = 0;
 
@@ -683,38 +652,33 @@ export class VersusMinigames {
         const timeLeft = Math.max(0, (duration - elapsed) / 1000);
         if (timerEl) timerEl.textContent = timeLeft.toFixed(1) + 's';
 
-        // Troca vento a cada 2s
-        const segVento = Math.floor(elapsed / 2000);
+        const segVento = Math.floor(elapsed / 1000);
         if (segVento > ultimoVento) {
           ultimoVento = segVento;
           sortearVento();
         }
 
-        // Spawn de nova estalactite a cada ~1.2s
-        if (elapsed - ultimoSpawn > 1200) {
+        const spawnDelay = isFinisher ? 300 : 160;
+        if (elapsed - ultimoSpawn > spawnDelay) {
           ultimoSpawn = elapsed;
           spawnEstalactite();
+          if (!isFinisher) spawnEstalactite();
         }
 
-        // Fisica de gelo
         if (mousePressed) {
-          // Aceleração em direção ao mouse
           const dx = mouseTarget.x - player.x;
           const dy = mouseTarget.y - player.y;
           const dist = Math.hypot(dx, dy) || 1;
-          player.vx += (dx / dist) * 0.4;
-          player.vy += (dy / dist) * 0.4;
+          player.vx += (dx / dist) * 0.58;
+          player.vy += (dy / dist) * 0.58;
         } else {
-          // Desliza: multiplica velocidade por 0.88
-          player.vx *= 0.88;
-          player.vy *= 0.88;
+          player.vx *= 0.90;
+          player.vy *= 0.90;
         }
 
-        // Aplica força do vento
         player.vx += ventoForca.x;
         player.vy += ventoForca.y;
 
-        // Limita velocidade máxima
         const spd = Math.hypot(player.vx, player.vy);
         if (spd > velMax) {
           player.vx = (player.vx / spd) * velMax;
@@ -724,81 +688,67 @@ export class VersusMinigames {
         player.x += player.vx;
         player.y += player.vy;
 
-        // Mantém player no canvas (rebate nas bordas)
         if (player.x < player.size / 2) { player.x = player.size / 2; player.vx *= -0.5; }
         if (player.x > W - player.size / 2) { player.x = W - player.size / 2; player.vx *= -0.5; }
         if (player.y < player.size / 2) { player.y = player.size / 2; player.vy *= -0.5; }
         if (player.y > H - player.size / 2) { player.y = H - player.size / 2; player.vy *= -0.5; }
 
-        // Atualiza invulnerabilidade
         if (invulneravel) {
           invTimer -= 16;
           piscarContador++;
           if (invTimer <= 0) { invulneravel = false; piscarContador = 0; }
         }
 
-        // Fundo azul escuro
-        ctx.fillStyle = '#050d1a';
+        ctx.fillStyle = '#030814';
         ctx.fillRect(0, 0, W, H);
 
-        // Estalactites decorativas estáticas no topo
-        ctx.fillStyle = 'rgba(0, 200, 255, 0.18)';
-        ctx.strokeStyle = 'rgba(0, 200, 255, 0.35)';
-        ctx.lineWidth = 1;
         estaDecorat.forEach(ed => {
+          ctx.fillStyle = 'rgba(0, 200, 255, 0.22)';
           ctx.beginPath();
           ctx.moveTo(ed.x - ed.largura / 2, 0);
           ctx.lineTo(ed.x + ed.largura / 2, 0);
           ctx.lineTo(ed.x, ed.altura);
           ctx.closePath();
           ctx.fill();
-          ctx.stroke();
         });
 
-        // Atualiza e desenha estalactites que caem
         for (let i = estalactites.length - 1; i >= 0; i--) {
           const e = estalactites[i];
           e.y += e.vel;
 
-          // Desenha: retângulo + ponta triangular abaixo
-          ctx.fillStyle = '#00aacc';
-          ctx.shadowColor = '#00aacc';
-          ctx.shadowBlur = 6;
-          // Corpo retangular
+          ctx.fillStyle = '#00e5ff';
+          ctx.shadowColor = '#00e5ff';
+          ctx.shadowBlur = 8;
           ctx.fillRect(e.x - e.largura / 2, e.y, e.largura, e.altura);
-          // Ponta triangular abaixo
           ctx.beginPath();
           ctx.moveTo(e.x - e.largura / 2, e.y + e.altura);
           ctx.lineTo(e.x + e.largura / 2, e.y + e.altura);
-          ctx.lineTo(e.x, e.y + e.altura + 16);
+          ctx.lineTo(e.x, e.y + e.altura + 14);
           ctx.closePath();
           ctx.fill();
           ctx.shadowBlur = 0;
 
-          // Saiu pela base
           if (e.y > H + 20) {
             estalactites.splice(i, 1);
             continue;
           }
 
-          // Hit detection
           if (!invulneravel) {
             const ph = player.size / 2;
             const ex1 = e.x - e.largura / 2, ex2 = e.x + e.largura / 2;
-            const ey1 = e.y, ey2 = e.y + e.altura + 16;
+            const ey1 = e.y, ey2 = e.y + e.altura + 14;
             const px1 = player.x - ph, px2 = player.x + ph;
             const py1 = player.y - ph, py2 = player.y + ph;
             if (px2 > ex1 && px1 < ex2 && py2 > ey1 && py1 < ey2) {
               hits++;
               invulneravel = true;
-              invTimer = 800;
-              this._shake(8);
+              invTimer = 350;
+              this._shake(9);
               try { getAudio().playAccessDenied(); } catch (e) {}
             }
           }
         }
 
-        // Desenha player (pisca durante invulnerabilidade)
         const mostrarPlayer = !invulneravel || (Math.floor(piscarContador / 4) % 2 === 0);
         if (mostrarPlayer) {
           ctx.save();
@@ -809,19 +759,18 @@ export class VersusMinigames {
           ctx.restore();
         }
 
-        // HUD
-        ctx.fillStyle = '#00aacc';
+        ctx.fillStyle = '#00e5ff';
         ctx.font = 'bold 11px monospace';
         ctx.textAlign = 'left';
-        ctx.fillText(`IMPACTOS: ${hits}`, 10, 20);
+        ctx.fillText(`IMPACTOS: ${hits} | ESTALACTITES: ${estalactites.length}`, 10, 20);
 
         if (timeLeft <= 0) {
           running = false;
           ac.abort();
           this._stop();
-          const score = Math.max(0.0, 1.0 - hits * 0.15);
+          const score = Math.max(0.0, 1.0 - hits * 0.12);
           const won = score > 0.0;
-          this._showResult(canvas, won, won ? `SOBREVIVEU! SCORE: ${score.toFixed(2)}` : 'CONGELADO! PONTUAÇÃO ZERO!');
+          this._showResult(canvas, won, won ? `SOBREVIVEU! SCORE: ${score.toFixed(2)}` : 'CONGELADO! PONTUACAO ZERO!');
           setTimeout(() => resolve({ won, score }), 950);
         }
       };
@@ -829,16 +778,17 @@ export class VersusMinigames {
     });
   }
 
-  // L3-PB: Camara de Cristal — Esquiva Prismatica (feixes de laser)
-  _pbDodge(color, name) {
+  // 4. PAVABYTE: TEMPESTADE PRISMATICA (TELEGRAPH 0.20s, ATE 8 FEIXES)
+  _pbDodge(color, name, opts = {}) {
     return new Promise(resolve => {
       const W = 520, H = 320;
-      const duration = 10000;
+      const duration = opts.duration || (opts.isFinisher ? 7000 : 13000);
+      const isFinisher = Boolean(opts.isFinisher);
 
       this.overlay.innerHTML = this._buildMgLayout(
         color, name,
-        'CAMARA DE CRISTAL — ESQUIVA PRISMATICA',
-        'DESVIE DOS FEIXES DE LUZ! UMA LINHA PONTILHADA AVISA ANTES DO LASER!',
+        'CAMARA DE CRISTAL - MATRIZ PRISMATICA',
+        'FEIXES ULTRA-VELOZES! TELEGRAFOS DE 0.2s! MANOBRE INSTANTANEAMENTE!',
         duration, true
       );
 
@@ -847,12 +797,10 @@ export class VersusMinigames {
       const ctx = canvas.getContext('2d');
       const timerEl = this.overlay.querySelector('.vmg-timer');
 
-      // Player
-      const player = { x: W / 2, y: H / 2, size: 14 };
+      const player = { x: W / 2, y: H / 2, size: 12 };
       let mousePressed = false;
       let mouseTarget = { x: player.x, y: player.y };
 
-      // Feixes
       const feixes = [];
       let hits = 0;
       let invulneravel = false;
@@ -860,7 +808,7 @@ export class VersusMinigames {
       let piscarContador = 0;
       let running = true;
       const start = performance.now();
-      let ultimoSpawn = -1200;
+      let ultimoSpawn = 0;
 
       const ac = new AbortController();
       const sig = ac.signal;
@@ -880,37 +828,30 @@ export class VersusMinigames {
       canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (mousePressed) mouseTarget = getPosCanvas(e); }, { signal: sig, passive: false });
       canvas.addEventListener('touchend', () => { mousePressed = false; }, { signal: sig });
 
-      // Gera um feixe aleatório
       const spawnFeixe = () => {
-        // Tipos: 0=horizontal, 1=vertical, 2=diagonal45, 3=diagonal-45
         const tipo = Math.floor(Math.random() * 4);
         let p1, p2;
         if (tipo === 0) {
-          // Horizontal
-          const y = 30 + Math.random() * (H - 60);
+          const y = 20 + Math.random() * (H - 40);
           p1 = { x: 0, y }; p2 = { x: W, y };
         } else if (tipo === 1) {
-          // Vertical
-          const x = 30 + Math.random() * (W - 60);
+          const x = 20 + Math.random() * (W - 40);
           p1 = { x, y: 0 }; p2 = { x, y: H };
         } else if (tipo === 2) {
-          // Diagonal 45°
           const off = Math.random() * (W + H);
           p1 = { x: 0, y: off }; p2 = { x: W, y: off - W };
         } else {
-          // Diagonal -45°
           const off = Math.random() * (W + H) - H;
           p1 = { x: 0, y: off }; p2 = { x: W, y: off + W };
         }
         feixes.push({
           p1, p2,
-          fase: 'telegraph',  // 'telegraph' (0.5s) ou 'laser' (0.8s)
-          timer: 0.5,
-          totalTimer: 0.5
+          fase: 'telegraph',
+          timer: isFinisher ? 0.30 : 0.20,
+          totalTimer: isFinisher ? 0.30 : 0.20
         });
       };
 
-      // Distância de ponto à reta definida por dois pontos
       const distPontoLinha = (px, py, x1, y1, x2, y2) => {
         const A = y2 - y1, B = x1 - x2, C = x2 * y1 - x1 * y2;
         const denom = Math.sqrt(A * A + B * B);
@@ -918,10 +859,9 @@ export class VersusMinigames {
         return Math.abs(A * px + B * py + C) / denom;
       };
 
-      // Grade lilás estática de fundo
       const pontosGrade = [];
-      for (let gx = 0; gx < W; gx += 30) {
-        for (let gy = 0; gy < H; gy += 30) {
+      for (let gx = 0; gx < W; gx += 26) {
+        for (let gy = 0; gy < H; gy += 26) {
           pontosGrade.push({ x: gx, y: gy });
         }
       }
@@ -938,79 +878,70 @@ export class VersusMinigames {
         const timeLeft = Math.max(0, (duration - elapsed) / 1000);
         if (timerEl) timerEl.textContent = timeLeft.toFixed(1) + 's';
 
-        // Spawn de feixe a cada 1.2s, máx 3
-        if (elapsed - ultimoSpawn > 1200 && feixes.length < 3) {
+        const maxFeixes = isFinisher ? 4 : 8;
+        const spawnDelay = isFinisher ? 450 : 210;
+        if (elapsed - ultimoSpawn > spawnDelay && feixes.length < maxFeixes) {
           ultimoSpawn = elapsed;
           spawnFeixe();
+          if (!isFinisher && Math.random() < 0.6) spawnFeixe();
         }
 
-        // Movimento do player
         if (mousePressed) {
-          player.x += (mouseTarget.x - player.x) * 0.18;
-          player.y += (mouseTarget.y - player.y) * 0.18;
+          player.x += (mouseTarget.x - player.x) * 0.28;
+          player.y += (mouseTarget.y - player.y) * 0.28;
         }
         player.x = Math.max(player.size / 2, Math.min(W - player.size / 2, player.x));
         player.y = Math.max(player.size / 2, Math.min(H - player.size / 2, player.y));
 
-        // Atualiza invulnerabilidade
         if (invulneravel) {
           invTimer -= 16;
           piscarContador++;
           if (invTimer <= 0) { invulneravel = false; piscarContador = 0; }
         }
 
-        // Fundo preto com grade lilás
-        ctx.fillStyle = '#000000';
+        ctx.fillStyle = '#020004';
         ctx.fillRect(0, 0, W, H);
-        ctx.fillStyle = 'rgba(224,64,251,0.08)';
-        pontosGrade.forEach(p => {
-          ctx.fillRect(p.x - 1, p.y - 1, 2, 2);
-        });
+        ctx.fillStyle = 'rgba(224,64,251,0.12)';
+        pontosGrade.forEach(p => { ctx.fillRect(p.x - 1, p.y - 1, 2, 2); });
 
-        // Atualiza e desenha feixes
         for (let i = feixes.length - 1; i >= 0; i--) {
           const f = feixes[i];
           f.timer -= dt;
 
           if (f.fase === 'telegraph') {
-            // Linha pontilhada (telegrama)
             ctx.save();
-            ctx.strokeStyle = 'rgba(200,100,255,0.6)';
-            ctx.lineWidth = 3;
-            ctx.setLineDash([8, 6]);
+            ctx.strokeStyle = 'rgba(255,100,255,0.85)';
+            ctx.lineWidth = 2.5;
+            ctx.setLineDash([6, 4]);
             ctx.beginPath();
             ctx.moveTo(f.p1.x, f.p1.y);
             ctx.lineTo(f.p2.x, f.p2.y);
             ctx.stroke();
-            ctx.setLineDash([]);
             ctx.restore();
 
             if (f.timer <= 0) {
               f.fase = 'laser';
-              f.timer = 0.8;
-              f.totalTimer = 0.8;
+              f.timer = 0.45;
             }
           } else if (f.fase === 'laser') {
-            // Laser ativo
             ctx.save();
             ctx.strokeStyle = '#e040fb';
-            ctx.lineWidth = 8;
+            ctx.lineWidth = 9;
             ctx.shadowColor = '#e040fb';
-            ctx.shadowBlur = 15;
+            ctx.shadowBlur = 18;
             ctx.beginPath();
             ctx.moveTo(f.p1.x, f.p1.y);
             ctx.lineTo(f.p2.x, f.p2.y);
             ctx.stroke();
             ctx.restore();
 
-            // Hit detection com laser ativo
             if (!invulneravel) {
               const dist = distPontoLinha(player.x, player.y, f.p1.x, f.p1.y, f.p2.x, f.p2.y);
-              if (dist < player.size) {
+              if (dist < player.size + 2) {
                 hits++;
                 invulneravel = true;
-                invTimer = 800;
-                this._shake(8);
+                invTimer = 350;
+                this._shake(9);
                 try { getAudio().playAccessDenied(); } catch (e) {}
               }
             }
@@ -1021,7 +952,6 @@ export class VersusMinigames {
           }
         }
 
-        // Desenha player (pisca durante invulnerabilidade)
         const mostrarPlayer = !invulneravel || (Math.floor(piscarContador / 4) % 2 === 0);
         if (mostrarPlayer) {
           ctx.save();
@@ -1032,19 +962,18 @@ export class VersusMinigames {
           ctx.restore();
         }
 
-        // HUD
         ctx.fillStyle = '#e040fb';
         ctx.font = 'bold 11px monospace';
         ctx.textAlign = 'left';
-        ctx.fillText(`IMPACTOS: ${hits}`, 10, 20);
+        ctx.fillText(`IMPACTOS: ${hits} | LASERS ATIVOS: ${feixes.length}`, 10, 20);
 
         if (timeLeft <= 0) {
           running = false;
           ac.abort();
           this._stop();
-          const score = Math.max(0.0, 1.0 - hits * 0.15);
+          const score = Math.max(0.0, 1.0 - hits * 0.12);
           const won = score > 0.0;
-          this._showResult(canvas, won, won ? `SOBREVIVEU! SCORE: ${score.toFixed(2)}` : 'VAPORIZADO! PONTUAÇÃO ZERO!');
+          this._showResult(canvas, won, won ? `SOBREVIVEU! SCORE: ${score.toFixed(2)}` : 'VAPORIZADO! PONTUACAO ZERO!');
           setTimeout(() => resolve({ won, score }), 950);
         }
       };
@@ -1052,16 +981,17 @@ export class VersusMinigames {
     });
   }
 
-  // L3-TV: Arena do Tigre — Barreira Eletrica (estilo Flappy Bird)
-  _tvDodge(color, name) {
+  // 5. TIGERVEX: CORREDOR TESLA INSANO (BARREIRAS RAPIDAS A CADA 600ms, ABERTURA 50px)
+  _tvDodge(color, name, opts = {}) {
     return new Promise(resolve => {
       const W = 520, H = 320;
-      const duration = 10000;
+      const duration = opts.duration || (opts.isFinisher ? 7000 : 13000);
+      const isFinisher = Boolean(opts.isFinisher);
 
       this.overlay.innerHTML = this._buildMgLayout(
         color, name,
-        'ARENA DO TIGRE — BARREIRA ELETRICA',
-        'DESVIE DAS BARREIRAS! ENCONTRE E PASSE PELA ABERTURA!',
+        'ARENA DO TIGRE - CORREDOR TESLA',
+        'VELOCIDADE MAXIMA! BARREIRAS HIPER-VELOZES! ENCONTRE AS FRESTAS!',
         duration, true
       );
 
@@ -1070,12 +1000,10 @@ export class VersusMinigames {
       const ctx = canvas.getContext('2d');
       const timerEl = this.overlay.querySelector('.vmg-timer');
 
-      // Player começa à esquerda
-      const player = { x: 80, y: H / 2, size: 14 };
+      const player = { x: 70, y: H / 2, size: 12 };
       let mousePressed = false;
       let mouseTarget = { x: player.x, y: player.y };
 
-      // Barreiras
       const barreiras = [];
       let hits = 0;
       let invulneravel = false;
@@ -1083,10 +1011,7 @@ export class VersusMinigames {
       let piscarContador = 0;
       let running = true;
       const start = performance.now();
-      let ultimoSpawn = -2500;
-
-      // Partículas de faísca decorativas
-      const faiscas = [];
+      let ultimoSpawn = -1500;
 
       const ac = new AbortController();
       const sig = ac.signal;
@@ -1107,14 +1032,14 @@ export class VersusMinigames {
       canvas.addEventListener('touchend', () => { mousePressed = false; }, { signal: sig });
 
       const spawnBarreira = () => {
-        const aberturaAltura = 80;
-        const aberturaY = 30 + Math.random() * (H - 60 - aberturaAltura);
+        const aberturaAltura = isFinisher ? 68 : 50;
+        const aberturaY = 20 + Math.random() * (H - 40 - aberturaAltura);
         barreiras.push({
           x: W,
-          largura: 40,
+          largura: 36,
           aberturaY,
           aberturaAltura,
-          vel: 2.5
+          vel: isFinisher ? 5.0 : 7.0
         });
       };
 
@@ -1125,108 +1050,70 @@ export class VersusMinigames {
         const timeLeft = Math.max(0, (duration - elapsed) / 1000);
         if (timerEl) timerEl.textContent = timeLeft.toFixed(1) + 's';
 
-        // Spawn de barreiras a cada 2.5s, máx 3
-        if (elapsed - ultimoSpawn > 2500 && barreiras.length < 3) {
+        const spawnDelay = isFinisher ? 1000 : 580;
+        const maxBars = isFinisher ? 4 : 7;
+        if (elapsed - ultimoSpawn > spawnDelay && barreiras.length < maxBars) {
           ultimoSpawn = elapsed;
           spawnBarreira();
         }
 
-        // Movimento do player — somente com mouse pressionado
         if (mousePressed) {
-          player.x += (mouseTarget.x - player.x) * 0.18;
-          player.y += (mouseTarget.y - player.y) * 0.18;
+          player.x += (mouseTarget.x - player.x) * 0.28;
+          player.y += (mouseTarget.y - player.y) * 0.28;
         }
         player.x = Math.max(player.size / 2, Math.min(W - player.size / 2, player.x));
         player.y = Math.max(player.size / 2, Math.min(H - player.size / 2, player.y));
 
-        // Atualiza invulnerabilidade
         if (invulneravel) {
           invTimer -= 16;
           piscarContador++;
           if (invTimer <= 0) { invulneravel = false; piscarContador = 0; }
         }
 
-        // Fundo preto com grade de circuito laranja fraca
-        ctx.fillStyle = '#000000';
+        ctx.fillStyle = '#020202';
         ctx.fillRect(0, 0, W, H);
-        ctx.strokeStyle = 'rgba(255,140,0,0.08)';
-        ctx.lineWidth = 1;
-        for (let gx = 0; gx < W; gx += 40) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
-        for (let gy = 0; gy < H; gy += 40) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
 
-        // Atualiza e desenha barreiras
         for (let i = barreiras.length - 1; i >= 0; i--) {
           const b = barreiras[i];
           b.x -= b.vel;
 
-          // Gera faíscas nas bordas da abertura
-          if (Math.random() < 0.4) {
-            faiscas.push({
-              x: b.x + b.largura / 2 + (Math.random() - 0.5) * b.largura,
-              y: b.aberturaY + (Math.random() < 0.5 ? 0 : b.aberturaAltura),
-              vx: (Math.random() - 0.5) * 2,
-              vy: (Math.random() - 0.5) * 2,
-              life: 1.0,
-              decay: 0.08
-            });
-          }
-
-          // Remove barreira que saiu pela esquerda
           if (b.x + b.largura < 0) {
             barreiras.splice(i, 1);
             continue;
           }
 
-          // Desenha bloco superior (topo até abertura)
-          ctx.fillStyle = '#333333';
-          ctx.strokeStyle = '#ff8c00';
-          ctx.lineWidth = 2;
-          // Bloco topo
+          ctx.fillStyle = '#ff8c00';
+          ctx.shadowColor = '#ff8c00';
+          ctx.shadowBlur = 10;
           ctx.fillRect(b.x, 0, b.largura, b.aberturaY);
-          ctx.strokeRect(b.x, 0, b.largura, b.aberturaY);
-          // Bloco base
-          ctx.fillRect(b.x, b.aberturaY + b.aberturaAltura, b.largura, H - (b.aberturaY + b.aberturaAltura));
-          ctx.strokeRect(b.x, b.aberturaY + b.aberturaAltura, b.largura, H - (b.aberturaY + b.aberturaAltura));
 
-          // Hit detection
+          const infY = b.aberturaY + b.aberturaAltura;
+          ctx.fillRect(b.x, infY, b.largura, H - infY);
+
+          ctx.fillStyle = '#ffff00';
+          ctx.fillRect(b.x - 2, b.aberturaY - 4, b.largura + 4, 4);
+          ctx.fillRect(b.x - 2, infY, b.largura + 4, 4);
+          ctx.shadowBlur = 0;
+
           if (!invulneravel) {
             const ph = player.size / 2;
             const px1 = player.x - ph, px2 = player.x + ph;
             const py1 = player.y - ph, py2 = player.y + ph;
             const bx1 = b.x, bx2 = b.x + b.largura;
-            // Verifica colisão com bloco superior
-            const hitTopo = px2 > bx1 && px1 < bx2 && py1 < b.aberturaY && py2 > 0;
-            // Verifica colisão com bloco base
-            const hitBase = px2 > bx1 && px1 < bx2 && py2 > b.aberturaY + b.aberturaAltura && py1 < H;
-            if (hitTopo || hitBase) {
-              hits++;
-              invulneravel = true;
-              invTimer = 800;
-              this._shake(8);
-              try { getAudio().playAccessDenied(); } catch (e) {}
+
+            if (px2 > bx1 && px1 < bx2) {
+              const naAbertura = py1 >= b.aberturaY && py2 <= (b.aberturaY + b.aberturaAltura);
+              if (!naAbertura) {
+                hits++;
+                invulneravel = true;
+                invTimer = 350;
+                this._shake(9);
+                try { getAudio().playAccessDenied(); } catch (e) {}
+              }
             }
           }
         }
 
-        // Atualiza e desenha faíscas
-        for (let i = faiscas.length - 1; i >= 0; i--) {
-          const f = faiscas[i];
-          f.x += f.vx;
-          f.y += f.vy;
-          f.life -= f.decay;
-          if (f.life <= 0) { faiscas.splice(i, 1); continue; }
-          ctx.save();
-          ctx.globalAlpha = f.life;
-          ctx.fillStyle = '#ff8c00';
-          ctx.shadowColor = '#ff8c00';
-          ctx.shadowBlur = 4;
-          ctx.beginPath();
-          ctx.arc(f.x, f.y, 2, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
-        }
-
-        // Desenha player (pisca durante invulnerabilidade)
         const mostrarPlayer = !invulneravel || (Math.floor(piscarContador / 4) % 2 === 0);
         if (mostrarPlayer) {
           ctx.save();
@@ -1237,19 +1124,18 @@ export class VersusMinigames {
           ctx.restore();
         }
 
-        // HUD
         ctx.fillStyle = '#ff8c00';
         ctx.font = 'bold 11px monospace';
         ctx.textAlign = 'left';
-        ctx.fillText(`IMPACTOS: ${hits}`, 10, 20);
+        ctx.fillText(`IMPACTOS: ${hits} | BARREIRAS: ${barreiras.length}`, 10, 20);
 
         if (timeLeft <= 0) {
           running = false;
           ac.abort();
           this._stop();
-          const score = Math.max(0.0, 1.0 - hits * 0.15);
+          const score = Math.max(0.0, 1.0 - hits * 0.12);
           const won = score > 0.0;
-          this._showResult(canvas, won, won ? `PASSOU! SCORE: ${score.toFixed(2)}` : 'BLOQUEADO! PONTUAÇÃO ZERO!');
+          this._showResult(canvas, won, won ? `PASSOU! SCORE: ${score.toFixed(2)}` : 'BLOQUEADO! PONTUACAO ZERO!');
           setTimeout(() => resolve({ won, score }), 950);
         }
       };
@@ -1257,83 +1143,6 @@ export class VersusMinigames {
     });
   }
 
-  // ════════════════════════════════════════════════════════════════
-  // HELPERS
-  // ════════════════════════════════════════════════════════════════
-  _buildMgLayout(color, name, title, instruction, duration, isCanvas = false) {
-    const h = isCanvas ? 320 : 280;
-    return `
-      <div class="vmg-wrap" style="border-color: ${color}; box-shadow: 0 0 50px ${color}33, inset 0 0 30px rgba(0,0,0,0.95);">
-        <div class="vmg-header" style="color:${color}">
-          <span>[ ${name.toUpperCase()} // ${title.toUpperCase()} ]</span>
-          <span style="font-size:0.75rem;opacity:0.7;letter-spacing:1px;">TERMINAL PROTOCOL v4.2</span>
-        </div>
-        <div class="vmg-command-badge" style="background: rgba(255, 215, 0, 0.12); border: 1px solid #ffd700; color: #ffd700; padding: 6px 12px; font-weight: 900; font-size: 0.92rem; text-shadow: 0 0 10px #ffd700; text-align: center; margin: 4px 0 8px 0; border-radius: 4px; letter-spacing: 1px;">
-          // COMANDO: ${instruction.toUpperCase()} //
-        </div>
-        <div class="vmg-status-bar" style="border-color: ${color}44;">
-          <div class="vmg-timer-box">
-            <span class="vmg-timer-label">TEMPO RESTANTE:</span>
-            <span class="vmg-timer" style="color:${color}">—</span>
-          </div>
-          <div class="vmg-score-box">
-            <span class="vmg-score-label">COTA DE ACERTOS:</span>
-            <span class="vmg-score" style="color:#ffd700">0/8</span>
-          </div>
-        </div>
-        <div class="vmg-canvas-container" style="border-color: ${color}55;">
-          <canvas width="560" height="${h}" style="width:100%;height:auto;display:block;background:#02060b;"></canvas>
-        </div>
-      </div>
-    `;
-  }
-
-  _showResult(canvas, success, msg) {
-    const ctx = canvas.getContext('2d');
-    const W = canvas.width, H = canvas.height;
-    ctx.fillStyle = success ? 'rgba(0,255,136,0.22)' : 'rgba(255,51,68,0.22)';
-    ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = success ? '#00ff88' : '#ff3344';
-    ctx.font = 'bold 20px monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.shadowColor = ctx.fillStyle;
-    ctx.shadowBlur = 24;
-    ctx.fillText(success ? '[SUCESSO] ' + msg : '[FALHA] ' + msg, W / 2, H / 2);
-    ctx.shadowBlur = 0;
-    if (success) {
-      try { getAudio().playPowerUp(); } catch (e) {}
-    } else {
-      try { getAudio().playAccessDenied(); } catch (e) {}
-    }
-  }
-
-  _distToSeg(p, a, b) {
-    const dx = b.x - a.x, dy = b.y - a.y;
-    if (dx === 0 && dy === 0) return Math.hypot(p.x - a.x, p.y - a.y);
-    const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy)));
-    return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
-  }
-
-  _segmentsIntersect(a, b, c, d) {
-    const det = (b.x - a.x) * (d.y - c.y) - (b.y - a.y) * (d.x - c.x);
-    if (Math.abs(det) < 1e-9) return false;
-    const l = ((d.y - c.y) * (d.x - a.x) + (c.x - d.x) * (d.y - a.y)) / det;
-    const m = ((a.y - b.y) * (d.x - a.x) + (b.x - a.x) * (d.y - a.y)) / det;
-    return l >= 0 && l <= 1 && m >= 0 && m <= 1;
-  }
-
-  _lightenHex(hex, amount) {
-    const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
-    const l = (c) => Math.min(255, Math.floor(c + (255 - c) * amount));
-    return `rgb(${l(r)},${l(g)},${l(b)})`;
-  }
-
-  _darkenHex(hex, amount) {
-    const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
-    const d = (c) => Math.max(0, Math.floor(c * (1 - amount)));
-    return `rgb(${d(r)},${d(g)},${d(b)})`;
-  }
 
   // ═══════════════════════════════════════════════════════════════════════
   // L2 NOVO: POINT-AND-CLICK / GESTOS ESPECÍFICOS PADRONIZADOS POR ROBÔ

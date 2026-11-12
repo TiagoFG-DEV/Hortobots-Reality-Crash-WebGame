@@ -1451,17 +1451,21 @@ body.graphics-low .crt-monitor-container {
 }
 
 .pokemon-card-slot.active-party::before {
-  content: "[ COMBATENTE ATIVO ]";
+  content: "ATIVO";
   position: absolute;
-  top: -11px;
-  right: 16px;
+  top: -12px;
+  right: 14px;
   background: var(--term-accent);
   color: #000;
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 900;
+  line-height: 1.2;
   padding: 2px 10px;
-  letter-spacing: 1px;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  letter-spacing: 1.5px;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.75);
+  z-index: 100;
+  border-radius: 2px;
+  pointer-events: none;
 }
 
 .pokemon-card-header {
@@ -1886,7 +1890,9 @@ body.graphics-low .crt-monitor-container {
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 14px;
   overflow-y: auto;
+  padding-top: 18px;
   padding-right: 6px;
+  padding-bottom: 28px;
 }
 
 .pokemon-card-slot {
@@ -1909,14 +1915,19 @@ body.graphics-low .crt-monitor-container {
 .pokemon-card-slot.active-party::before {
   content: "ATIVO";
   position: absolute;
-  top: -10px;
-  right: 12px;
+  top: -12px;
+  right: 14px;
   background: var(--term-accent);
   color: #000;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 900;
-  padding: 2px 8px;
-  letter-spacing: 1px;
+  line-height: 1.2;
+  padding: 2px 10px;
+  letter-spacing: 1.5px;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.75);
+  z-index: 100;
+  border-radius: 2px;
+  pointer-events: none;
 }
 
 .pokemon-card-header {
@@ -10081,7 +10092,7 @@ body.combat-terminals-enabled .versus-narrative-terminal {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr));
   align-content: start;
   gap: 14px;
-  padding: 12px 6px 28px;
+  padding: 18px 6px 28px;
 }
 
 .pokemon-card-slot {
@@ -10102,19 +10113,21 @@ body.combat-terminals-enabled .versus-narrative-terminal {
 }
 
 .pokemon-card-slot.active-party::before {
-  content: "[ ATIVO ]";
+  content: "ATIVO";
   position: absolute;
-  top: -11px;
+  top: -12px;
   right: 14px;
   background: var(--term-accent);
   color: #000;
   font-size: 0.72rem;
   font-weight: 900;
-  padding: 2px 8px;
+  line-height: 1.2;
+  padding: 2px 10px;
   letter-spacing: 1.5px;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
-  z-index: 10;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.75);
+  z-index: 100;
   border-radius: 2px;
+  pointer-events: none;
 }
 
 .party-id-header {
