@@ -5,6 +5,7 @@
 // ═══════════════════════════════════════════════════════════════════
 import { VERSUS_ARENA_THEMES, VersusParallaxRenderer } from './versus-themes.js';
 import { combatSprites, COMBAT_SPRITE_STATES } from './combat-sprites.js';
+import { ShieldVisualFX } from './shield-fx.js';
 
 export class VersusBoard {
   constructor(canvas) {
@@ -949,10 +950,8 @@ export class VersusBoard {
       }
     }
 
-    // 4. Shield Holographic Arcs
-    if (robot.shield) {
-      this._drawShield(robot, x, y, r);
-    }
+    // 4. Shield Holographic Back Aura (Halo Traseiro de Difusão)
+    ShieldVisualFX.drawBack(ctx, robot, x, y, this.time);
 
     // 4.5 Stun (Tonto) Effect
     if (robot.isStunned) {
@@ -995,7 +994,10 @@ export class VersusBoard {
     this._drawAvatarGlyph(robot.id, x, y, r, robot.color);
     }
 
-    // 8. Dynamic HP Bar & Energy Indicators below
+    // 8. Shield Holographic Front Dome (Cúpula 3D Frontal sobre o Sprite)
+    ShieldVisualFX.drawFront(ctx, robot, x, y, this.time);
+
+    // 9. Dynamic HP Bar & Energy Indicators below
     this._drawRobotMiniHUD(robot, x, y, r);
   }
 
@@ -1253,24 +1255,7 @@ export class VersusBoard {
   _drawBreakingShields() {
     const ctx = this.ctx;
     this.expandingShieldBreaks.forEach(sb => {
-      ctx.save();
-      ctx.globalAlpha = Math.max(0, Math.min(1, sb.alpha));
-      ctx.shadowColor = sb.color || '#00e5ff';
-      ctx.shadowBlur = 16;
-      ctx.strokeStyle = sb.color || '#00e5ff';
-      ctx.lineWidth = 3.5;
-
-      ctx.beginPath();
-      ctx.arc(sb.x, sb.y, sb.r, 0, Math.PI * 2);
-      ctx.stroke();
-
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 1.8;
-      ctx.beginPath();
-      ctx.arc(sb.x, sb.y, sb.r * 0.93, 0, Math.PI * 2);
-      ctx.stroke();
-
-      ctx.restore();
+      ShieldVisualFX.drawBreakEffect(ctx, sb);
     });
   }
 

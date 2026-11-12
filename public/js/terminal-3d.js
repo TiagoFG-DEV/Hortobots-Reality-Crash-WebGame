@@ -1777,6 +1777,102 @@ export class Terminal3DEngine {
     this.preTitleIsWarping = false;
   }
 
+  _createCoroaCoinTexture() {
+    const cvs = document.createElement('canvas');
+    cvs.width = 1024;
+    cvs.height = 1024;
+    const ctx = cvs.getContext('2d');
+
+    const grad = ctx.createRadialGradient(512, 512, 60, 512, 512, 500);
+    grad.addColorStop(0, '#fffbe6');
+    grad.addColorStop(0.25, '#f5cb23');
+    grad.addColorStop(0.65, '#d4af37');
+    grad.addColorStop(1, '#664d08');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 1024, 1024);
+
+    // Círculo interno metálico escuro
+    ctx.fillStyle = '#14041a';
+    ctx.beginPath();
+    ctx.arc(512, 512, 340, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ffd700';
+    ctx.lineWidth = 16;
+    ctx.stroke();
+
+    // Diadema / Base da Coroa
+    ctx.fillStyle = '#ffd700';
+    ctx.beginPath();
+    if (typeof ctx.roundRect === 'function') {
+      ctx.roundRect(280, 640, 464, 60, 12);
+    } else {
+      ctx.rect(280, 640, 464, 60);
+    }
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 6;
+    ctx.stroke();
+
+    // Joias da Base
+    const gemColors = ['#00e5ff', '#ff3344', '#00ff66', '#ff3344', '#00e5ff'];
+    for (let g = 0; g < 5; g++) {
+      ctx.fillStyle = gemColors[g];
+      ctx.beginPath();
+      ctx.arc(326 + g * 90, 670, 16, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // 5 Pontas Majestosas da Coroa
+    ctx.fillStyle = '#f5cb23';
+    ctx.beginPath();
+    ctx.moveTo(280, 640);
+    ctx.lineTo(260, 400); // Ponta 1 (esquerda)
+    ctx.lineTo(380, 520);
+    ctx.lineTo(420, 320); // Ponta 2
+    ctx.lineTo(512, 480);
+    ctx.lineTo(512, 260); // Ponta 3 (centro mais alto)
+    ctx.lineTo(512, 480);
+    ctx.lineTo(604, 320); // Ponta 4
+    ctx.lineTo(644, 520);
+    ctx.lineTo(764, 400); // Ponta 5 (direita)
+    ctx.lineTo(744, 640);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = '#fffbe6';
+    ctx.lineWidth = 8;
+    ctx.stroke();
+
+    // Joias Reluzentes nas Pontas da Coroa
+    const crownTips = [
+      { x: 260, y: 400, r: 18, color: '#00e5ff' },
+      { x: 420, y: 320, r: 22, color: '#ff3344' },
+      { x: 512, y: 260, r: 28, color: '#00e5ff' },
+      { x: 604, y: 320, r: 22, color: '#ff3344' },
+      { x: 764, y: 400, r: 18, color: '#00e5ff' }
+    ];
+
+    crownTips.forEach(tip => {
+      ctx.fillStyle = tip.color;
+      ctx.beginPath();
+      ctx.arc(tip.x, tip.y, tip.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 5;
+      ctx.stroke();
+    });
+
+    // Inscrição COROA abaixo da coroa
+    ctx.font = '900 48px monospace';
+    ctx.fillStyle = '#ffd700';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = '#ffd700';
+    ctx.shadowBlur = 12;
+    ctx.fillText('COROA', 512, 760);
+
+    return new THREE.CanvasTexture(cvs);
+  }
+
   // =========================================================================
   // 7. MOEDA 3D IDLE (Para a Tela de Duelo de Iniciativa)
   // =========================================================================
@@ -1785,64 +1881,54 @@ export class Terminal3DEngine {
     if (!container || typeof THREE === 'undefined') return null;
 
     container.innerHTML = '';
-    const width = container.clientWidth || 300;
-    const height = container.clientHeight || 300;
+    const width = 140;
+    const height = 140;
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100);
-    camera.position.set(0, 0, 10);
+    const camera = new THREE.PerspectiveCamera(46, 1, 0.1, 100);
+    camera.position.set(0, 0, 11);
     camera.lookAt(0, 0, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(this._getPixelRatio());
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.domElement.style.width = '100%';
+    renderer.domElement.style.height = '100%';
+    renderer.domElement.style.display = 'block';
+    renderer.domElement.style.margin = '0 auto';
     container.appendChild(renderer.domElement);
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.4);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.8);
     scene.add(ambientLight);
 
-    const mainLight = new THREE.DirectionalLight(0xfff5cc, 2.8);
+    const mainLight = new THREE.DirectionalLight(0xfff5cc, 3.2);
     mainLight.position.set(6, 16, 10);
     scene.add(mainLight);
 
-    const rimLight = new THREE.PointLight(0x00ff66, 2.5, 30);
+    const rimLight = new THREE.PointLight(0x00ff66, 2.8, 30);
     rimLight.position.set(-8, -2, 6);
     scene.add(rimLight);
 
-    const cyanLight = new THREE.PointLight(0x00e5ff, 2.2, 30);
+    const cyanLight = new THREE.PointLight(0x00e5ff, 2.5, 30);
     cyanLight.position.set(8, 2, -6);
     scene.add(cyanLight);
 
     const caraTexture = this._createCaraCoinTexture();
-    
-    // Simplificando textura da coroa para idle
-    const cvs = document.createElement('canvas');
-    cvs.width = 1024; cvs.height = 1024;
-    const ctx = cvs.getContext('2d');
-    const grad = ctx.createRadialGradient(512, 512, 60, 512, 512, 500);
-    grad.addColorStop(0, '#fffbe6'); grad.addColorStop(0.25, '#f5cb23');
-    grad.addColorStop(0.65, '#d4af37'); grad.addColorStop(1, '#664d08');
-    ctx.fillStyle = grad; ctx.fillRect(0, 0, 1024, 1024);
-    
-    ctx.fillStyle = '#14041a'; ctx.beginPath(); ctx.arc(512, 512, 340, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 16; ctx.stroke();
-    // Diadema
-    ctx.fillStyle = '#ffd700'; ctx.beginPath(); ctx.roundRect(280, 640, 464, 60, 12); ctx.fill();
-    const coroaTexture = new THREE.CanvasTexture(cvs);
+    const coroaTexture = this._createCoroaCoinTexture();
 
     const goldEdgeMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.96, roughness: 0.22 });
     const faceCaraMat = new THREE.MeshStandardMaterial({ map: caraTexture, color: 0xe0d4b0, metalness: 0.82, roughness: 0.34 });
     const faceCoroaMat = new THREE.MeshStandardMaterial({ map: coroaTexture, metalness: 0.88, roughness: 0.28 });
 
     const coinGroup = new THREE.Group();
-    const coinCylinderGeo = new THREE.CylinderGeometry(3.6, 3.6, 0.65, 20, 1, false);
+    const coinCylinderGeo = new THREE.CylinderGeometry(3.6, 3.6, 0.65, 28, 1, false);
     const coinMesh = new THREE.Mesh(coinCylinderGeo, [goldEdgeMat, faceCaraMat, faceCoroaMat]);
     
     // Rotate coin mesh to show face correctly on Y axis spin
     coinMesh.rotation.x = Math.PI / 2;
     coinGroup.add(coinMesh);
 
-    const rimGeo = new THREE.TorusGeometry(3.38, 0.16, 12, 20);
+    const rimGeo = new THREE.TorusGeometry(3.38, 0.16, 12, 28);
     const rimMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.98, roughness: 0.18 });
     const frontRim = new THREE.Mesh(rimGeo, rimMat); frontRim.position.z = 0.32; coinGroup.add(frontRim);
     const backRim = new THREE.Mesh(rimGeo, rimMat); backRim.position.z = -0.32; coinGroup.add(backRim);
@@ -1852,7 +1938,7 @@ export class Terminal3DEngine {
     let animId = null;
     const animate = () => {
       animId = requestAnimationFrame(animate);
-      coinGroup.rotation.y += 0.02; // Giro lento em pé
+      coinGroup.rotation.y += 0.025; // Giro suave e contínuo
       renderer.render(scene, camera);
     };
     animate();

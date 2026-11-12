@@ -1,4 +1,5 @@
 import { combatSprites, COMBAT_SPRITE_STATES } from './combat-sprites.js';
+import { ShieldVisualFX } from './shield-fx.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // story-board.js — Tabuleiro Canvas 2D Tático do Modo História (Invasão)
@@ -893,6 +894,9 @@ export class StoryBoard {
       ctx.restore();
     }
 
+    // 4.5 Shield Holographic Back Aura (Halo Traseiro de Difusão)
+    ShieldVisualFX.drawBack(ctx, robot, x, y, this.time);
+
     const spriteState = isActing && (!robot.spriteState || robot.spriteState === COMBAT_SPRITE_STATES.IDLE)
       ? COMBAT_SPRITE_STATES.AWAITING_ACTION
       : (robot.spriteState || COMBAT_SPRITE_STATES.IDLE);
@@ -936,6 +940,9 @@ export class StoryBoard {
     const code = robot.code || this._normalizeBotId(robot.id, robot.name);
     this._drawAvatarGlyph(code, x, y, r, robot.color);
     }
+
+    // 6.5 Shield Holographic Front Dome (Cúpula 3D Frontal sobre o Sprite)
+    ShieldVisualFX.drawFront(ctx, robot, x, y, this.time);
 
     // 7. Mini HUD (HP Bar, Ghost Damage, Energy Pips e Nome)
     this._drawRobotMiniHUD(robot, x, y, r, isAllied);

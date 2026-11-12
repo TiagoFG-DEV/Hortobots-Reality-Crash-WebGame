@@ -1643,6 +1643,9 @@ function runCoinDuelUI(countdown = 3, isTiebreak = false) {
   headsBtn.className = 'versus-coin-choice-btn heads';
   tailsBtn.className = 'versus-coin-choice-btn tails';
   
+  overlay.classList.remove('hidden');
+  isCoinDuelResolved = false;
+
   if (coinDisc) {
     coinDisc.className = 'versus-coin-disc';
     coinDisc.style.background = 'transparent'; // Remove a imagem 2D de background do CSS
@@ -1657,9 +1660,6 @@ function runCoinDuelUI(countdown = 3, isTiebreak = false) {
       window.currentIdleCoin = engine3D.renderIdle3DCoin('versusCoinDisc');
     }
   }
-
-  overlay.classList.remove('hidden');
-  isCoinDuelResolved = false;
 
   let currentCount = countdown;
   if (countdownEl) {

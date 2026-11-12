@@ -1048,3 +1048,55 @@ Padronização arquitetural e de gameplay dos minigames de combate para os 5 rob
   - Correção definitiva do corte superior da etiqueta `ATIVO`:
     - Adicionado `padding-top: 18px` ao `.party-pokemon-grid` para criar espaço vertical no topo da área de rolagem, evitando que o posicionamento negativo do badge encoste ou seja cortado pela caixa delimitadora.
     - Padronização rigorosa de `.pokemon-card-slot.active-party::before`: `content: "ATIVO"`, `top: -12px`, `right: 14px`, `z-index: 100`, `line-height: 1.2`, `padding: 2px 10px`, `box-shadow: 0 0 12px rgba(255, 215, 0, 0.75)`, garantindo renderização nítida, legível e sobreposta ao retângulo do card sem nenhum truncamento de borda.
+
+
+---
+
+### [12/11/2026 - 16:30] Quadruplicação de Dificuldade nos Minigames de Esquiva e Ajuste Fino do Badge ATIVO
+
+- **Quadruplicação da Dificuldade dos Minigames de Esquiva (Nível 1 & Paridade Total)**:
+  - **Duração Estendida**: Tempo dos minigames de esquiva elevado para 13.0 segundos (exigência de resistência e concentração contínua sob fogo cruzado).
+  - **Escala de Tempo Frenética**: Reflexos baseados na janela de 0.20s como unidade tática padrão do jogo.
+  - **Dino-Byte (`_dbDodge`)**:
+    - Chuva torrencial de meteoritos pequenos (bolinhas vermelhas pontiagudas e incandescentes com brilho interno).
+    - Densidade extrema na tela: mais de 30 a 45 meteoritos ativos simultaneamente.
+    - Cadência de spawn a cada 60ms em rajadas contínuas.
+    - Velocidades variando entre rápido e hiper-rápido (6.5 a 12.5 px/frame, ~1.5x a 2x a velocidade limite do jogador).
+    - Tempo de invulnerabilidade (i-frame) pós-dano reduzido para 220ms.
+  - **Cowputer-Moo (`_cpDodge`)**:
+    - Triplo feixe magnético rotativo (3 braços de laço independentes com velocidades orbitais aceleradas de até 0.35 rad/frame).
+    - Taxa de contração e convergência da borda elétrica elevada para 5.2px/s.
+    - Janela de colisão e aceleração agressiva forçando micro-movimentações perto do epicentro.
+  - **Penlinux (`_plDodge`)**:
+    - Avalanche contínua de estalactites gélidas com spawn a cada 180ms e velocidades entre 7.0 e 13.0 px/frame.
+    - Rajadas de vento polar de alta pressão alternando a cada 1.4s com empuxo de 0.90, forçando o jogador contra as bordas congeladas.
+  - **Pavabyte (`_pbDodge`)**:
+    - Telegraphs de linha pontilhada relâmpago de apenas 0.20s antes do disparo real do laser térmico.
+    - Disparos cruzados (horizontais, verticais e diagonais) gerando redes de feixes simultâneos (até 8 linhas ativas).
+    - Intervalo de spawn de novos feixes reduzido para 220ms.
+  - **TigerVex (`_tvDodge`)**:
+    - Corredor de pulsos eletromagnéticos gigantes avançando em velocidade hiper-rápida (7.0 px/frame).
+    - Abertura de escape extremamente estreita (50px).
+    - Intervalo de surgimento encurtado para 580ms.
+- **Ajuste e Sobreposição Visual do Badge ATIVO na Party (`terminal.css`)**:
+  - Correção definitiva do corte superior da etiqueta `ATIVO`:
+    - Adicionado `padding-top: 18px` ao `.party-pokemon-grid` para criar espaço vertical no topo da área de rolagem, evitando que o posicionamento negativo do badge encoste ou seja cortado pela caixa delimitadora.
+    - Padronização rigorosa de `.pokemon-card-slot.active-party::before`: `content: "ATIVO"`, `top: -12px`, `right: 14px`, `z-index: 100`, `line-height: 1.2`, `padding: 2px 10px`, `box-shadow: 0 0 12px rgba(255, 215, 0, 0.75)`, garantindo renderização nítida, legível e sobreposta ao retângulo do card sem nenhum truncamento de borda.
+
+
+---
+
+### [12/11/2026 - 16:50] Correção de Execução dos Minigames, Escudos Holográficos 3D Padronizados e Alinhamento da Moeda 3D
+
+- **Restauração dos Helpers de Layout dos Minigames (`public/js/versus-minigames.js`)**:
+  - Reintegrados os métodos de layout e utilitários (`_buildMgLayout`, `_showResult`, `_distToSeg`, `_segmentsIntersect`, `_lightenHex`, `_darkenHex`), sanando o erro de execução `TypeError: this._buildMgLayout is not a function` tanto no Modo História quanto no Modo Versus.
+  - Minigames de esquiva (Nível 1), ação e point-and-click (Nível 2) e finalizadores (Nível 3) 100% operacionais e fluidos.
+- **Motor Visual de Escudos Padronizado (`public/js/shield-fx.js`)**:
+  - Criada a classe `ShieldVisualFX`, compartilhada por `versus-board.js` e `story-board.js`.
+  - **Camada Traseira (`drawBack`)**: Halo de difusão de energia atmosférica desenhado atrás do robô (`createRadialGradient`).
+  - **Camada Frontal (`drawFront`)**: Cúpula holográfica esférica translúcida 3D desenhada na frente do sprite (raio 48-50px envolvendo os 84x84px do robô), com anel de contenção neon pulsante, anel segmentado rotativo, 4 emissores orbitais de campo de força, scanlines horizontais internas e badge holográfico no topo com HP e rodadas restantes.
+  - **Efeito de Quebra (`drawBreakEffect`)**: Onda de choque expansiva com fragmentos e estilhaços geométricos em dispersão radial.
+  - Implementado tanto no Modo Versus quanto no Modo História (quando em postura de defesa ou com escudo ativo).
+- **Ajuste Fino e Centralização da Moeda 3D do Duelo ao Meio-Dia (`terminal-3d.js`, `versus-ui.js`, `terminal.css`)**:
+  - Resolução do problema de sobreposição e descentralização: o overlay agora é exibido antes da inicialização do Three.js, e o container `.versus-coin-stage` / `.versus-coin-disc` foi configurado com dimensões fixas de 140x140px com `display: flex; justify-content: center; align-items: center`, mantendo a moeda centralizada acima dos botões de Cara e Coroa.
+  - **Textura Oficial da Coroa**: Implementado o método `_createCoroaCoinTexture()` com a Coroa Imperial completa (diadema, 5 pontas majestosas, joias coloridas em ciano/vermelho, ornatos e inscrição dourada), renderizada com precisão na face de trás da moeda 3D em rotação idle.

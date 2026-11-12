@@ -1143,6 +1143,83 @@ export class VersusMinigames {
     });
   }
 
+  // ════════════════════════════════════════════════════════════════
+  // HELPERS
+  // ════════════════════════════════════════════════════════════════
+  _buildMgLayout(color, name, title, instruction, duration, isCanvas = false) {
+    const h = isCanvas ? 320 : 280;
+    return `
+      <div class="vmg-wrap" style="border-color: ${color}; box-shadow: 0 0 50px ${color}33, inset 0 0 30px rgba(0,0,0,0.95);">
+        <div class="vmg-header" style="color:${color}">
+          <span>[ ${name.toUpperCase()} // ${title.toUpperCase()} ]</span>
+          <span style="font-size:0.75rem;opacity:0.7;letter-spacing:1px;">TERMINAL PROTOCOL v4.2</span>
+        </div>
+        <div class="vmg-command-badge" style="background: rgba(255, 215, 0, 0.12); border: 1px solid #ffd700; color: #ffd700; padding: 6px 12px; font-weight: 900; font-size: 0.92rem; text-shadow: 0 0 10px #ffd700; text-align: center; margin: 4px 0 8px 0; border-radius: 4px; letter-spacing: 1px;">
+          // COMANDO: ${instruction.toUpperCase()} //
+        </div>
+        <div class="vmg-status-bar" style="border-color: ${color}44;">
+          <div class="vmg-timer-box">
+            <span class="vmg-timer-label">TEMPO RESTANTE:</span>
+            <span class="vmg-timer" style="color:${color}">—</span>
+          </div>
+          <div class="vmg-score-box">
+            <span class="vmg-score-label">COTA DE ACERTOS:</span>
+            <span class="vmg-score" style="color:#ffd700">0/8</span>
+          </div>
+        </div>
+        <div class="vmg-canvas-container" style="border-color: ${color}55;">
+          <canvas width="560" height="${h}" style="width:100%;height:auto;display:block;background:#02060b;"></canvas>
+        </div>
+      </div>
+    `;
+  }
+
+  _showResult(canvas, success, msg) {
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    ctx.fillStyle = success ? 'rgba(0,255,136,0.22)' : 'rgba(255,51,68,0.22)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = success ? '#00ff88' : '#ff3344';
+    ctx.font = 'bold 20px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = ctx.fillStyle;
+    ctx.shadowBlur = 24;
+    ctx.fillText(success ? '[SUCESSO] ' + msg : '[FALHA] ' + msg, W / 2, H / 2);
+    ctx.shadowBlur = 0;
+    if (success) {
+      try { getAudio().playPowerUp(); } catch (e) {}
+    } else {
+      try { getAudio().playAccessDenied(); } catch (e) {}
+    }
+  }
+
+  _distToSeg(p, a, b) {
+    const dx = b.x - a.x, dy = b.y - a.y;
+    if (dx === 0 && dy === 0) return Math.hypot(p.x - a.x, p.y - a.y);
+    const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy)));
+    return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+  }
+
+  _segmentsIntersect(a, b, c, d) {
+    const det = (b.x - a.x) * (d.y - c.y) - (b.y - a.y) * (d.x - c.x);
+    if (Math.abs(det) < 1e-9) return false;
+    const l = ((d.y - c.y) * (d.x - a.x) + (c.x - d.x) * (d.y - a.y)) / det;
+    const m = ((a.y - b.y) * (d.x - a.x) + (b.x - a.x) * (d.y - a.y)) / det;
+    return l >= 0 && l <= 1 && m >= 0 && m <= 1;
+  }
+
+  _lightenHex(hex, amount) {
+    const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+    const l = (c) => Math.min(255, Math.floor(c + (255 - c) * amount));
+    return `rgb(${l(r)},${l(g)},${l(b)})`;
+  }
+
+  _darkenHex(hex, amount) {
+    const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+    const d = (c) => Math.max(0, Math.floor(c * (1 - amount)));
+    return `rgb(${d(r)},${d(g)},${d(b)})`;
+  }
 
   // ═══════════════════════════════════════════════════════════════════════
   // L2 NOVO: POINT-AND-CLICK / GESTOS ESPECÍFICOS PADRONIZADOS POR ROBÔ
