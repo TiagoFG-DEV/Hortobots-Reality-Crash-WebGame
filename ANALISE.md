@@ -987,3 +987,30 @@ Padronização arquitetural e de gameplay dos minigames de combate para os 5 rob
   - Rebaixamento e reposicionamento de `.crt-vignette` e `.crt-fisheye-overlay` (`z-index: 0`) e suavização da vinheta para nunca escurecer ou omitir botões e inputs interativos.
   - Rebaixamento de `.title-bottom-shadow` (`z-index: 1`) e elevação do conteúdo do menu `.title-foreground-content` (`z-index: 15 !important`).
   - Correção do badge de status da Party (`.pokemon-card-slot.active-party::before`), garantindo texto `ATIVO`, `z-index: 100 !important`, margem superior adequada e sobreposição impecável sobre o retângulo dourado.
+---
+
+### [12/11/2026 - 16:15] Calibração de Dificuldade (+120%) nos Minigames de Esquiva e Ação
+
+- **Dino-Byte (`db_dodge`)**:
+  - Meteoritos redesenhados como esferas vermelhas velozes com rastro incandescente e núcleo quente amarelo.
+  - Lote de projéteis ativos aumentado drasticamente (até 24 na tela, spawn em pares a cada 160ms).
+  - Velocidade base elevada de 2.0 para 5.8px/frame com aceleração contínua (+120%).
+  - Tempo de invulnerabilidade pós-dano reduzido de 800ms para 450ms.
+- **Cowputer-Moo (`cp_dodge`)**:
+  - Introduzido sistema de dois laços rotativos concêntricos girando em direções opostas (horário e anti-horário).
+  - Velocidade de rotação dobrada (máx 0.28 rad/frame).
+  - Taxa de convergência da borda elétrica de perigo mais que dobrada (4.2px/s em vez de 2.0px/s).
+- **Penlinux (`pl_dodge`)**:
+  - Frequência de queda de estalactites triplicada (spawn a cada 420ms em vez de 1200ms).
+  - Velocidade vertical elevada para 5.0 a 7.5px/frame.
+  - Força de arraste do vento ártico aumentada em +120% (0.65 de empuxo).
+- **Pavabyte (`pb_dodge`)**:
+  - Telegraph pontilhado prévio acelerado de 0.5s para 0.28s.
+  - Feixes simultâneos aumentados para até 6 feixes cruzados, com spawn ocorrendo a cada 480ms.
+- **TigerVex (`tv_dodge`)**:
+  - Velocidade horizontal das barreiras dobrada (5.4px/frame em vez de 2.5px/frame).
+  - Abertura de passagem estreitada para 62px.
+  - Intervalo de surgimento de barreiras reduzido de 2500ms para 1100ms.
+- **Minigames Nível 2 (Ação & Point-and-Click)**:
+  - `db_bite`: Tempo de vida das janelas cortado pela metade (1.4s), taxa de spawn intensificada (340ms).
+  - `pl_sequence` e `pb_prism`: Janela de tolerância e tempo limite encurtados exigindo reflexos imediatos.

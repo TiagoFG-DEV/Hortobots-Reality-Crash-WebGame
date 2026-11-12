@@ -1378,7 +1378,7 @@ export class VersusMinigames {
           x, y, w, h,
           title: titles[Math.floor(Math.random() * titles.length)],
           spawnTime: now,
-          life: 3000
+          life: 1400
         });
       };
 
@@ -1442,7 +1442,7 @@ export class VersusMinigames {
         if (timerEl) timerEl.textContent = `${remaining.toFixed(1)}s`;
         if (scoreEl) scoreEl.textContent = `MORDIDAS: ${bitten}/${totalSpawned}`;
 
-        if (now - lastSpawn > 800 && totalSpawned < 15) {
+        if (now - lastSpawn > 340 && totalSpawned < 24) {
           spawnWindow(now);
           lastSpawn = now;
         }
@@ -1698,7 +1698,7 @@ export class VersusMinigames {
   _plSequence(color, name) {
     return new Promise(resolve => {
       const W = 520, H = 320;
-      const duration = 15000;
+      const duration = 9000;
       this.overlay.innerHTML = this._buildMgLayout(
         color, name,
         'DANÇA POLAR — SEQUÊNCIA DO HEE-HEE',
@@ -1842,7 +1842,7 @@ export class VersusMinigames {
   _pbPrism(color, name) {
     return new Promise(resolve => {
       const W = 520, H = 320;
-      const duration = 15000;
+      const duration = 9000;
       this.overlay.innerHTML = this._buildMgLayout(
         color, name,
         'ALINHAMENTO PRISMÁTICO — FEIXE ESPECTRAL',
