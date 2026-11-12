@@ -3,14 +3,27 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QUEZAS-DOS</title>
-  <link rel="icon" type="image/png" href="/img/cara-icon.png">
-  <link rel="shortcut icon" type="image/png" href="/img/cara-icon.png">
-  <link rel="apple-touch-icon" href="/img/cara-icon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>HORTOBOTS: REALITY CRASH // ANDROID WEB APP</title>
+  
+  <!-- METATAGS PWA E ANDROID WEB APP -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#00ff66">
+  <meta name="application-name" content="Hortobots">
+  
+  <!-- ÍCONES OFICIAIS DO JOGO (TELA INICIAL, BARRA DE APPS E NOTIFICAÇÕES) -->
+  <link rel="icon" type="image/png" sizes="192x192" href="./img/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="./img/icon-512.png">
+  <link rel="shortcut icon" type="image/png" href="./img/cara-icon.png">
+  <link rel="apple-touch-icon" href="./img/icon-192.png">
+
   <link rel="stylesheet" href="/css/terminal.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script type="module" src="./js/android-app.js"></script>
 </head>
 
 <body>
@@ -90,6 +103,14 @@
       </div>
 
       <div class="term-controls">
+        <div id="pwaOfflineBadge" class="biome-status-badge" style="display:none; color: #ffd700; border-color: #ffd700; font-size:0.75rem;">
+          [ OFFLINE // LOCAL ]
+        </div>
+        <button class="term-btn term-icon-nav-btn" id="btnToggleFullscreenMobile" type="button" title="Alternar Tela Cheia">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+          </svg>
+        </button>
         <button class="term-btn term-icon-nav-btn home-nav-btn hidden" id="termHomeBtn" type="button"
           title="Início / Menu Principal">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">

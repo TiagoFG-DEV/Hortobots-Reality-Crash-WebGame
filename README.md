@@ -1,6 +1,15 @@
-# HORTOBOTS: REALITY CRASH // A TORRE VIRTUAL (v1.1 OFICIAL)
+# HORTOBOTS: REALITY CRASH // ANDROID WEB APP EDITION
+
+> [!CAUTION]
+> ### ⚠️ ATENÇÃO: BRANCH DEDICADA APLICATIVO ANDROID (NÃO MERGEAR NA MAIN) ⚠️
+> Esta branch (`android-webapp`) é uma **versão independente dedicada para Web App Android (PWA / Mobile)**.
+> **ELA NÃO PODE SER UNIFICADA OU MERGEADA NA BRANCH `main`**, pois possui configurações de tela inteira, Service Worker offline, manifesto PWA e adaptações móveis que futuramente constituirão um repositório próprio.
 
 <p align="center">
+  <img src="https://img.shields.io/badge/Platform-Android_Web_App_(PWA)-00ff66?style=for-the-badge&logo=android&logoColor=black" alt="Android Web App">
+  <img src="https://img.shields.io/badge/Offline-Service_Worker_Cache-ffd700?style=for-the-badge&logo=pwa&logoColor=black" alt="Offline Ready">
+  <img src="https://img.shields.io/badge/Display-Fullscreen_Mobile-00e5ff?style=for-the-badge&logo=googlechrome&logoColor=black" alt="Fullscreen">
+</p>
   <a href="https://hortobots-reality-crash-webgame.onrender.com" target="_blank">
     <img src="https://img.shields.io/badge/JOGAR_ONLINE-ONRENDER.COM-00ff66?style=for-the-badge&logo=googlechrome&logoColor=black" alt="Jogar Online">
   </a>
