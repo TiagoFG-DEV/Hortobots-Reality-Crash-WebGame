@@ -892,3 +892,60 @@ Antes do envio: conferir que o remoto continua na base esperada, executar a suí
 ### Resultado da publicação
 
 O pacote 1.1 passou por `npm test` (dez grupos do simulador Versus), checagem sintática de 12 arquivos JavaScript, leitura dos JSONs de versão/arte e `git -c core.whitespace=cr-at-eol diff --check`. A resposta `/api/server-info` foi atualizada no código para `1.1.0`; não houve teste de uma implantação pública em execução nesta rodada. Os 21 blobs foram comparados aos identificadores locais, e a árvore publicada coincidiu com a árvore do commit local. O primeiro commit remoto da versão é `2742d589158c344cd848e2c673bc70f906776cfb`, confirmado em `main`. O envio via Git local aguardou autenticação; a publicação foi concluída pela conexão GitHub autenticada nesta sessão. As alterações independentes do checkout principal continuam locais.
+
+
+---
+
+## Diário de modificações e padronização — 12 de novembro de 2026
+
+### Objetivo da sessão
+Padronização arquitetural e de gameplay dos minigames de combate para os 5 robôs jogáveis (Dino-Byte, Cowputer-Moo, Penlinux, Tigervex e Pavabyte) em ambos os modos de jogo (História e Versus). Resolução de problemas de usabilidade visual decorrentes de sobreposição indevida de sombras CRT nas bordas da interface e corte do indicador de status da Party.
+
+### Linha do tempo das alterações técnicas
+
+#### 1. Padronização do ciclo de 3 ataques por robô (História e Versus)
+- **Eliminação de divergências de minigames:** Redução da lista de habilidades de 5 opções legadas para 3 ataques padronizados em ambos os modos:
+  - **Ataque Nível 1 (L1 - Esquiva):** Baixo custo de energia, dano escalonado. O jogador manobra o núcleo evitando obstáculos para manter a carga máxima (100%). Cada acerto diminui ~15% da carga. Se mantiver 100%, há 30% de chance de acerto crítico (+50% de dano).
+  - **Ataque Nível 2 (L2 - Point-and-Click):** Custo intermediário de energia, dano superior. Foco em cliques pontuais e gestos rápidos acessíveis a web app / mobile.
+  - **Ataque Nível 3 (L3 - Finalizador Supremo):** Custo total da energia do robô. O dano equivale à soma dos dois ataques base acrescida de 50% de bônus (`(Dano L1 + Dano L2) * 1.5`).
+
+#### 2. Implementação dos novos motores em `public/js/versus-minigames.js`
+- **Controle universal de esquiva:** O núcleo segue o cursor/toque exclusivamente sob pressão contínua do botão esquerdo (`pointerdown`), cessando movimento imediato ou aplicando inércia ao soltar (`pointerup`). Event listeners são vinculados a instâncias de `AbortController` para descarte estrito sem vazamento de memória.
+- **Minigames de Esquiva (L1):**
+  - `db_dodge` (Dino-Byte): Chuva torrencial de meteoritos térmicos com rastro de plasma e velocidade progressiva.
+  - `cp_dodge` (Cowputer-Moo): Laço elíptico rotatório acelerado em torno do centro e contração de zona periférica perigosa.
+  - `pl_dodge` (Penlinux): Física de gelo escorregadio com estalactites em queda livre e vetor de vento polar oscilante a cada 2 segundos.
+  - `pb_dodge` (Pavabyte): Feixes de laser óptico que telegrafam com linhas pontilhadas 0.5s antes da emissão do feixe de dano contínuo.
+  - `tv_dodge` (Tigervex): Barreiras sólidas em translação lateral contendo janelas específicas de passagem (estilo Flappy Bird).
+- **Minigames de Point-and-Click (L2):**
+  - `db_bite` (Dino-Byte): Aparecimento de janelas de alerta de erro do terminal; ao clicar, a janela é bipartida com física de queda e rotação angular estilo *Fruit Ninja*.
+  - `cp_lasso` (Cowputer-Moo): Giro orbital do cursor pelo jogador medindo a variância radial do círculo executado para energizar o laço.
+  - `pl_sequence` (Penlinux): Grade de 15 nós numéricos gerados sem sobreposição geométrica para seleção cronológica de 1 a 15.
+  - `pb_prism` (Pavabyte): 6 prismas espectrais em alinhamento que rotacionam em 90° no sentido anti-horário ao clique para conectar o feixe emissor ao receptor por 1.2s contínuos.
+  - `tv_slash` (Tigervex): Deslizes verticais rápidos de cima para baixo cobrindo as colunas da tela CRT, simulando o rasgo da quarta parede revelando o vácuo digital estelar.
+
+#### 3. Integração com o Modo História em `public/js/terminal-minigames.js`
+- Atualização do catálogo `VERSUS_MINIGAMES` e do mapeamento `getMinigameInstruction` com os novos IDs.
+- Reformulação do resolvedor assíncrono para decodificar retornos estruturados `{ won, score }` além de booleanos puros, calculando multiplicadores de dano dinâmicos (entre 0.50x e 1.50x com base na integridade do núcleo).
+
+#### 4. Sincronização dos bancos de dados em `terminal-game.js` e `versus-engine.js`
+- `ROBOT_TEMPLATES` em `terminal-game.js`: Atualizados os ataques de Dino-Byte, Cowputer-Moo, Penlinux, Tigervex e Pavabyte para referenciarem `db_dodge`/`db_bite`, `cp_dodge`/`cp_lasso`, `pl_dodge`/`pl_sequence`, `tv_dodge`/`tv_slash` e `pb_dodge`/`pb_prism`, além dos finalizadores de dano recalculado.
+- `VERSUS_ROBOTS` em `versus-engine.js`: Atualizados os ataques nos 5 arquétipos competitivos garantindo paridade total de habilidades e balanceamento de custos.
+
+#### 5. Correção de sobreposição visual das sombras CRT em `public/css/terminal.css`
+- **Diagnóstico:** `.crt-monitor-container`, `.crt-fisheye-overlay` e `.static-vignette` aplicavam `box-shadow inset` de 100px a 180px com opacidades escuras de 0.95 a 0.97, escurecendo drasticamente e omitindo textos e botões na periferia da tela.
+- **Resolução:**
+  - Redução do `box-shadow inset` do container principal de 180px para 60px (`rgba(0, 0, 0, 0.60)`).
+  - Rebaixamento do `z-index` dos overlays fixos `.crt-fisheye-overlay` e `.crt-vignette` para ficarem sob a camada do terminal, preservando a vinheta e o aspecto de curvatura de tubo sem bloquear a visualização da UI.
+  - Suavização do `.static-vignette` de 100px para 55px.
+
+#### 6. Correção do badge de status "ATIVO" da Party em `public/css/terminal.css`
+- **Diagnóstico:** A classe `.pokemon-card-slot` possuía `overflow: hidden`, truncando a etiqueta `::before` posicionada com coordenadas negativas no topo (`top: -11px`).
+- **Resolução:**
+  - Alteração de `overflow: hidden` para `overflow: visible` em `.pokemon-card-slot`.
+  - Inclusão explícita de `position: relative`, `z-index: 10` e etiqueta padronizada `[ ATIVO ]` com fundo amarelo dourado neon sobrepondo perfeitamente a moldura superior do card.
+
+### Validação de conformidade técnica
+- **Sintaxe:** Todos os módulos alterados foram validados via `node --check` com zero falhas registradas.
+- **Suíte automatizada:** `npm test` executou o script de validação de combate e regras em `debug-versus.js`, obtendo aprovação em todos os 10 grupos de teste.
+- **Regras autorais:** Preservada a proibição irrevogável de emojis no código e interface, bem como a paleta terminal CRT e arquivos de assets canônicos.

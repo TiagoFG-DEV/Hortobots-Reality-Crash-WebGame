@@ -43,11 +43,10 @@ const ROBOT_TEMPLATES = {
     xpGrowthPerLevel: 35,
     growthStats: { hp: 8, atk: 3, movePowerGrowth: 1 },
     moves: [
-      { id: 'jurassic_bite', name: 'Expurgo Térmico', cost: 2, basePower: 12, minigame: 'click_targets', unlockLevel: 1, desc: 'Clique veloz: feche pelo menos 15 terminais antes do tempo acabar.' },
-      { id: 'flame_claw', name: 'Garras QTE', cost: 4, basePower: 20, minigame: 'arrow_qte', unlockLevel: 4, desc: 'Comandos direcionais de alta velocidade nas setas do teclado.' },
-      { id: 'draconic_firewall', name: 'Expurgo Térmico Supremo', cost: 6, basePower: 30, minigame: 'click_targets', unlockLevel: 6, desc: 'Expurgo fênico potencializado: feche os terminais com o dobro da intensidade antes do tempo acabar.' }
+      { id: 'db_lvl1', name: 'Chuva de Meteoritos', cost: 2, basePower: 12, minigame: 'db_dodge', unlockLevel: 1, desc: 'Desvie dos meteoritos — quanto mais esquivar, maior o dano!' },
+      { id: 'db_lvl2', name: 'Mordida Dracônica', cost: 4, basePower: 20, minigame: 'db_bite', unlockLevel: 1, desc: 'Clique nas telas de erro para o Dino-Byte morder e destruí-las!' }
     ],
-    finisher: { id: 'lizards_roar', name: 'Rugido Hiperbárico do Lagarto', cost: 10, basePower: 45, unlockLevel: 2, minigame: 'chained_finisher', desc: 'O golpe supremo que desencadeia os 3 protocolos em sequência rápida!' }
+    finisher: { id: 'lizards_roar', name: 'Rugido Hiperbárico do Lagarto', cost: 10, basePower: 46, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Combinação devastadora: meteoritos + mordidas + finalização suprema!' }
   },
   COWPUTER: {
     id: 'cowputer',
@@ -63,11 +62,10 @@ const ROBOT_TEMPLATES = {
     xpGrowthPerLevel: 40,
     growthStats: { hp: 10, atk: 2, movePowerGrowth: 1 },
     moves: [
-      { id: 'stampede_ram', name: 'Laço Circular', cost: 2, basePower: 11, minigame: 'circle_click', unlockLevel: 1, desc: 'Clique de precisão no momento exato em que o ponteiro cruzar o anel polar.' },
-      { id: 'horn_overload', name: 'Código do Xerife', cost: 4, basePower: 19, minigame: 'dual_keys', unlockLevel: 4, desc: 'Alternância rápida de teclas duplas no teclado.' },
-      { id: 'western_dust', name: 'Sincronizador Supremo', cost: 6, basePower: 28, minigame: 'circle_click', unlockLevel: 6, desc: 'Sincronização avançada de nós do osciloscilóspio em ordem numérica com ritmo acelerado.' }
+      { id: 'cp_lvl1', name: 'Arena do Xerife', cost: 2, basePower: 11, minigame: 'cp_dodge', unlockLevel: 1, desc: 'Desvie do laço giratório — permaneça no centro para sobreviver!' },
+      { id: 'cp_lvl2', name: 'Giro do Laço', cost: 4, basePower: 19, minigame: 'cp_lasso', unlockLevel: 1, desc: 'Pressione e gire o mouse em círculo perfeito para acumular energia!' }
     ],
-    finisher: { id: 'bovine_voltage', name: 'Choque Bovino de Alta Tensão', cost: 10, basePower: 42, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Ataque sísmico total encadeando laço, código e saque rápido!' }
+    finisher: { id: 'bovine_voltage', name: 'Choque Bovino de Alta Tensão', cost: 10, basePower: 44, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Laço em espiral + giro perfeito + descarga final suprema!' }
   },
   PENLINUX: {
     id: 'penlinux',
@@ -83,11 +81,10 @@ const ROBOT_TEMPLATES = {
     xpGrowthPerLevel: 35,
     growthStats: { hp: 7, atk: 4, movePowerGrowth: 1 },
     moves: [
-      { id: 'frost_slide', name: 'Condutor Criogênico', cost: 2, basePower: 13, minigame: 'swipe_path', unlockLevel: 1, desc: 'Arraste o cursor pelo traço de gelo condutor sem sair da linha.' },
-      { id: 'glacier_quake', name: 'Combo Glaciar', cost: 4, basePower: 22, minigame: 'typing_sprint', unlockLevel: 4, desc: 'Digitação veloz de palavras-chave árticas no teclado.' },
-      { id: 'dance_pass', name: 'Condutor Criogênico Supremo', cost: 6, basePower: 32, minigame: 'swipe_path', unlockLevel: 6, desc: 'Condução de sinal ártico em circuito mais longo e complexo sem perder o contato.' }
+      { id: 'frost_slide', name: 'Tundra Ártica', cost: 2, basePower: 13, minigame: 'pl_dodge', unlockLevel: 1, desc: 'Desvie das estalactites com controle escorregadio e vento gelado!' },
+      { id: 'pl_sequence_dance', name: 'Sequência do Hee-Hee', cost: 4, basePower: 22, minigame: 'pl_sequence', unlockLevel: 1, desc: 'Clique nos números de 1 a 15 em ordem correta!' }
     ],
-    finisher: { id: 'hee_hee_avalanche', name: 'Avalanche Ártica do Hee-Hee', cost: 10, basePower: 48, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Coreografia devastadora executando os 3 ritmos em cadeia!' }
+    finisher: { id: 'hee_hee_avalanche', name: 'Avalanche Ártica do Hee-Hee', cost: 10, basePower: 50, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Coreografia devastadora executando os ritmos em cadeia!' }
   },
   TIGERVEX: {
     id: 'tigervex',
@@ -103,11 +100,10 @@ const ROBOT_TEMPLATES = {
     xpGrowthPerLevel: 45,
     growthStats: { hp: 9, atk: 4, movePowerGrowth: 1 },
     moves: [
-      { id: 'titanium_slash', name: 'Talho Veloz', cost: 2, basePower: 14, minigame: 'slash_draw', unlockLevel: 1, desc: 'Arraste velozmente o traço de corte para fatiar o circuito condutor.' },
-      { id: 'plasma_pounce', name: 'Sequência Tesla', cost: 4, basePower: 24, minigame: 'arrow_sequence', unlockLevel: 4, desc: 'Sequência de setas direcionais nas bobinas Tesla sem cometer erros.' },
-      { id: 'white_fang', name: 'Lâmina Suprema de Titânio', cost: 6, basePower: 34, minigame: 'slash_draw', unlockLevel: 6, desc: 'Corte devastador em alta velocidade: tráço amplo e preciso para fatiar os circuitos condutores principais.' }
+      { id: 'titanium_slash', name: 'Arena do Tigre', cost: 2, basePower: 14, minigame: 'tv_dodge', unlockLevel: 1, desc: 'Desvie das barreiras elétricas — encontre e passe pela abertura!' },
+      { id: 'tv_slash_move', name: 'Rasgo de Dimensão', cost: 4, basePower: 24, minigame: 'tv_slash', unlockLevel: 1, desc: 'Deslize de cima para baixo para rasgar a dimensão!' }
     ],
-    finisher: { id: 'thunder_core', name: 'Ruptura do Núcleo Trovão', cost: 10, basePower: 50, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Liberação total da usina interna em feixe colinear triplo!' }
+    finisher: { id: 'thunder_core', name: 'Ruptura do Núcleo Trovão', cost: 10, basePower: 52, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Barreiras + rasgo + ruptura total do núcleo trovão!' }
   },
   PAVABYTE: {
     id: 'pavabyte',
@@ -123,11 +119,10 @@ const ROBOT_TEMPLATES = {
     xpGrowthPerLevel: 40,
     growthStats: { hp: 8, atk: 3, movePowerGrowth: 1 },
     moves: [
-      { id: 'prism_flare', name: 'Reflexo Prismático', cost: 2, basePower: 12, minigame: 'mirror_sequence', unlockLevel: 1, desc: 'Clique nos espelhos na ordem correta para convergir o feixe de luz.' },
-      { id: 'spectral_tail', name: 'Teste de Reação', cost: 4, basePower: 22, minigame: 'reaction_test', unlockLevel: 4, desc: 'Reação relâmpago ao sinal óptico no terminal.' },
-      { id: 'code_cascade', name: 'Alinhamento Prismático Supremo', cost: 6, basePower: 32, minigame: 'mirror_sequence', unlockLevel: 6, desc: 'Alinhamento de espelhos em sequência extensa: mais espelhos, mais precisão exigida para convergir o feixe.' }
+      { id: 'prism_flare', name: 'Câmara de Cristal', cost: 2, basePower: 12, minigame: 'pb_dodge', unlockLevel: 1, desc: 'Desvie dos feixes de luz — atenção à linha pontilhada que anuncia o laser!' },
+      { id: 'pb_prism_align', name: 'Alinhamento Prismático', cost: 4, basePower: 22, minigame: 'pb_prism', unlockLevel: 1, desc: 'Clique nos prismas para rotacionar e alinhar o feixe de luz!' }
     ],
-    finisher: { id: 'rainbow_laser', name: 'Matriz Laser Arco-Íris', cost: 10, basePower: 46, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Bombardeio orbital óptico convergente executado em 3 fases!' }
+    finisher: { id: 'rainbow_laser', name: 'Matriz Laser Arco-Íris', cost: 10, basePower: 48, unlockLevel: 2, minigame: 'chained_finisher', desc: 'Câmara + prismas + bombardeio orbital final!' }
   },
   QUEZADILHAS: {
     id: 'quezas_avatar',
