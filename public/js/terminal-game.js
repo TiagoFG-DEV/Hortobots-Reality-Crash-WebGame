@@ -138,8 +138,8 @@ const ROBOT_TEMPLATES = {
     xpGrowthPerLevel: 35,
     growthStats: { hp: 7, atk: 3, movePowerGrowth: 1 },
     moves: [
-      { id: 'quezas_hack', name: 'Expurgo de Dados', cost: 2, basePower: 12, minigame: 'click_targets', unlockLevel: 1, desc: 'Feche os terminais de sobreaquecimento antes do overflow.' },
-      { id: 'quezas_strike', name: 'Talho de Dados', cost: 4, basePower: 18, minigame: 'arrow_qte', unlockLevel: 1, desc: 'QTE direcional de alta velocidade.' }
+      { id: 'quezas_hack', name: 'Expurgo de Dados', cost: 2, basePower: 12, minigame: 'db_dodge', unlockLevel: 1, desc: 'Feche os terminais de sobreaquecimento antes do overflow.' },
+      { id: 'quezas_strike', name: 'Talho de Dados', cost: 4, basePower: 18, minigame: 'db_bite', unlockLevel: 1, desc: 'QTE direcional de alta velocidade.' }
     ]
   }
 };
@@ -1715,8 +1715,8 @@ export class TerminalGameApp {
           defenseStance: null,
           isLethalWithstandTriggered: false,
           moves: quezasTmpl.moves || [
-            { id: 'quezas_hack', name: 'Expurgo de Dados', cost: 2, basePower: 12, minigame: 'click_targets', desc: 'Feche os terminais de sobreaquecimento antes do overflow.' },
-            { id: 'quezas_strike', name: 'Talho de Dados', cost: 4, basePower: 18, minigame: 'arrow_qte', desc: 'QTE direcional de alta velocidade.' }
+            { id: 'quezas_hack', name: 'Expurgo de Dados', cost: 2, basePower: 12, minigame: 'db_dodge', desc: 'Feche os terminais de sobreaquecimento antes do overflow.' },
+            { id: 'quezas_strike', name: 'Talho de Dados', cost: 4, basePower: 18, minigame: 'db_bite', desc: 'QTE direcional de alta velocidade.' }
           ]
         };
 

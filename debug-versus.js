@@ -4,9 +4,9 @@
  * Run: node debug-versus.js
  */
 
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // ANSI COLORS
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const C = {
   reset: '\x1b[0m',
   bold: '\x1b[1m',
@@ -24,28 +24,28 @@ const C = {
 
 const log = (msg, color = C.white) => console.log(`${color}${msg}${C.reset}`);
 const header = (msg) => {
-  console.log(`\n${C.bold}${C.cyan}${'═'.repeat(60)}${C.reset}`);
+  console.log(`\n${C.bold}${C.cyan}${'â•'.repeat(60)}${C.reset}`);
   console.log(`${C.bold}${C.cyan}  ${msg}${C.reset}`);
-  console.log(`${C.bold}${C.cyan}${'═'.repeat(60)}${C.reset}`);
+  console.log(`${C.bold}${C.cyan}${'â•'.repeat(60)}${C.reset}`);
 };
 const section = (msg) => {
-  console.log(`\n${C.bold}${C.yellow}── ${msg} ──${C.reset}`);
+  console.log(`\n${C.bold}${C.yellow}â”€â”€ ${msg} â”€â”€${C.reset}`);
 };
 const ok = (msg) => console.log(`  ${C.green}[OK] ${msg}${C.reset}`);
 const fail = (msg) => console.log(`  ${C.red}[FALHA] ${msg}${C.reset}`);
-const info = (msg) => console.log(`  ${C.dim}» ${msg}${C.reset}`);
+const info = (msg) => console.log(`  ${C.dim}Â» ${msg}${C.reset}`);
 
-// ═══════════════════════════════════════════════════════════
-// ROBOT DEFINITIONS (VERSUS MODE — ALL LEVELED)
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ROBOT DEFINITIONS (VERSUS MODE â€” ALL LEVELED)
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const VERSUS_ROBOTS = {
   DB: {
     id: 'DB', name: 'Dino-Byte', color: 'RED',
     baseHp: 200, baseAtk: 5, baseEnergy: 0,
     attacks: [
-      { id: 'db_l1', name: 'Impacto Térmico', level: 1, energyCost: 0, minigame: 'click_targets' },
-      { id: 'db_l2', name: 'Garras QTE', level: 2, energyCost: 1, minigame: 'arrow_qte' },
-      { id: 'db_l3', name: 'Firewall Infernal', level: 3, energyCost: 2, minigame: 'gravity_dodge' },
+      { id: 'db_l1', name: 'Impacto TÃ©rmico', level: 1, energyCost: 0, minigame: 'db_dodge' },
+      { id: 'db_l2', name: 'Garras QTE', level: 2, energyCost: 1, minigame: 'db_bite' },
+      { id: 'db_l3', name: 'Firewall Infernal', level: 3, energyCost: 2, minigame: 'chained_finisher' },
     ],
     defense: {
       name: 'Escudo de Grupo',
@@ -63,18 +63,18 @@ const VERSUS_ROBOTS = {
     id: 'PL', name: 'Penlinux', color: 'CYAN',
     baseHp: 200, baseAtk: 5, baseEnergy: 0,
     attacks: [
-      { id: 'pl_l1', name: 'Deslize Glacial', level: 1, energyCost: 0, minigame: 'swipe_path' },
-      { id: 'pl_l2', name: 'Combo Glaciar', level: 2, energyCost: 1, minigame: 'typing_sprint' },
-      { id: 'pl_l3', name: 'Blizzard Plataforma', level: 3, energyCost: 2, minigame: 'platform_dodge' },
+      { id: 'pl_l1', name: 'Deslize Glacial', level: 1, energyCost: 0, minigame: 'pl_dodge' },
+      { id: 'pl_l2', name: 'Combo Glaciar', level: 2, energyCost: 1, minigame: 'pl_sequence' },
+      { id: 'pl_l3', name: 'Blizzard Plataforma', level: 3, energyCost: 2, minigame: 'chained_finisher' },
     ],
     defense: {
       name: 'Escudo do Atacante',
-      desc: 'Escudo azul de 10HP somente no robô que vai atacar.',
+      desc: 'Escudo azul de 10HP somente no robÃ´ que vai atacar.',
       shieldHp: 10, targets: 'attacker', shieldColor: 'BLUE',
     },
     support: {
       name: 'Cura HoT',
-      desc: '+3 HP por 5 rounds seguidos. Para se o robô cair.',
+      desc: '+3 HP por 5 rounds seguidos. Para se o robÃ´ cair.',
       effect: { type: 'hot', amount: 3, rounds: 5, target: 'one' },
       energyCost: 1,
     },
@@ -83,12 +83,12 @@ const VERSUS_ROBOTS = {
     id: 'CP', name: 'Cowputer-Moo', color: 'GOLD',
     baseHp: 200, baseAtk: 5, baseEnergy: 0,
     attacks: [
-      { id: 'cp_l1', name: 'Laço Circular', level: 1, energyCost: 0, minigame: 'circle_click' },
-      { id: 'cp_l2', name: 'Código do Xerife', level: 2, energyCost: 1, minigame: 'dual_keys' },
-      { id: 'cp_l3', name: 'Polvora Digital', level: 3, energyCost: 2, minigame: 'shooter_dodge' },
+      { id: 'cp_l1', name: 'LaÃ§o Circular', level: 1, energyCost: 0, minigame: 'cp_dodge' },
+      { id: 'cp_l2', name: 'CÃ³digo do Xerife', level: 2, energyCost: 1, minigame: 'cp_lasso' },
+      { id: 'cp_l3', name: 'Polvora Digital', level: 3, energyCost: 2, minigame: 'chained_finisher' },
     ],
     defense: {
-      name: 'Escudo Energético',
+      name: 'Escudo EnergÃ©tico',
       desc: 'Escudo amarelo de 10HP em si mesmo que concede +1 energia por round enquanto ativo.',
       shieldHp: 10, targets: 'self', shieldColor: 'YELLOW', energyPerRound: 1,
     },
@@ -103,13 +103,13 @@ const VERSUS_ROBOTS = {
     id: 'PB', name: 'Pavabyte', color: 'PINK',
     baseHp: 200, baseAtk: 5, baseEnergy: 0,
     attacks: [
-      { id: 'pb_l1', name: 'Reflexo Prismático', level: 1, energyCost: 0, minigame: 'mirror_sequence' },
-      { id: 'pb_l2', name: 'Teste de Reação', level: 2, energyCost: 1, minigame: 'reaction_test' },
-      { id: 'pb_l3', name: 'Órbita Caótica', level: 3, energyCost: 2, minigame: 'orbit_dodge' },
+      { id: 'pb_l1', name: 'Reflexo PrismÃ¡tico', level: 1, energyCost: 0, minigame: 'pb_dodge' },
+      { id: 'pb_l2', name: 'Teste de ReaÃ§Ã£o', level: 2, energyCost: 1, minigame: 'pb_prism' },
+      { id: 'pb_l3', name: 'Ã“rbita CaÃ³tica', level: 3, energyCost: 2, minigame: 'orbit_dodge' },
     ],
     defense: {
       name: 'Escudo Duplo',
-      desc: 'Escudo azul de 10HP nos outros 2 aliados (não em si).',
+      desc: 'Escudo azul de 10HP nos outros 2 aliados (nÃ£o em si).',
       shieldHp: 10, targets: 'others', shieldColor: 'BLUE',
     },
     support: {
@@ -123,12 +123,12 @@ const VERSUS_ROBOTS = {
     id: 'TV', name: 'Tigervex', color: 'ORANGE',
     baseHp: 200, baseAtk: 5, baseEnergy: 0,
     attacks: [
-      { id: 'tv_l1', name: 'Talho Veloz', level: 1, energyCost: 0, minigame: 'slash_draw' },
-      { id: 'tv_l2', name: 'Sequência Tesla', level: 2, energyCost: 1, minigame: 'arrow_sequence' },
-      { id: 'tv_l3', name: 'Coração de Ferro', level: 3, energyCost: 2, minigame: 'green_heart_dodge' },
+      { id: 'tv_l1', name: 'Talho Veloz', level: 1, energyCost: 0, minigame: 'tv_dodge' },
+      { id: 'tv_l2', name: 'SequÃªncia Tesla', level: 2, energyCost: 1, minigame: 'tv_slash' },
+      { id: 'tv_l3', name: 'CoraÃ§Ã£o de Ferro', level: 3, energyCost: 2, minigame: 'green_heart_dodge' },
     ],
     defense: {
-      name: 'Escudo Elétrico Fraco',
+      name: 'Escudo ElÃ©trico Fraco',
       desc: 'Escudo azul fraco de 5HP nos 3 aliados.',
       shieldHp: 5, targets: 'all', shieldColor: 'BLUE_WEAK',
     },
@@ -141,9 +141,9 @@ const VERSUS_ROBOTS = {
   },
 };
 
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // GAME STATE
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 class VersusGameState {
   constructor() {
     this.round = 1;
@@ -162,9 +162,9 @@ class VersusGameState {
   }
 }
 
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // ROBOT INSTANCE
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function createRobot(templateId, slot, side) {
   const template = VERSUS_ROBOTS[templateId];
   return {
@@ -182,9 +182,9 @@ function createRobot(templateId, slot, side) {
   };
 }
 
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // BOARD DISPLAY
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function displayBoard(state) {
   section('TABULEIRO 5x5');
   const grid = Array.from({ length: 5 }, () => Array(5).fill('  .  '));
@@ -222,9 +222,9 @@ function displayBoard(state) {
   });
 }
 
-// ═══════════════════════════════════════════════════════════
-// SIMULATE MINIGAME (mock — returns success/fail)
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// SIMULATE MINIGAME (mock â€” returns success/fail)
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function simulateMinigame(minigameId, difficulty = 'medium') {
   // In real game, this runs the actual minigame. Here we simulate a probability.
   const successRates = {
@@ -248,16 +248,16 @@ function simulateMinigame(minigameId, difficulty = 'medium') {
   return Math.random() < rate;
 }
 
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // SIMULATE COIN FLIP (defense)
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function simulateCoinFlip() {
   return Math.random() < 0.5; // 50/50
 }
 
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // CALCULATE ATTACK POWER (base + hit streak bonus)
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function calculateAttackPower(robot) {
   const hitCount = robot.attackHitsThisRound;
   let bonus = 0;
@@ -267,9 +267,9 @@ function calculateAttackPower(robot) {
   return robot.attackPower + bonus;
 }
 
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // APPLY DAMAGE (with shield logic)
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function applyDamage(attacker, target, targetTeam, rawDamage, state) {
   let damage = rawDamage;
 
@@ -286,14 +286,14 @@ function applyDamage(attacker, target, targetTeam, rawDamage, state) {
       targetTeam.forEach(r => { if (r.shield && r.shield.targets === 'all') r.shield = null; });
     } else if (target.shield.hp <= 0) {
       target.shield = null;
-      state.log(`  [ALERTA] Escudo de ${target.name} destruído!`);
+      state.log(`  [ALERTA] Escudo de ${target.name} destruÃ­do!`);
     }
   }
 
   // Apply remaining damage
   if (damage > 0) {
     target.currentHp = Math.max(0, target.currentHp - damage);
-    state.log(`  [DANO] ${target.name} recebe ${damage} de dano → HP: ${target.currentHp}/${target.baseHp}`);
+    state.log(`  [DANO] ${target.name} recebe ${damage} de dano â†’ HP: ${target.currentHp}/${target.baseHp}`);
   }
 
   // Check if dead
@@ -305,9 +305,9 @@ function applyDamage(attacker, target, targetTeam, rawDamage, state) {
   return false; // no kill
 }
 
-// ═══════════════════════════════════════════════════════════
-// ON KILL — award buffs
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ON KILL â€” award buffs
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function onKill(attacker, killerSide, state) {
   attacker.currentHp = Math.min(attacker.baseHp, attacker.currentHp + 15);
   attacker.currentEnergy += 3;
@@ -315,9 +315,9 @@ function onKill(attacker, killerSide, state) {
   state.log(`  [MEDALHA] KILL! ${attacker.name} ganhou +15HP, +3 Energia. Medalhas ${killerSide}: ${state.medals[killerSide]}`);
 }
 
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // APPLY SHIELD (defense action)
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function applyShield(robot, team, state) {
   const def = robot.defense;
   state.log(`  [ESCUDO] ${robot.name} ativou: ${def.name}`);
@@ -344,9 +344,9 @@ function applyShield(robot, team, state) {
   }
 }
 
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // APPLY SUPPORT
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function applySupport(robot, targetRobot, state) {
   if (robot.currentEnergy < robot.support.energyCost) {
     state.log(`  [ENERGIA] ${robot.name} sem energia para suporte!`);
@@ -358,14 +358,14 @@ function applySupport(robot, targetRobot, state) {
 
   if (eff.type === 'heal') {
     targetRobot.currentHp = Math.min(targetRobot.baseHp, targetRobot.currentHp + eff.amount);
-    state.log(`     +${eff.amount} HP → ${targetRobot.currentHp}HP`);
+    state.log(`     +${eff.amount} HP â†’ ${targetRobot.currentHp}HP`);
   } else if (eff.type === 'hot') {
     targetRobot.hotEffect = { amount: eff.amount, roundsLeft: eff.rounds };
     state.log(`     HoT: +${eff.amount}HP por ${eff.rounds} rounds`);
   } else if (eff.type === 'heal_energy') {
     targetRobot.currentHp = Math.min(targetRobot.baseHp, targetRobot.currentHp + eff.healAmount);
     targetRobot.currentEnergy += eff.energyAmount;
-    state.log(`     +${eff.healAmount}HP +${eff.energyAmount} Energia → ${targetRobot.currentHp}HP / ${targetRobot.currentEnergy}E`);
+    state.log(`     +${eff.healAmount}HP +${eff.energyAmount} Energia â†’ ${targetRobot.currentHp}HP / ${targetRobot.currentEnergy}E`);
   } else if (eff.type === 'heal_cost') {
     if (targetRobot.currentEnergy >= eff.targetEnergyCost) {
       targetRobot.currentEnergy -= eff.targetEnergyCost;
@@ -375,16 +375,16 @@ function applySupport(robot, targetRobot, state) {
       state.log(`     Alvo sem energia suficiente! Suporte cancelado.`);
     }
   } else if (eff.type === 'heal_all') {
-    // determined by team reference — pass in team via closure
+    // determined by team reference â€” pass in team via closure
     state.log(`     +${eff.amount}HP para todos os aliados`);
     // Applied externally
   }
   return true;
 }
 
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // REVIVE ROBOT
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function reviveRobot(deadRobot, state) {
   deadRobot.currentHp = Math.floor(deadRobot.baseHp / 2); // 100
   deadRobot.isAlive = true;
@@ -392,9 +392,9 @@ function reviveRobot(deadRobot, state) {
   state.log(`  [REVIVE] ${deadRobot.name} REVIVIDO com ${deadRobot.currentHp}HP!`);
 }
 
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // PROCESS HOT EFFECTS (at round start)
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function processHotEffects(team, state) {
   team.forEach(robot => {
     if (robot.hotEffect && robot.isAlive) {
@@ -413,9 +413,9 @@ function processHotEffects(team, state) {
   });
 }
 
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // SIMULATE FULL TURN (attacker side)
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function simulateTurn(state, attackerSide) {
   const isPlayer = attackerSide === 'PLAYER';
   const myTeam = isPlayer ? state.playerTeam : state.enemyTeam;
@@ -490,16 +490,16 @@ function simulateTurn(state, attackerSide) {
   return true;
 }
 
-// ═══════════════════════════════════════════════════════════
-// BOT AI — simple random-ish logic
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// BOT AI â€” simple random-ish logic
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function botTurn(state) {
   return simulateTurn(state, 'ENEMY');
 }
 
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // CHECK WIN
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function checkWin(state) {
   if (state.medals.PLAYER >= state.winCondition) return 'PLAYER';
   if (state.medals.ENEMY >= state.winCondition) return 'ENEMY';
@@ -509,24 +509,24 @@ function checkWin(state) {
   return null;
 }
 
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // DISPLAY STATUS
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function displayStatus(state) {
   section('STATUS DAS EQUIPES');
   
   console.log(`  ${C.cyan}PLAYER TEAM:${C.reset}`);
   state.playerTeam.forEach(r => {
-    const hpBar = '█'.repeat(Math.ceil(r.currentHp / 20)) + '░'.repeat(10 - Math.ceil(r.currentHp / 20));
-    const status = r.isAlive ? `${C.green}VIVO${C.reset}` : `${C.red}CAÍDO${C.reset}`;
+    const hpBar = 'â–ˆ'.repeat(Math.ceil(r.currentHp / 20)) + 'â–‘'.repeat(10 - Math.ceil(r.currentHp / 20));
+    const status = r.isAlive ? `${C.green}VIVO${C.reset}` : `${C.red}CAÃDO${C.reset}`;
     const shield = r.shield ? ` ${C.yellow}[ESCUDO:${r.shield.hp}HP]${C.reset}` : '';
     console.log(`    ${C.cyan}${r.name.padEnd(15)}${C.reset} HP: ${hpBar} ${r.currentHp}/${r.baseHp} E:${r.currentEnergy} ${status}${shield}`);
   });
 
   console.log(`\n  ${C.red}ENEMY TEAM:${C.reset}`);
   state.enemyTeam.forEach(r => {
-    const hpBar = '█'.repeat(Math.ceil(r.currentHp / 20)) + '░'.repeat(10 - Math.ceil(r.currentHp / 20));
-    const status = r.isAlive ? `${C.green}VIVO${C.reset}` : `${C.red}CAÍDO${C.reset}`;
+    const hpBar = 'â–ˆ'.repeat(Math.ceil(r.currentHp / 20)) + 'â–‘'.repeat(10 - Math.ceil(r.currentHp / 20));
+    const status = r.isAlive ? `${C.green}VIVO${C.reset}` : `${C.red}CAÃDO${C.reset}`;
     const shield = r.shield ? ` ${C.yellow}[ESCUDO:${r.shield.hp}HP]${C.reset}` : '';
     console.log(`    ${C.red}${r.name.padEnd(15)}${C.reset} HP: ${hpBar} ${r.currentHp}/${r.baseHp} E:${r.currentEnergy} ${status}${shield}`);
   });
@@ -534,21 +534,21 @@ function displayStatus(state) {
   console.log(`\n  [MEDALHAS] ${C.cyan}PLAYER: ${state.medals.PLAYER}${C.reset} | ${C.red}ENEMY: ${state.medals.ENEMY}${C.reset}`);
 }
 
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // RUN DEBUG SIMULATION
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 async function runDebug() {
-  header('HORTOBOTS — DEBUG VERSUS MODE v1.1');
+  header('HORTOBOTS â€” DEBUG VERSUS MODE v1.1');
 
-  // ─── TEST 1: Robot Selection ───
-  section('TESTE 1: Seleção de Robôs');
+  // â”€â”€â”€ TEST 1: Robot Selection â”€â”€â”€
+  section('TESTE 1: SeleÃ§Ã£o de RobÃ´s');
   const playerPicks = ['DB', 'PL', 'TV']; // player chooses 3 of 5
   const enemyPicks  = ['CP', 'PB', 'DB']; // bot picks (different order)
-  ok(`Player escolheu: ${playerPicks.join(' → ')}`);
-  ok(`Bot escolheu: ${enemyPicks.join(' → ')}`);
+  ok(`Player escolheu: ${playerPicks.join(' â†’ ')}`);
+  ok(`Bot escolheu: ${enemyPicks.join(' â†’ ')}`);
 
-  // ─── TEST 2: Create Game State ───
-  section('TESTE 2: Criação de Estado de Jogo');
+  // â”€â”€â”€ TEST 2: Create Game State â”€â”€â”€
+  section('TESTE 2: CriaÃ§Ã£o de Estado de Jogo');
   const state = new VersusGameState();
   
   state.playerTeam = playerPicks.map((id, i) => createRobot(id, i, 'PLAYER'));
@@ -557,12 +557,12 @@ async function runDebug() {
   ok(`Player team criado: ${state.playerTeam.map(r => `${r.name}(${r.currentHp}HP, 5ATK)`).join(', ')}`);
   ok(`Enemy team criado: ${state.enemyTeam.map(r => `${r.name}(${r.currentHp}HP, 5ATK)`).join(', ')}`);
 
-  // ─── TEST 3: Board Display ───
+  // â”€â”€â”€ TEST 3: Board Display â”€â”€â”€
   section('TESTE 3: Tabuleiro Inicial');
   displayBoard(state);
   ok('Tabuleiro renderizado (texto)');
 
-  // ─── TEST 4: Attack Power Scaling ───
+  // â”€â”€â”€ TEST 4: Attack Power Scaling â”€â”€â”€
   section('TESTE 4: Escalada de Poder por Hits');
   const testBot = createRobot('DB', 0, 'PLAYER');
   testBot.attackHitsThisRound = 0;
@@ -575,7 +575,7 @@ async function runDebug() {
   info(`DB (3 hits): ${calculateAttackPower(testBot)} de ataque (base + 3)`);
   ok('Sistema de escalada de poder verificado');
 
-  // ─── TEST 5: Shield System ───
+  // â”€â”€â”€ TEST 5: Shield System â”€â”€â”€
   section('TESTE 5: Sistema de Escudos');
   
   // DB group shield
@@ -587,21 +587,21 @@ async function runDebug() {
   const attk = createRobot('CP', 0, 'ENEMY');
   const victim = testTeam[1]; // PL has group shield
   applyDamage(attk, victim, testTeam, 7, state); // Less than shield
-  info(`Após ataque 7: ${victim.name} HP=${victim.currentHp}, Shield=${victim.shield ? victim.shield.hp : 'null'}`);
+  info(`ApÃ³s ataque 7: ${victim.name} HP=${victim.currentHp}, Shield=${victim.shield ? victim.shield.hp : 'null'}`);
 
-  applyDamage(attk, victim, testTeam, 15, state); // More than shield — break for all
-  info(`Após ataque 15: ${victim.name} HP=${victim.currentHp}, Shield=${victim.shield ? victim.shield.hp : 'QUEBRADO'}`);
+  applyDamage(attk, victim, testTeam, 15, state); // More than shield â€” break for all
+  info(`ApÃ³s ataque 15: ${victim.name} HP=${victim.currentHp}, Shield=${victim.shield ? victim.shield.hp : 'QUEBRADO'}`);
   info(`PL shield: ${testTeam[1].shield ? testTeam[1].shield.hp : 'NULL (quebrou)'}`);
   ok('Sistema de escudos verificado');
 
-  // ─── TEST 6: Support System ───
+  // â”€â”€â”€ TEST 6: Support System â”€â”€â”€
   section('TESTE 6: Sistema de Suporte');
   const supporter = createRobot('DB', 0, 'PLAYER');
   supporter.currentEnergy = 3;
   const supportTarget = createRobot('PL', 1, 'PLAYER');
   supportTarget.currentHp = 150;
   applySupport(supporter, supportTarget, state);
-  info(`Após suporte: ${supportTarget.name} HP=${supportTarget.currentHp}, ${supporter.name} Energy=${supporter.currentEnergy}`);
+  info(`ApÃ³s suporte: ${supportTarget.name} HP=${supportTarget.currentHp}, ${supporter.name} Energy=${supporter.currentEnergy}`);
 
   // PL HoT
   const hoter = createRobot('PL', 1, 'PLAYER');
@@ -614,21 +614,21 @@ async function runDebug() {
   // Process HoT
   const hotTeam = [hotTarget];
   processHotEffects(hotTeam, state);
-  info(`Após 1 round HoT: HP=${hotTarget.currentHp}, rounds left=${hotTarget.hotEffect ? hotTarget.hotEffect.roundsLeft : 'null'}`);
+  info(`ApÃ³s 1 round HoT: HP=${hotTarget.currentHp}, rounds left=${hotTarget.hotEffect ? hotTarget.hotEffect.roundsLeft : 'null'}`);
   ok('Sistema de suporte verificado');
 
-  // ─── TEST 7: Medal / Kill System ───
+  // â”€â”€â”€ TEST 7: Medal / Kill System â”€â”€â”€
   section('TESTE 7: Sistema de Medalhas e Kills');
   const killer = createRobot('TV', 2, 'PLAYER');
   killer.currentHp = 150;
   killer.currentEnergy = 2;
   state.medals = { PLAYER: 0, ENEMY: 0 };
   onKill(killer, 'PLAYER', state);
-  info(`Após kill: ${killer.name} HP=${killer.currentHp}, Energy=${killer.currentEnergy}, Medalhas PLAYER=${state.medals.PLAYER}`);
+  info(`ApÃ³s kill: ${killer.name} HP=${killer.currentHp}, Energy=${killer.currentEnergy}, Medalhas PLAYER=${state.medals.PLAYER}`);
   ok('Sistema de kill/medalhas verificado');
 
-  // ─── TEST 8: Full Turn Simulation ───
-  section('TESTE 8: Simulação de 5 Rounds Completos');
+  // â”€â”€â”€ TEST 8: Full Turn Simulation â”€â”€â”€
+  section('TESTE 8: SimulaÃ§Ã£o de 5 Rounds Completos');
   
   // Reset state
   state.playerTeam = playerPicks.map((id, i) => createRobot(id, i, 'PLAYER'));
@@ -639,7 +639,7 @@ async function runDebug() {
   let winner = null;
   for (let r = 1; r <= 5 && !winner; r++) {
     state.round = r;
-    log(`\n${'─'.repeat(50)}`, C.dim);
+    log(`\n${'â”€'.repeat(50)}`, C.dim);
     log(`  ROUND ${r}`, C.bold);
 
     // Process HoT at round start
@@ -666,12 +666,12 @@ async function runDebug() {
     header(`[VENCEDOR] ${winner}`);
     ok(`${winner} ganhou com ${state.medals[winner]} medalhas!`);
   } else {
-    log(`\n  Simulação de 5 rounds completa. Sem vencedor ainda.`, C.yellow);
+    log(`\n  SimulaÃ§Ã£o de 5 rounds completa. Sem vencedor ainda.`, C.yellow);
     info(`Player: ${state.medals.PLAYER} medalhas | Enemy: ${state.medals.ENEMY} medalhas`);
   }
 
-  // ─── TEST 9: Win Condition ───
-  section('TESTE 9: Condição de Vitória (10 Medalhas)');
+  // â”€â”€â”€ TEST 9: Win Condition â”€â”€â”€
+  section('TESTE 9: CondiÃ§Ã£o de VitÃ³ria (10 Medalhas)');
   const winState = new VersusGameState();
   winState.medals = { PLAYER: 9, ENEMY: 7 };
   winState.playerTeam = [createRobot('DB', 0, 'PLAYER')];
@@ -682,12 +682,12 @@ async function runDebug() {
   onKill(killer2, 'PLAYER', winState);
   const winResult = checkWin(winState);
   if (winResult === 'PLAYER') {
-    ok(`PLAYER venceu com ${winState.medals.PLAYER} medalhas! Condição de vitória correta.`);
+    ok(`PLAYER venceu com ${winState.medals.PLAYER} medalhas! CondiÃ§Ã£o de vitÃ³ria correta.`);
   } else {
-    fail(`Condição de vitória não detectada corretamente!`);
+    fail(`CondiÃ§Ã£o de vitÃ³ria nÃ£o detectada corretamente!`);
   }
 
-  // ─── TEST 10: Revive System ───
+  // â”€â”€â”€ TEST 10: Revive System â”€â”€â”€
   section('TESTE 10: Sistema de Revive (Suporte)');
   const deadBot = createRobot('PL', 1, 'PLAYER');
   deadBot.currentHp = 0;
@@ -699,23 +699,24 @@ async function runDebug() {
     fail(`Revive falhou!`);
   }
 
-  // ─── ALL TESTS SUMMARY ───
+  // â”€â”€â”€ ALL TESTS SUMMARY â”€â”€â”€
   header('RESUMO DOS SISTEMAS DEBUGADOS');
-  ok('Seleção de robôs (3 de 5)');
+  ok('SeleÃ§Ã£o de robÃ´s (3 de 5)');
   ok('Estado de jogo inicializado');
   ok('Tabuleiro 5x5 posicionado');
   ok('Escalada de poder por hits (0/+1/+2/+3)');
   ok('Sistema de escudos (DB grupo, PL atacante, CP self+energy, PB outros, TV fraco)');
   ok('Sistema de suporte (heal, HoT, heal+energy, heal_cost, heal_all)');
   ok('Sistema de kill/medal/buff (+15HP, +3E, +1 medalha)');
-  ok('Simulação de turnos completos (ataque/defesa/suporte)');
-  ok('Condição de vitória (10 medalhas)');
+  ok('SimulaÃ§Ã£o de turnos completos (ataque/defesa/suporte)');
+  ok('CondiÃ§Ã£o de vitÃ³ria (10 medalhas)');
   ok('Sistema de revive (50% HP)');
 
-  log(`\n${C.bold}${C.green}[OK] TODOS OS SISTEMAS PASSARAM! Pronto para implementação da UI.${C.reset}\n`);
+  log(`\n${C.bold}${C.green}[OK] TODOS OS SISTEMAS PASSARAM! Pronto para implementaÃ§Ã£o da UI.${C.reset}\n`);
 }
 
 runDebug().catch(err => {
   console.error(`${C.red}ERRO NO DEBUG:${C.reset}`, err);
   process.exit(1);
 });
+

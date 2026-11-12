@@ -949,3 +949,41 @@ Padronização arquitetural e de gameplay dos minigames de combate para os 5 rob
 - **Sintaxe:** Todos os módulos alterados foram validados via `node --check` com zero falhas registradas.
 - **Suíte automatizada:** `npm test` executou o script de validação de combate e regras em `debug-versus.js`, obtendo aprovação em todos os 10 grupos de teste.
 - **Regras autorais:** Preservada a proibição irrevogável de emojis no código e interface, bem como a paleta terminal CRT e arquivos de assets canônicos.
+
+---
+
+### [12/11/2026 - 16:00] Padronização Definitiva de Minigames & Eliminação de Código Legado
+
+#### 1. Eliminação Completa de Motores Legados e Código Morto
+- **`public/js/versus-minigames.js`**:
+  - Excluídos permanentemente todos os 15 métodos legados de minigames (`_clickTargets`, `_swipePath`, `_circleClick`, `_mirrorSequence`, `_slashDraw`, `_arrowQTE`, `_typingSprint`, `_dualKeys`, `_reactionTest`, `_arrowSequence`, `_gravityDodge`, `_platformDodge`, `_shooterDodge`, `_orbitDodge`, `_greenHeartDodge`).
+  - Redução de ~2.100 linhas de código obsoleto.
+  - Implementado o método `_chainedFinisher(color, name, finisherId)` para o Ataque Nível 3 (Finalizador Supremo), executando a sequência L1 + L2 com 60% menos obstáculos e ritmo ágil.
+- **`public/js/terminal-minigames.js`**:
+  - Excluídos permanentemente os motores obsoletos do Modo História (`runUndertaleMinigame`, `runRhythmFNFMinigame`, `runIceFrenzyMinigame`, `runCommandTypingMinigame`, `runSliceReflexMinigame`, `runPrismAlignMinigame`), reduzindo o arquivo de 1.670 para 173 linhas limpas.
+  - O Modo História agora delega 100% da execução ao motor unificado padronizado (`VersusMinigames`), garantindo paridade absoluta entre a Campanha e o Versus.
+- **`public/js/terminal-game.js`**:
+  - Substituídos os minigames legados do personagem inicial Quezas (`click_targets`, `arrow_qte`) por `db_dodge` e `db_bite`.
+
+#### 2. Matriz Padronizada de Minigames (3 Ataques por Robô)
+- **Nível 1 (L1 - Esquiva / Menor custo / Menor dano / Pointerdown Contínuo)**:
+  - Dino-Byte: `db_dodge` (Chuva de meteoritos térmicos)
+  - Cowputer-Moo: `cp_dodge` (Laço giratório acelerando + bordas convergentes)
+  - Penlinux: `pl_dodge` (Estalactites em queda + física deslizante de gelo + vento cíclico a cada 2s)
+  - Pavabyte: `pb_dodge` (Feixes laser rápidos com aviso prévio pontilhado)
+  - TigerVex: `tv_dodge` (Barreiras colossais tipo Flappy Bird com frestas de passagem)
+- **Nível 2 (L2 - Ação Interativa / Custo médio / Dano aumentado / Acessível via Cliques/Toques)**:
+  - Dino-Byte: `db_bite` (Janelas de terminal corrompidas partidas ao meio)
+  - Cowputer-Moo: `cp_lasso` (Rotação 360° acumulando energia com visual ondulante)
+  - Penlinux: `pl_sequence` (15 nós numéricos gerados sem colisão em ordem 1 a 15)
+  - Pavabyte: `pb_prism` (Prismas rotacionáveis em 90° conectando o feixe de ponta a ponta)
+  - TigerVex: `tv_slash` (Deslize vertical rasgando as colunas da tela CRT)
+- **Nível 3 (L3 - Finalizador Supremo / Custo Máximo de Energia)**:
+  - `chained_finisher`: Sequência em cadeia (L1 + L2) com 60% menos densidade de obstáculos.
+  - Dano: `(Dano L1 + Dano L2) * 1.5`.
+
+#### 3. Ajustes de Interface Visual e Sombras
+- **`public/css/terminal.css`**:
+  - Rebaixamento e reposicionamento de `.crt-vignette` e `.crt-fisheye-overlay` (`z-index: 0`) e suavização da vinheta para nunca escurecer ou omitir botões e inputs interativos.
+  - Rebaixamento de `.title-bottom-shadow` (`z-index: 1`) e elevação do conteúdo do menu `.title-foreground-content` (`z-index: 15 !important`).
+  - Correção do badge de status da Party (`.pokemon-card-slot.active-party::before`), garantindo texto `ATIVO`, `z-index: 100 !important`, margem superior adequada e sobreposição impecável sobre o retângulo dourado.

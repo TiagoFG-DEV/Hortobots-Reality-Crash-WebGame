@@ -8,7 +8,7 @@
     "description": "Dinossauro térmico com garras incandescentes e blindagem de dados.",
     "catchphrase": "Sente o poder do lagarto!",
     "baseHp": 50,
-    "attackPower": 7,
+    "attackPower": 10,
     "xpBaseToNext": 75,
     "xpGrowthPerLevel": 35,
     "growthStats": {
@@ -18,41 +18,32 @@
     },
     "moves": [
       {
-        "id": "jurassic_bite",
-        "name": "Mordida Jurássica",
+        "id": "db_lvl1",
+        "name": "Chuva de Meteoritos",
         "cost": 2,
-        "basePower": 7,
-        "minigame": "dino_targets",
-        "unlockLevel": 1,
-        "desc": "Chuva de meteoros térmicos. Desvie dos projéteis e colete nós de ignição."
-      },
-      {
-        "id": "flame_claw",
-        "name": "Garras Flamejantes",
-        "cost": 4,
         "basePower": 12,
-        "minigame": "dino_arrows",
-        "unlockLevel": 4,
-        "desc": "Barragem de garras laser. Posicione o núcleo nas brechas seguras."
+        "minigame": "db_dodge",
+        "unlockLevel": 1,
+        "desc": "Desvie dos meteoritos — quanto mais esquivar, maior o dano!"
       },
       {
-        "id": "draconic_firewall",
-        "name": "Firewall Dracônico",
-        "cost": 6,
-        "basePower": 18,
-        "minigame": "dino_timing",
-        "unlockLevel": 6,
-        "desc": "Vórtice espiral de labaredas. Mantenha o núcleo em órbita desviando do fogo."
+        "id": "db_lvl2",
+        "name": "Mordida Dracônica",
+        "cost": 4,
+        "basePower": 20,
+        "minigame": "db_bite",
+        "unlockLevel": 1,
+        "desc": "Clique nas telas de erro para o Dino-Byte morder e destruí-las!"
       }
     ],
     "finisher": {
       "id": "lizards_roar",
       "name": "Rugido Hiperbárico do Lagarto",
       "cost": 10,
-      "basePower": 40,
+      "basePower": 46,
       "unlockLevel": 2,
       "minigame": "chained_finisher",
-      "desc": "O golpe supremo que desencadeia a barragem tríplice de 10 segundos!"
+      "desc": "Combinação devastadora: meteoritos + mordidas + finalização suprema!"
     }
   },
   "COWPUTER": {
@@ -63,7 +54,7 @@
     "avatar": "[CP-02]",
     "description": "Robô xerife bovino com chifres condutores e laço magnético polar.",
     "catchphrase": "O faroeste digital tem uma nova xerife!",
-    "baseHp": 88,
+    "baseHp": 58,
     "attackPower": 9,
     "xpBaseToNext": 80,
     "xpGrowthPerLevel": 40,
@@ -74,41 +65,32 @@
     },
     "moves": [
       {
-        "id": "stampede_ram",
-        "name": "Laço Magnético",
+        "id": "cp_lvl1",
+        "name": "Arena do Xerife",
         "cost": 2,
         "basePower": 11,
-        "minigame": "cow_lasso",
+        "minigame": "cp_dodge",
         "unlockLevel": 1,
-        "desc": "Laço polar giratório. Manobre o núcleo longe das vigas magnéticas."
+        "desc": "Desvie do laço giratório — permaneça no centro para sobreviver!"
       },
       {
-        "id": "horn_overload",
-        "name": "Sobrecarga de Chifres",
+        "id": "cp_lvl2",
+        "name": "Giro do Laço",
         "cost": 4,
-        "basePower": 15,
-        "minigame": "cow_decrypt",
-        "unlockLevel": 4,
-        "desc": "Labirinto de dados dinâmico. Colete as chaves criptográficas sem colidir."
-      },
-      {
-        "id": "western_dust",
-        "name": "Poeira do Velho Oeste",
-        "cost": 6,
-        "basePower": 18,
-        "minigame": "cow_quickdraw",
-        "unlockLevel": 6,
-        "desc": "Disparos velozes de plasma com ricochete. Mantenha o núcleo protegido."
+        "basePower": 19,
+        "minigame": "cp_lasso",
+        "unlockLevel": 1,
+        "desc": "Pressione e gire o mouse em círculo perfeito para acumular energia!"
       }
     ],
     "finisher": {
       "id": "bovine_voltage",
       "name": "Choque Bovino de Alta Tensão",
       "cost": 10,
-      "basePower": 42,
+      "basePower": 44,
       "unlockLevel": 2,
       "minigame": "chained_finisher",
-      "desc": "Ataque sísmico supremo sobrevivendo à barragem tríplice de 10 segundos!"
+      "desc": "Laço em espiral + giro perfeito + descarga final suprema!"
     }
   },
   "PENLINUX": {
@@ -131,40 +113,31 @@
     "moves": [
       {
         "id": "frost_slide",
-        "name": "Deslize Glacial",
+        "name": "Tundra Ártica",
         "cost": 2,
-        "basePower": 10,
-        "minigame": "pen_slide",
+        "basePower": 13,
+        "minigame": "pl_dodge",
         "unlockLevel": 1,
-        "desc": "Trilha glacial em alta velocidade. Desvie das estalactites e blocos de gelo."
+        "desc": "Desvie das estalactites com controle escorregadio e vento gelado!"
       },
       {
-        "id": "glacier_quake",
-        "name": "Terremoto de Iceberg",
+        "id": "pl_sequence_dance",
+        "name": "Sequência do Hee-Hee",
         "cost": 4,
-        "basePower": 16,
-        "minigame": "pen_stomp",
-        "unlockLevel": 4,
-        "desc": "Ondas de choque de iceberg concêntricas. Atravesse os anéis pelas brechas."
-      },
-      {
-        "id": "dance_pass",
-        "name": "Passinho do Hee-Hee",
-        "cost": 6,
-        "basePower": 17,
-        "minigame": "pen_rhythm",
-        "unlockLevel": 6,
-        "desc": "Pista de dança glacial com holofotes laser. Fique nas zonas seguras no compasso."
+        "basePower": 22,
+        "minigame": "pl_sequence",
+        "unlockLevel": 1,
+        "desc": "Clique nos números de 1 a 15 em ordem correta!"
       }
     ],
     "finisher": {
       "id": "hee_hee_avalanche",
       "name": "Avalanche Ártica do Hee-Hee",
       "cost": 10,
-      "basePower": 35,
+      "basePower": 50,
       "unlockLevel": 2,
       "minigame": "chained_finisher",
-      "desc": "Coreografia devastadora sobrevivendo à tempestade de gelo por 10 segundos!"
+      "desc": "Coreografia devastadora executando os ritmos em cadeia!"
     }
   },
   "TIGERVEX": {
@@ -175,7 +148,7 @@
     "avatar": "[TV-04]",
     "description": "Titã Tigre-Branco forjado em titânio e bobinas Tesla de alta voltagem.",
     "catchphrase": "Garra, circuito e voltagem suprema!",
-    "baseHp": 100,
+    "baseHp": 60,
     "attackPower": 13,
     "xpBaseToNext": 90,
     "xpGrowthPerLevel": 45,
@@ -187,40 +160,31 @@
     "moves": [
       {
         "id": "titanium_slash",
-        "name": "Talho de Titânio",
+        "name": "Arena do Tigre",
         "cost": 2,
-        "basePower": 12,
-        "minigame": "tiger_slice",
-        "unlockLevel": 1,
-        "desc": "Talhos de plasma instantâneos de alta voltagem. Reflexo rápido de manobra."
-      },
-      {
-        "id": "plasma_pounce",
-        "name": "Bote de Plasma",
-        "cost": 4,
         "basePower": 14,
-        "minigame": "tiger_plasma",
-        "unlockLevel": 4,
-        "desc": "Orbes Tesla teleguiados. Conduza os orbes longe do núcleo."
+        "minigame": "tv_dodge",
+        "unlockLevel": 1,
+        "desc": "Desvie das barreiras elétricas — encontre e passe pela abertura!"
       },
       {
-        "id": "white_fang",
-        "name": "Presas Relâmpago",
-        "cost": 6,
-        "basePower": 22,
-        "minigame": "tiger_tesla",
-        "unlockLevel": 6,
-        "desc": "Circuito condutor eletrificado. Colete os nós condutores sem tocar nas linhas."
+        "id": "tv_slash_move",
+        "name": "Rasgo de Dimensão",
+        "cost": 4,
+        "basePower": 24,
+        "minigame": "tv_slash",
+        "unlockLevel": 1,
+        "desc": "Deslize de cima para baixo para rasgar a dimensão!"
       }
     ],
     "finisher": {
       "id": "thunder_core",
       "name": "Ruptura do Núcleo Trovão",
       "cost": 10,
-      "basePower": 50,
+      "basePower": 52,
       "unlockLevel": 2,
       "minigame": "chained_finisher",
-      "desc": "Ruptura suprema do núcleo trovão em barragem tríplice de 10 segundos!"
+      "desc": "Barreiras + rasgo + ruptura total do núcleo trovão!"
     }
   },
   "PAVABYTE": {
@@ -231,7 +195,7 @@
     "avatar": "[PB-05]",
     "description": "Titã Pavão com leque holográfico e emissores de prisma quântico.",
     "catchphrase": "Admire a perfeição dos dados luminosos!",
-    "baseHp": 96,
+    "baseHp": 56,
     "attackPower": 11,
     "xpBaseToNext": 80,
     "xpGrowthPerLevel": 40,
@@ -243,40 +207,31 @@
     "moves": [
       {
         "id": "prism_flare",
-        "name": "Clarão Prismático",
+        "name": "Câmara de Cristal",
         "cost": 2,
         "basePower": 12,
-        "minigame": "pava_prism",
+        "minigame": "pb_dodge",
         "unlockLevel": 1,
-        "desc": "Refração de feixes luminosos. Encontre os pontos cegos dos prismas."
+        "desc": "Desvie dos feixes de luz — atenção à linha pontilhada que anuncia o laser!"
       },
       {
-        "id": "spectral_tail",
-        "name": "Cauda Espectral",
+        "id": "pb_prism_align",
+        "name": "Alinhamento Prismático",
         "cost": 4,
-        "basePower": 18,
-        "minigame": "pava_fan",
-        "unlockLevel": 4,
-        "desc": "Leque holográfico de fótons rotativo. Acompanhe a rotação na zona segura."
-      },
-      {
-        "id": "code_cascade",
-        "name": "Cascata de Códigos",
-        "cost": 6,
-        "basePower": 20,
-        "minigame": "pava_cascade",
-        "unlockLevel": 6,
-        "desc": "Chuva torrencial de fótons. Colete dados dourados e evite partículas corrompidas."
+        "basePower": 22,
+        "minigame": "pb_prism",
+        "unlockLevel": 1,
+        "desc": "Clique nos prismas para rotacionar e alinhar o feixe de luz!"
       }
     ],
     "finisher": {
       "id": "rainbow_laser",
       "name": "Matriz Laser Arco-Íris",
       "cost": 10,
-      "basePower": 46,
+      "basePower": 48,
       "unlockLevel": 2,
       "minigame": "chained_finisher",
-      "desc": "Bombardeio orbital óptico em barragem tríplice de 10 segundos!"
+      "desc": "Câmara + prismas + bombardeio orbital final!"
     }
   },
   "QUEZADILHAS": {
@@ -298,22 +253,22 @@
     },
     "moves": [
       {
-        "id": "quezas_hack",
-        "name": "Pulso de Desfragmentação",
+        "id": "db_lvl1_q",
+        "name": "Chuva de Meteoritos",
         "cost": 2,
         "basePower": 12,
-        "minigame": "dino_targets",
+        "minigame": "db_dodge",
         "unlockLevel": 1,
-        "desc": "Disparo de neutralização de cabos de corrupção."
+        "desc": "Desvie dos meteoritos térmicos para neutralizar cabos."
       },
       {
-        "id": "quezas_strike",
-        "name": "Talho de Dados",
+        "id": "db_lvl2_q",
+        "name": "Mordida Dracônica",
         "cost": 4,
         "basePower": 18,
-        "minigame": "dino_arrows",
+        "minigame": "db_bite",
         "unlockLevel": 1,
-        "desc": "Corte de precisão nos circuitos corrompidos."
+        "desc": "Destrua as telas de erro na mordida rápida."
       }
     ]
   }
