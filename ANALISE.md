@@ -1100,3 +1100,33 @@ Padronização arquitetural e de gameplay dos minigames de combate para os 5 rob
 - **Ajuste Fino e Centralização da Moeda 3D do Duelo ao Meio-Dia (`terminal-3d.js`, `versus-ui.js`, `terminal.css`)**:
   - Resolução do problema de sobreposição e descentralização: o overlay agora é exibido antes da inicialização do Three.js, e o container `.versus-coin-stage` / `.versus-coin-disc` foi configurado com dimensões fixas de 140x140px com `display: flex; justify-content: center; align-items: center`, mantendo a moeda centralizada acima dos botões de Cara e Coroa.
   - **Textura Oficial da Coroa**: Implementado o método `_createCoroaCoinTexture()` com a Coroa Imperial completa (diadema, 5 pontas majestosas, joias coloridas em ciano/vermelho, ornatos e inscrição dourada), renderizada com precisão na face de trás da moeda 3D em rotação idle.
+
+
+---
+
+### [12/11/2026 - 17:00] Status Geral do Projeto, Branch Android Web App e Roteiro de Continuidade
+
+#### 1. O que foi finalizado e commitado na branch `main`:
+- **Correção Crítica dos Minigames**: Reintegrados todos os helpers de layout e cálculo em `public/js/versus-minigames.js`, extinguindo o erro `TypeError: this._buildMgLayout is not a function`. Os minigames em ambos os modos (História e Versus) abrem e executam normalmente.
+- **Escudos Holográficos 3D Padronizados**: Criado o motor unificado `ShieldVisualFX` em `public/js/shield-fx.js`, integrando tanto `versus-board.js` quanto `story-board.js` com cúpula volumétrica 3D, halo traseiro de difusão, anéis de contenção giratórios, emissores orbitais, scanlines internas e badge de status superior.
+- **Moeda 3D do Duelo de Iniciativa**: Corrigida a sobreposição e descentralização do canvas Three.js (agora enquadrado e centralizado em 140x140px no `.versus-coin-stage`). A face da Coroa Imperial foi completamente desenhada e texturizada com as 5 pontas, joias e ornatos dourados.
+- **Badge ATIVO na Party**: Resolvido o corte da borda superior com padding-top preventivo e elevação de z-index.
+
+#### 2. O que foi criado e enviado na branch dedicada `android-webapp` (NÃO MERGEAR NA MAIN):
+- **Branch criada e enviada ao remoto**: `origin/android-webapp` (commit `b215c5c`).
+- **Arquivos PWA/Mobile adicionados**:
+  - `AVISO_BRANCH_NAO_MERGEAR.md`: Documentação de isolamento para futuro repositório próprio.
+  - `public/manifest.json`: Manifesto com display `fullscreen`, orientação e metadados.
+  - `public/sw.js`: Service Worker com pre-cache do App Shell e suporte offline.
+  - `public/js/android-app.js`: Gerenciador de instalação PWA, alternância de tela cheia, persistência offline em IndexedDB + LocalStorage e haptic feedback tátil.
+  - Ícones PWA: `icon-192.png`, `icon-512.png` e `icon-maskable.png` gerados e vinculados.
+  - `public/css/terminal.css`: Media queries para smartphones/tablets, safe-area-insets para notch e prevenção de scroll em minigames com `touch-action: none`.
+
+#### 3. Roteiro Claro de Onde Continuar Depois:
+1. **Validação em Dispositivo Real / Emulador Android**:
+   - Testar o prompt de instalação "Adicionar à tela inicial" no Chrome Android na branch `android-webapp`.
+   - Verificar a ergonomia dos toques nos minigames L2 (mordida, laço, sequência, prismas, corte de tela) em telas pequenas de 6 polegadas.
+2. **Criação do Repositório Dedicado para o App Android**:
+   - Como solicitado, quando for o momento, clonar a branch `android-webapp` em um repositório separado (ex: `Hortobots-Android-App`) para desacoplar totalmente do repositório web principal.
+3. **Calibração de Áudio no Mobile**:
+   - Validar se a política de autoplay do Android requer desbloqueio sonoro explícito logo na tela de boot (`initialBootCurtain`).
